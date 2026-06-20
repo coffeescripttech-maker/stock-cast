@@ -2,12 +2,6 @@ import type { Product, ProductCategory } from '../types/product';
 import type { Transaction } from '../types/transaction';
 import type { Customer } from '../types/customer';
 import type { RewardsConfig } from '../types/customer';
-import type { UserAccount } from '../types/auth';
-
-export const ACCOUNTS: Record<string, UserAccount> = {
-  admin: { password: 'admin123', role: 'owner', name: 'Store Owner' },
-  staff: { password: 'staff123', role: 'staff', name: 'Store Staff' },
-};
 
 export const CATEGORIES: ProductCategory[] = [
   'Beverage', 'Food', 'Snacks', 'Dairy', 'Household', 'Personal Care', 'Frozen', 'Others',
