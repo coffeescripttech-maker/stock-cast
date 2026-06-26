@@ -3,6 +3,7 @@ import { usePOSStore } from '../stores/posStore';
 import { useDataStore } from '../stores/dataStore';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import { ProductSearch } from '../components/pos/ProductSearch';
 import { Cart } from '../components/pos/Cart';
 import { OrderSummary } from '../components/pos/OrderSummary';
@@ -76,9 +77,14 @@ export default function POSPage() {
 
   const processCheckout = useCallback(() => {
     if (cart.length === 0) return;
+    const settings = useSettingsStore.getState().settings.pos;
+    if (settings.customerRequired && !linkedCustomer) {
+      showToast('Please link a customer before checkout', 'error');
+      return;
+    }
     setPendingTotal(grandTotal);
     setPaymentOpen(true);
-  }, [cart.length, grandTotal]);
+  }, [cart.length, grandTotal, linkedCustomer]);
 
   function handlePaymentComplete(payment: { amountTendered: number; change: number }) {
     finalizeSale(payment.amountTendered, payment.change);
@@ -126,6 +132,16 @@ export default function POSPage() {
     setReceiptOpen(true);
 
     showToast('Sale completed! Press Enter to print receipt.', 'success');
+
+    // Auto-print if enabled
+    const pSettings = useSettingsStore.getState().settings.pos;
+    if (pSettings.autoPrintReceipt) {
+      setTimeout(() => {
+        setReceiptShowing(false);
+        window.print();
+        setReceiptOpen(false);
+      }, 500);
+    }
   }
 
   function handlePrintReceipt() {

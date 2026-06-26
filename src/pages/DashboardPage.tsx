@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { TrendingUp, AlertTriangle, ShoppingCart, Package, RefreshCw, DollarSign, Activity, Clock, ArrowRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useDataStore } from '../stores/dataStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import { useUIStore } from '../stores/uiStore';
 import { TypeBadge } from '../components/ui/Badge';
 import { cn } from '../lib/cn';
@@ -29,8 +30,9 @@ export default function DashboardPage() {
     [transactions, todayStr]
   );
   const todaySales = todayTx.reduce((s, t) => s + t.total, 0);
-  const rtLow = products.filter((p) => p.retailStock <= 10);
-  const wsLow = products.filter((p) => p.wholesaleStock <= 30);
+  const invSettings = useSettingsStore((s) => s.settings.inventory);
+  const rtLow = products.filter((p) => p.retailStock <= invSettings.lowStockThresholdRt);
+  const wsLow = products.filter((p) => p.wholesaleStock <= invSettings.lowStockThresholdWs);
   const recentTx = useMemo(
     () => [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5),
     [transactions]

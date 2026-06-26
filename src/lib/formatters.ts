@@ -1,6 +1,7 @@
 import type { TierKey, TierInfo } from '../types/customer';
 import type { Transaction } from '../types/transaction';
 import { defaultRewardsConfig } from './constants';
+import { useSettingsStore } from '../stores/settingsStore';
 
 export function fmtDate(iso: string): string {
   const d = new Date(iso);
@@ -11,7 +12,22 @@ export function fmtDate(iso: string): string {
 export function fmtCurrency(amount: number): string {
   const n = Number(amount);
   if (isNaN(n)) return '0.00';
-  return n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  try {
+    const tax = useSettingsStore.getState().settings.tax;
+    const { currencySymbol, currencyPosition, decimalSeparator, thousandSeparator } = tax;
+
+    const parts = n.toFixed(2).split('.');
+    const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandSeparator);
+    const formatted = `${intPart}${decimalSeparator}${parts[1]}`;
+
+    return currencyPosition === 'before'
+      ? `${currencySymbol}${formatted}`
+      : `${formatted}${currencySymbol}`;
+  } catch {
+    // Fallback if store isn't loaded yet
+    return n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
 }
 
 /** Safe .toFixed(2) — never throws on null/undefined/NaN/string */

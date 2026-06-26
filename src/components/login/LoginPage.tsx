@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Home, AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Store } from 'lucide-react';
 
 export function LoginPage() {
   const [username, setUsername] = useState('');
@@ -15,6 +16,8 @@ export function LoginPage() {
   const currentUser = useAuthStore((s) => s.currentUser);
   const hydrate = useDataStore((s) => s.hydrate);
   const navigate = useNavigate();
+  const storeName = useSettingsStore((s) => s.settings.general.storeName);
+  const storeLogo = useSettingsStore((s) => s.settings.branding.storeLogo);
 
   // If already logged in, redirect
   if (currentUser) {
@@ -53,11 +56,15 @@ export function LoginPage() {
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-11 w-[400px] shadow-2xl border border-brand/5 animate-[fadeUp_0.4s_ease]">
         {/* Logo */}
         <div className="w-13 h-13 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-5">
-          <Home size={22} className="text-white" />
+          {storeLogo ? (
+            <img src={storeLogo} alt={storeName} className="w-full h-full rounded-2xl object-contain" />
+          ) : (
+            <Store size={22} className="text-white" />
+          )}
         </div>
 
         <h1 className="text-xl font-bold text-center mb-1.5 text-slate-900 dark:text-slate-100">
-          Ruiz Store POS
+          {storeName || 'Ruiz Store'} POS
         </h1>
         <p className="text-xs text-slate-400 text-center mb-8 dark:text-slate-500">
           Sign in to access the inventory and sales system

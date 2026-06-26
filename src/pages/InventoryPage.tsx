@@ -8,6 +8,7 @@ import {
 import { useDataStore } from '../stores/dataStore';
 import { useUIStore } from '../stores/uiStore';
 import { useAuthStore } from '../stores/authStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import { Button } from '../components/ui/Button';
 import { Dialog } from '../components/ui/Dialog';
 import { BarcodeVisual } from '../components/pos/BarcodeVisual';
@@ -16,9 +17,11 @@ import { CATEGORIES, CATEGORY_COLORS } from '../lib/constants';
 import { fmtCurrency } from '../lib/formatters';
 import type { Product, ProductCategory } from '../types/product';
 
-/* ─── Stock thresholds ─── */
-const LOW_STOCK_RT = 10;
-const LOW_STOCK_WS = 30;
+/* ─── Stock thresholds (from settings) ─── */
+function getThresholds() {
+  const inv = useSettingsStore.getState().settings.inventory;
+  return { LOW_STOCK_RT: inv.lowStockThresholdRt, LOW_STOCK_WS: inv.lowStockThresholdWs };
+}
 
 /* ─── Categories with rich metadata ─── */
 const CATEGORY_META = Object.fromEntries(
@@ -26,12 +29,12 @@ const CATEGORY_META = Object.fromEntries(
 );
 
 /* ─── Stats calculation ─── */
-function computeStats(products: Product[]) {
+function computeStats(products: Product[], rtThreshold: number, wsThreshold: number) {
   const total = products.length;
   const totalValue = products.reduce(
     (s, p) => s + p.retailStock * p.retailPrice + p.wholesaleStock * p.wholesalePrice, 0
   );
-  const lowStock = products.filter((p) => p.retailStock <= LOW_STOCK_RT || p.wholesaleStock <= LOW_STOCK_WS).length;
+  const lowStock = products.filter((p) => p.retailStock <= rtThreshold || p.wholesaleStock <= wsThreshold).length;
   const outOfStock = products.filter((p) => p.retailStock === 0 && p.wholesaleStock === 0).length;
   return { total, totalValue, lowStock, outOfStock };
 }
@@ -81,7 +84,8 @@ export default function InventoryPage() {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   /* ── Computed ── */
-  const stats = useMemo(() => computeStats(products), [products]);
+  const { LOW_STOCK_RT, LOW_STOCK_WS } = useMemo(() => getThresholds(), []);
+  const stats = useMemo(() => computeStats(products, LOW_STOCK_RT, LOW_STOCK_WS), [products, LOW_STOCK_RT, LOW_STOCK_WS]);
   const catDist = useMemo(() => categoryDistribution(products), [products]);
   const maxCatCount = Math.max(1, ...Object.values(catDist));
 
@@ -1049,6 +1053,7 @@ function ProductFormModal({
   onSave: (data: Omit<Product, 'id'>) => void;
 }) {
   const showToast = useUIStore((s) => s.showToast);
+  const invSettings = useSettingsStore((s) => s.settings.inventory);
   const uploadProductImage = useDataStore((s) => s.uploadProductImage);
   const deleteProductImage = useDataStore((s) => s.deleteProductImage);
   const liveProduct = useDataStore(s => product ? s.products.find(p => p.id === product.id) : undefined);
@@ -1209,13 +1214,13 @@ function ProductFormModal({
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Retail Stock</label>
             <input type="number" value={form.retailStock} onChange={(e) => update('retailStock', parseInt(e.target.value) || 0)}
               className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
-            <p className="text-[10px] text-slate-400">Alert at ≤{LOW_STOCK_RT}</p>
+            <p className="text-[10px] text-slate-400">Alert at ≤{invSettings.lowStockThresholdRt}</p>
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Wholesale Stock</label>
             <input type="number" value={form.wholesaleStock} onChange={(e) => update('wholesaleStock', parseInt(e.target.value) || 0)}
               className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
-            <p className="text-[10px] text-slate-400">Alert at ≤{LOW_STOCK_WS}</p>
+            <p className="text-[10px] text-slate-400">Alert at ≤{invSettings.lowStockThresholdWs}</p>
           </div>
         </div>
 

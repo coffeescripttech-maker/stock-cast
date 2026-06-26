@@ -195,6 +195,24 @@ const settingsUpdateSchema = z.object({
 
 // ---- Helpers ----
 
+/** Convert snake_case string to camelCase */
+function snakeToCamel(key: string): string {
+  return key.replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase());
+}
+
+/** Recursively convert all object keys from snake_case to camelCase */
+function toCamelCaseKeys(obj: unknown): unknown {
+  if (Array.isArray(obj)) return obj.map(toCamelCaseKeys);
+  if (obj !== null && typeof obj === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      result[snakeToCamel(key)] = toCamelCaseKeys(value);
+    }
+    return result;
+  }
+  return obj;
+}
+
 async function getSettings(): Promise<Record<string, any>> {
   const [rows] = await pool.query<MySqlRow[]>(
     'SELECT settings FROM system_settings WHERE id = 1'
@@ -257,7 +275,8 @@ router.get('/', async (_req, res, next) => {
 // PUT /api/settings — update settings (owner only)
 router.put('/', requireRole('owner'), async (req, res, next) => {
   try {
-    const input = settingsUpdateSchema.parse(req.body);
+    // Convert incoming snake_case keys to camelCase (client sends snake_case)
+    const input = settingsUpdateSchema.parse(toCamelCaseKeys(req.body));
 
     const current = await getSettings();
 
@@ -280,8 +299,8 @@ router.put('/', requireRole('owner'), async (req, res, next) => {
   }
 });
 
-// PUT /api/settings/branding — upload logo or favicon (owner only)
-router.put(
+// POST /api/settings/branding — upload logo or favicon (owner only)
+router.post(
   '/branding',
   requireRole('owner'),
   upload.fields([

@@ -2,10 +2,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
 import { useUIStore } from '../../stores/uiStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { ThemeToggle } from './ThemeToggle';
 import { cn } from '../../lib/cn';
 import {
-  LayoutDashboard, ShoppingCart, Package, Receipt, Star, BarChart3, ScrollText, LogOut, Store,
+  LayoutDashboard, ShoppingCart, Package, Receipt, Star, BarChart3, ScrollText, LogOut, Store, Settings,
 } from 'lucide-react';
 
 interface NavTab {
@@ -23,6 +24,7 @@ const tabs: NavTab[] = [
   { path: '/rewards', label: 'Rewards', icon: <Star size={15} />, roles: ['owner', 'staff'] },
   { path: '/reports', label: 'Reports', icon: <BarChart3 size={15} />, roles: ['owner'] },
   { path: '/audit', label: 'Audit Trail', icon: <ScrollText size={15} />, roles: ['owner'] },
+  { path: '/settings', label: 'Settings', icon: <Settings size={15} />, roles: ['owner'] },
 ];
 
 export function TopNav() {
@@ -33,6 +35,8 @@ export function TopNav() {
   const closeModal = useUIStore((s) => s.closeModal);
 
   const userTabs = tabs.filter((t) => t.roles.includes(currentUser?.role || 'staff'));
+  const storeName = useSettingsStore((s) => s.settings.general.storeName);
+  const storeLogo = useSettingsStore((s) => s.settings.branding.storeLogo);
 
   const handleLogout = () => {
     logAudit('LOGOUT', `${currentUser?.name} signed out`, currentUser?.name, currentUser?.role);
@@ -45,11 +49,15 @@ export function TopNav() {
     <nav className="sticky top-0 z-50 bg-slate-900 dark:bg-slate-900 border-b border-slate-700/50 h-14 px-6 flex items-center gap-2 shadow-md">
       {/* Brand */}
       <div className="flex items-center gap-2.5 mr-4">
-        <div className="w-9 h-9 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-          <Store size={18} className="text-white" />
-        </div>
+        {storeLogo ? (
+          <img src={storeLogo} alt={storeName} className="w-9 h-9 rounded-lg object-contain bg-white/10" />
+        ) : (
+          <div className="w-9 h-9 bg-brand rounded-lg flex items-center justify-center shadow-sm">
+            <Store size={18} className="text-white" />
+          </div>
+        )}
         <div className="leading-tight">
-          <div className="text-sm font-bold text-white">Ruiz Store</div>
+          <div className="text-sm font-bold text-white">{storeName}</div>
           <div className="text-[10px] text-slate-400">POS System</div>
         </div>
       </div>

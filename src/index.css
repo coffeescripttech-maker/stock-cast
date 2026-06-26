@@ -62,3 +62,23 @@
   font-size: 12px;
   color: #0f172a;
 }
+
+/* Dense mode — tighter spacing */
+.dense-mode .p-6 { padding: 0.75rem; }
+.dense-mode .gap-5 { gap: 0.75rem; }
+.dense-mode .py-7 { padding-top: 1rem; padding-bottom: 1rem; }
+.dense-mode .p-5 { padding: 0.75rem; }
+.dense-mode .px-6 { padding-left: 1rem; padding-right: 1rem; }
+.dense-mode .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+.dense-mode .gap-6 { gap: 1rem; }
+.dense-mode .h-14 { height: 3rem; }
+
+/* Animations off */
+.animations-off * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+
+/* Font sizes */
+[data-font-size="small"] { font-size: 87.5%; }
+[data-font-size="large"] { font-size: 112.5%; }

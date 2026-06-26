@@ -1,6 +1,7 @@
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { fmtCurrency, fmtDate } from '../../lib/formatters';
+import { useSettingsStore } from '../../stores/settingsStore';
 import type { Transaction } from '../../types/transaction';
 
 interface ReceiptModalProps {
@@ -12,6 +13,11 @@ interface ReceiptModalProps {
 }
 
 export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }: ReceiptModalProps) {
+  const receiptSettings = useSettingsStore((s) => s.settings.receipt);
+  const taxSettings = useSettingsStore((s) => s.settings.tax);
+  const generalSettings = useSettingsStore((s) => s.settings.general);
+  const brandingSettings = useSettingsStore((s) => s.settings.branding);
+
   if (!receipt) return null;
 
   const rtItems = receipt.items.filter((i) => i.type === 'rt');
@@ -21,7 +27,6 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
   const totalItems = receipt.items.reduce((s, i) => s + i.qty, 0);
 
   const dash = '─'.repeat(48);
-
   const typeLabel = receipt.type === 'rt' ? 'RETAIL' : receipt.type === 'ws' ? 'WHOLESALE' : 'MIXED (Retail + Wholesale)';
 
   return (
@@ -31,13 +36,18 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
       title=""
       showClose={!printMode}
       hideOverlayClose={printMode}
-      className="w-[420px]"
+      className={receiptSettings.paperSize === '80mm' ? 'w-[520px]' : 'w-[420px]'}
     >
       {/* Receipt content - also used for print */}
       <div className="receipt-text space-y-1.5">
         {/* Header */}
         <div className="text-center">
-          <h3 className="text-lg font-bold tracking-widest">RUIZ STORE</h3>
+          {receiptSettings.showLogoOnReceipt && brandingSettings.storeLogo && (
+            <img src={brandingSettings.storeLogo} alt="" className="h-10 mx-auto mb-1" />
+          )}
+          <h3 className="text-lg font-bold tracking-widest">
+            {receiptSettings.headerText || generalSettings.storeName}
+          </h3>
           <p className="text-[10px] text-slate-400 mt-0.5">Point of Sale Receipt</p>
         </div>
         <div className="font-mono text-[10px] text-slate-300">{dash}</div>
@@ -47,7 +57,9 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
           <Row label="Date:" value={fmtDate(receipt.date)} />
           <Row label="Cashier:" value={receipt.cashier} />
           <Row label="Txn #:" value={receipt.id} mono />
-          {receipt.customerName && <Row label="Customer:" value={receipt.customerName} />}
+          {receiptSettings.showCustomerInfo && receipt.customerName && (
+            <Row label="Customer:" value={receipt.customerName} />
+          )}
           <div className="flex items-center gap-2 mt-1">
             <span className="text-[10px] text-slate-500">Type:</span>
             <span className={[
@@ -84,8 +96,8 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
               </span>
             </span>
             <span className="w-8 text-center">{item.qty}</span>
-            <span className="w-16 text-right">₱{fmtCurrency(item.price)}</span>
-            <span className="w-16 text-right">₱{fmtCurrency(item.qty * item.price)}</span>
+            <span className="w-16 text-right">{fmtCurrency(item.price)}</span>
+            <span className="w-16 text-right">{fmtCurrency(item.qty * item.price)}</span>
           </div>
         ))}
 
@@ -93,15 +105,27 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
 
         {/* Subtotals */}
         {rtItems.length > 0 && (
-          <SubtotalRow label="🛒 Retail subtotal:" value={rtSubtotal} />
+          <SubtotalRow label="Retail subtotal:" value={rtSubtotal} />
         )}
         {wsItems.length > 0 && (
-          <SubtotalRow label="📦 Wholesale subtotal:" value={wsSubtotal} />
+          <SubtotalRow label="Wholesale subtotal:" value={wsSubtotal} />
         )}
+
+        {/* Tax line */}
+        {taxSettings.enabled && taxSettings.rate > 0 && (
+          <>
+            <div className="flex justify-between text-[11px]">
+              <span>{taxSettings.label} ({taxSettings.rate}%):</span>
+              <span>{fmtCurrency(receipt.total * taxSettings.rate / 100)}</span>
+            </div>
+            <div className="font-mono text-[10px] text-slate-300">{dash}</div>
+          </>
+        )}
+
         {receipt.discount > 0 && (
           <div className="flex justify-between text-[11px] text-emerald-600">
-            <span>🎁 Points redemption ({receipt.pointsRedeemed} pts):</span>
-            <span>-₱{fmtCurrency(receipt.discount)}</span>
+            <span>{receiptSettings.discountLabel} ({receipt.pointsRedeemed} pts):</span>
+            <span>-{fmtCurrency(receipt.discount)}</span>
           </div>
         )}
 
@@ -114,7 +138,7 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
 
         <div className="flex justify-between text-sm font-bold border-t border-slate-300 dark:border-slate-600 pt-1.5 mt-1.5">
           <span>GRAND TOTAL</span>
-          <span>₱{fmtCurrency(receipt.total)}</span>
+          <span>{fmtCurrency(receipt.total)}</span>
         </div>
 
         {receipt.amountTendered != null && (
@@ -122,18 +146,18 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
             <div className="font-mono text-[10px] text-slate-300">{dash}</div>
             <div className="flex justify-between text-[11px]">
               <span>Cash Tendered:</span>
-              <span>₱{fmtCurrency(receipt.amountTendered)}</span>
+              <span>{fmtCurrency(receipt.amountTendered)}</span>
             </div>
             <div className="flex justify-between text-[11px] font-bold">
               <span>Change:</span>
-              <span>₱{fmtCurrency(receipt.change)}</span>
+              <span>{fmtCurrency(receipt.change)}</span>
             </div>
           </>
         )}
 
         {receipt.pointsEarned && receipt.pointsEarned > 0 && (
           <div className="text-center text-[10px] text-brand font-mono mt-1">
-            ★ +{receipt.pointsEarned} points earned for {receipt.customerName}
+            ★ +{receipt.pointsEarned} points earned{receipt.customerName ? ` for ${receipt.customerName}` : ''}
           </div>
         )}
 
@@ -141,10 +165,19 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
 
         {/* Footer */}
         <div className="text-center text-[11px] pt-1">
-          <p>Thank you for shopping at</p>
-          <p className="font-bold">Ruiz Store!</p>
-          <p className="text-[10px] text-slate-400 mt-1">Please come again 🙂</p>
+          {receiptSettings.footerText.split('\n').map((line, i) => (
+            <p key={i} className={i > 0 ? 'text-[10px] text-slate-400' : ''}>{line}</p>
+          ))}
         </div>
+
+        {receiptSettings.returnPolicyText && (
+          <>
+            <div className="font-mono text-[10px] text-slate-300">{dash}</div>
+            <div className="text-center text-[9px] text-slate-400">
+              {receiptSettings.returnPolicyText}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Print hint & button */}
@@ -178,7 +211,7 @@ function SubtotalRow({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex justify-between text-[11px]">
       <span>{label}</span>
-      <span>₱{fmtCurrency(value)}</span>
+      <span>{fmtCurrency(value)}</span>
     </div>
   );
 }

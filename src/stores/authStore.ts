@@ -75,6 +75,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
       // Hydrate fresh data from the API after session restore
       const { useDataStore } = await import('./dataStore');
       useDataStore.getState().hydrate().catch(() => {});
+      // Load system settings (CMS)
+      const { useSettingsStore } = await import('./settingsStore');
+      useSettingsStore.getState().fetchSettings().catch(() => {});
     } catch {
       // Token invalid or expired
       localStorage.removeItem(TOKEN_KEY);

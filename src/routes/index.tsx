@@ -12,6 +12,7 @@ const TransactionsPage = lazy(() => import('../pages/TransactionsPage'));
 const RewardsPage = lazy(() => import('../pages/RewardsPage'));
 const ReportsPage = lazy(() => import('../pages/ReportsPage'));
 const AuditPage = lazy(() => import('../pages/AuditPage'));
+const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
               { path: 'transactions', element: <TransactionsPage /> },
               { path: 'reports', element: <ReportsPage /> },
               { path: 'audit', element: <AuditPage /> },
+              { path: 'settings', element: <SettingsPage /> },
             ],
           },
           // Staff-accessible routes
