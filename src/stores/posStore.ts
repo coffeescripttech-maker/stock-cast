@@ -20,6 +20,7 @@ interface POSState {
   addToCart: (productId: number, name: string, type: SaleType, price: number) => void;
   removeFromCart: (index: number) => void;
   updateCartItemQty: (index: number, delta: number) => void;
+  setCartItemQty: (index: number, qty: number) => void;
   toggleCartItemType: (index: number, type: SaleType, newPrice: number) => void;
   clearCart: () => void;
   linkCustomer: (c: Customer) => void;
@@ -60,6 +61,12 @@ export const usePOSStore = create<POSState>()((set, get) => ({
   updateCartItemQty: (index, delta) => set((s) => ({
     cart: s.cart.map((item, i) =>
       i === index ? { ...item, qty: Math.max(1, item.qty + delta) } : item
+    ),
+  })),
+
+  setCartItemQty: (index, qty) => set((s) => ({
+    cart: s.cart.map((item, i) =>
+      i === index ? { ...item, qty: Math.max(1, qty) } : item
     ),
   })),
 

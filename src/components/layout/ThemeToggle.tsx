@@ -9,7 +9,9 @@ export function ThemeToggle({ className }: { className?: string }) {
     <button
       onClick={toggleTheme}
       className={cn(
-        'w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-brand hover:text-white hover:border-brand transition-all dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300',
+        'w-8 h-8 rounded-lg flex items-center justify-center transition-all',
+        'text-slate-400 hover:text-white hover:bg-white/10',
+        'border border-slate-700/50',
         className
       )}
       title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}

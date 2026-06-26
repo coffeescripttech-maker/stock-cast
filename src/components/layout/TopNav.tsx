@@ -5,7 +5,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { ThemeToggle } from './ThemeToggle';
 import { cn } from '../../lib/cn';
 import {
-  LayoutDashboard, ShoppingCart, Package, Receipt, Star, BarChart3, ScrollText, LogOut, Home,
+  LayoutDashboard, ShoppingCart, Package, Receipt, Star, BarChart3, ScrollText, LogOut, Store,
 } from 'lucide-react';
 
 interface NavTab {
@@ -42,29 +42,29 @@ export function TopNav() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-14 px-6 flex items-center gap-2">
+    <nav className="sticky top-0 z-50 bg-slate-900 dark:bg-slate-900 border-b border-slate-700/50 h-14 px-6 flex items-center gap-2 shadow-md">
       {/* Brand */}
-      <div className="flex items-center gap-2 mr-4">
-        <div className="w-9 h-9 bg-brand rounded-lg flex items-center justify-center">
-          <Home size={18} className="text-white" />
+      <div className="flex items-center gap-2.5 mr-4">
+        <div className="w-9 h-9 bg-brand rounded-lg flex items-center justify-center shadow-sm">
+          <Store size={18} className="text-white" />
         </div>
         <div className="leading-tight">
-          <div className="text-sm font-bold text-slate-900 dark:text-slate-100">Ruiz Store</div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500">POS System</div>
+          <div className="text-sm font-bold text-white">Ruiz Store</div>
+          <div className="text-[10px] text-slate-400">POS System</div>
         </div>
       </div>
 
       {/* Nav tabs */}
-      <div className="flex gap-1 flex-1">
+      <div className="flex gap-1 flex-1 overflow-x-auto">
         {userTabs.map((tab) => (
           <button
             key={tab.path}
             onClick={() => navigate(tab.path)}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap',
               location.pathname === tab.path
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                : 'text-slate-400 hover:bg-slate-50 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+                ? 'bg-brand/20 text-brand-light shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-white/10'
             )}
           >
             {tab.icon} {tab.label}
@@ -73,14 +73,14 @@ export function TopNav() {
       </div>
 
       {/* Right section */}
-      <div className="flex items-center gap-3 ml-auto">
-        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{currentUser?.name}</span>
+      <div className="flex items-center gap-3 ml-auto flex-shrink-0">
+        <span className="text-xs font-medium text-slate-300">{currentUser?.name}</span>
         <span
           className={cn(
             'px-2.5 py-0.5 rounded-full text-[10px] font-bold',
             currentUser?.role === 'owner'
-              ? 'bg-indigo-50 text-brand dark:bg-indigo-950 dark:text-indigo-300'
-              : 'bg-green-bg text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300'
+              ? 'bg-indigo-500/20 text-indigo-300'
+              : 'bg-emerald-500/20 text-emerald-300'
           )}
         >
           {currentUser?.role === 'owner' ? 'Owner' : 'Staff'}
@@ -88,7 +88,7 @@ export function TopNav() {
         <ThemeToggle />
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 text-slate-500 hover:bg-red-50 hover:border-red-500 hover:text-red-500 transition-all dark:border-slate-600 dark:text-slate-400 dark:hover:bg-red-950"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-red-300 hover:bg-red-500/15 transition-all border border-slate-700/50"
         >
           <LogOut size={13} />
           Logout

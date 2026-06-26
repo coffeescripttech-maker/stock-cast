@@ -142,4 +142,48 @@ export function del<T>(path: string): Promise<T> {
   return request<T>('DELETE', `/api${path}`);
 }
 
-export default { get, post, put, patch, del };
+/**
+ * Upload a file via FormData (multipart).
+ * Does NOT set Content-Type — browser sets it for FormData.
+ */
+export async function upload<T>(path: string, formData: FormData): Promise<T> {
+  const url = `/api${path}`;
+  const headers: Record<string, string> = {};
+  const token = await getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  let res: Response;
+  try {
+    res = await fetch(url, { method: 'POST', headers, body: formData });
+  } catch {
+    throw new ApiError(0, 'Network error — unable to reach the server');
+  }
+
+  if (res.status === 401) {
+    await handleLogout();
+    throw new ApiError(401, 'Session expired — please log in again');
+  }
+
+  const contentType = res.headers.get('content-type');
+  let data: unknown;
+  if (contentType?.includes('application/json')) {
+    data = await res.json();
+  } else {
+    const text = await res.text();
+    if (!res.ok) throw new ApiError(res.status, text || res.statusText);
+    return text as unknown as T;
+  }
+
+  if (!res.ok) {
+    const apiErr = data as { error?: string; code?: string } | undefined;
+    throw new ApiError(res.status, apiErr?.error || 'Upload failed', apiErr?.code);
+  }
+
+  const apiResponse = data as { data?: unknown } | undefined;
+  if (apiResponse && 'data' in apiResponse) {
+    return { ...apiResponse, data: toCamelCase(apiResponse.data) } as T;
+  }
+  return toCamelCase(data) as T;
+}
+
+export default { get, post, put, patch, del, upload };

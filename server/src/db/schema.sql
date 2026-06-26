@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS products (
   wholesale_stock   INT               NOT NULL DEFAULT 0,
   default_type      ENUM('rt','ws')   NOT NULL DEFAULT 'rt',
   category_id       TINYINT UNSIGNED  NOT NULL,
+  image_url         VARCHAR(255)      NULL,
   is_active         BOOLEAN           NOT NULL DEFAULT TRUE,
   created_at        TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -161,4 +162,16 @@ CREATE TABLE IF NOT EXISTS audit_log (
   INDEX idx_user (user_name),
   INDEX idx_created_at (created_at),
   INDEX idx_action_created (action, created_at)
+) ENGINE=InnoDB;
+
+-- -----------------------------------------------------------
+-- System Settings (single-row JSON document — CMS module)
+-- -----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS system_settings (
+  id         TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  settings   JSON             NOT NULL,
+  updated_by INT UNSIGNED     NULL,
+  updated_at TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (updated_by) REFERENCES users(id)
 ) ENGINE=InnoDB;

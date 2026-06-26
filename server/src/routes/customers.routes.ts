@@ -62,6 +62,38 @@ router.get('/', async (req, res, next) => {
 });
 
 // GET /api/customers/stats — aggregate stats
+// GET /api/customers/generate-nfc — generate a unique NFC tag
+router.get('/generate-nfc', async (_req, res, next) => {
+  try {
+    let nfcTag = '';
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (attempts < maxAttempts) {
+      const rand = Array.from({ length: 8 }, () =>
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.charAt(Math.floor(Math.random() * 36))
+      ).join('');
+      nfcTag = `NFC-${rand}`;
+
+      const [rows] = await pool.query<MySqlRow[]>(
+        'SELECT id FROM customers WHERE nfc_tag = ?',
+        [nfcTag]
+      );
+      if (rows.length === 0) break;
+      attempts++;
+    }
+
+    if (attempts >= maxAttempts) {
+      res.status(500).json({ success: false, error: 'Failed to generate unique NFC tag' });
+      return;
+    }
+
+    res.json({ success: true, data: { nfc_tag: nfcTag } });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/stats', async (_req, res, next) => {
   try {
     const [[{ total_customers }]] = await pool.query<MySqlRow[]>(

@@ -71,6 +71,7 @@ function normalizeProduct(raw: Record<string, any>): Product {
     wholesaleStock: Number(raw.wholesaleStock) || 0,
     defaultType: raw.defaultType ?? 'rt',
     category: raw.category ?? 'Others',
+    imageUrl: raw.imageUrl ?? raw.image_url ?? null,
   };
 }
 
@@ -113,6 +114,8 @@ interface DataState {
   updateProduct: (id: number, updates: Partial<Product>) => void;
   deleteProduct: (id: number) => void;
   deductStock: (productId: number, type: SaleType, qty: number) => void;
+  uploadProductImage: (productId: number, file: File) => Promise<string | null>;
+  deleteProductImage: (productId: number) => Promise<boolean>;
 
   // Transactions
   addTransaction: (t: Transaction) => void;
@@ -226,6 +229,41 @@ export const useDataStore = create<DataState>()(
             return { ...p, retailStock: Math.max(0, p.retailStock - qty) };
           })
         }));
+      },
+
+      uploadProductImage: async (productId, file) => {
+        try {
+          const formData = new FormData();
+          formData.append('image', file);
+          const res = await api.upload<{ data: { imageUrl: string } }>(`/products/${productId}/image`, formData);
+          const imageUrl = res.data.imageUrl;
+          set(s => ({
+            products: s.products.map(p =>
+              p.id === productId ? { ...p, imageUrl } : p
+            )
+          }));
+          return imageUrl;
+        } catch (err: any) {
+          const { useUIStore } = await import('./uiStore');
+          useUIStore.getState().showToast(err.message || 'Failed to upload image', 'error');
+          return null;
+        }
+      },
+
+      deleteProductImage: async productId => {
+        try {
+          await api.del(`/products/${productId}/image`);
+          set(s => ({
+            products: s.products.map(p =>
+              p.id === productId ? { ...p, imageUrl: null } : p
+            )
+          }));
+          return true;
+        } catch (err: any) {
+          const { useUIStore } = await import('./uiStore');
+          useUIStore.getState().showToast(err.message || 'Failed to delete image', 'error');
+          return false;
+        }
       },
 
       // ============ TRANSACTIONS ============

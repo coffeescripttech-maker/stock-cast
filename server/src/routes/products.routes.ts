@@ -1,11 +1,42 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { pool } from '../db/pool.js';
 import { requireRole } from '../middleware/role.js';
 import type { MySqlRow, MySqlOk } from '../types/common.types.js';
 import type { ProductRow, ProductCreateInput, ProductUpdateInput } from '../types/product.types.js';
 
 const router = Router();
+
+// ---- Multer config for product image uploads ----
+const UPLOADS_DIR = path.resolve('uploads');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname) || '.jpg';
+    const name = `product_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, name);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (_req, file, cb) => {
+    const allowed = /\.(jpg|jpeg|png|gif|webp)$/i;
+    if (allowed.test(path.extname(file.originalname))) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files (jpg, jpeg, png, gif, webp) are allowed'));
+    }
+  },
+});
 
 const createSchema = z.object({
   retail_barcode: z.string().min(1),
@@ -257,6 +288,58 @@ router.patch('/:id/stock', async (req, res, next) => {
     );
 
     res.json({ success: true, data: { message: 'Stock deducted' } });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/products/:id/image — upload product image (owner only)
+router.post('/:id/image', requireRole('owner'), upload.single('image'), async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!req.file) {
+      res.status(400).json({ success: false, error: 'No image file provided' });
+      return;
+    }
+
+    // Delete old image file if exists
+    const [existing] = await pool.query<MySqlRow[]>(
+      'SELECT image_url FROM products WHERE id = ?', [id]
+    );
+    if (existing.length > 0 && existing[0].image_url) {
+      const oldPath = path.join(UPLOADS_DIR, path.basename(existing[0].image_url));
+      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    }
+
+    const imageUrl = `/uploads/${req.file.filename}`;
+    await pool.query('UPDATE products SET image_url = ? WHERE id = ?', [imageUrl, id]);
+
+    await logAudit('PRODUCT_IMAGE_UPDATED', `Updated image for product ID ${id}`, req.user!.display_name, req.user!.role);
+
+    res.json({ success: true, data: { image_url: imageUrl } });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/products/:id/image — remove product image (owner only)
+router.delete('/:id/image', requireRole('owner'), async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const [existing] = await pool.query<MySqlRow[]>(
+      'SELECT image_url FROM products WHERE id = ?', [id]
+    );
+
+    if (existing.length > 0 && existing[0].image_url) {
+      const filePath = path.join(UPLOADS_DIR, path.basename(existing[0].image_url));
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    }
+
+    await pool.query('UPDATE products SET image_url = NULL WHERE id = ?', [id]);
+
+    await logAudit('PRODUCT_IMAGE_DELETED', `Removed image for product ID ${id}`, req.user!.display_name, req.user!.role);
+
+    res.json({ success: true, data: { message: 'Image removed' } });
   } catch (err) {
     next(err);
   }

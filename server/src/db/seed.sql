@@ -57,6 +57,134 @@ VALUES (1, 10, 100, 10, 0, 500, 2000)
 ON DUPLICATE KEY UPDATE id = id;
 
 -- -----------------------------------------------------------
+-- System Settings (single default row — CMS module)
+-- -----------------------------------------------------------
+INSERT INTO system_settings (id, settings) VALUES (1, '{
+  "general": {
+    "storeName": "Ruiz Store",
+    "address": "",
+    "phone": "",
+    "email": "",
+    "taxId": "",
+    "timezone": "Asia/Manila",
+    "dateFormat": "MM/DD/YYYY",
+    "currencyLocale": "en-PH"
+  },
+  "branding": {
+    "storeLogo": null,
+    "favicon": null,
+    "primaryBrandColor": "#4f46e5",
+    "secondaryBrandColor": "#818cf8",
+    "loginPageBackground": null
+  },
+  "appearance": {
+    "defaultTheme": "light",
+    "sidebarCollapsedDefault": false,
+    "fontSize": "normal",
+    "denseMode": false,
+    "animationsEnabled": true
+  },
+  "pos": {
+    "defaultSaleType": "rt",
+    "autoPrintReceipt": false,
+    "soundOnScan": true,
+    "quickAddMode": false,
+    "defaultQuantity": 1,
+    "decimalPlaces": 2,
+    "customerRequired": false,
+    "enableRewards": true
+  },
+  "inventory": {
+    "lowStockThresholdRt": 10,
+    "lowStockThresholdWs": 30,
+    "outOfStockThreshold": 0,
+    "autoGenerateBarcodes": false,
+    "barcodePrefix": "22",
+    "enableNegativeStock": false,
+    "defaultSupplier": ""
+  },
+  "receipt": {
+    "headerText": "RUIZ STORE",
+    "footerText": "Thank you for shopping at Ruiz Store!",
+    "showLogoOnReceipt": false,
+    "showCustomerInfo": true,
+    "showBarcodeOnReceipt": false,
+    "showQrCodeOnReceipt": false,
+    "paperSize": "58mm",
+    "taxLabel": "Tax",
+    "discountLabel": "Discount",
+    "returnPolicyText": ""
+  },
+  "tax": {
+    "enabled": false,
+    "label": "VAT",
+    "rate": 0,
+    "inclusivePricing": false,
+    "currencySymbol": "₱",
+    "currencyPosition": "before",
+    "decimalSeparator": ".",
+    "thousandSeparator": ","
+  },
+  "barcode": {
+    "type": "CODE128",
+    "width": 2,
+    "height": 50,
+    "showPriceBelow": false,
+    "showNameBelow": false
+  },
+  "security": {
+    "passwordMinLength": 6,
+    "sessionTimeout": 480,
+    "maxLoginAttempts": 5,
+    "requireStrongPassword": false,
+    "enable2fa": false,
+    "lockoutDuration": 30
+  },
+  "notifications": {
+    "lowStockAlert": true,
+    "dailySalesReportTime": "17:00",
+    "newCustomerAlert": false,
+    "largeTransactionThreshold": 10000,
+    "emailNotifications": false,
+    "pushNotifications": false
+  },
+  "emailSms": {
+    "smtpHost": "",
+    "smtpPort": 587,
+    "smtpUser": "",
+    "smtpPass": "",
+    "senderEmail": "",
+    "smsProvider": "none",
+    "smsApiKey": "",
+    "smsSenderId": ""
+  },
+  "backup": {
+    "autoBackupFrequency": "daily",
+    "backupRetentionDays": 30,
+    "lastBackup": null,
+    "backupLocation": "",
+    "enableAutoBackup": false
+  },
+  "integrations": {
+    "enableQrPayments": false,
+    "paymentGatewayApiKey": "",
+    "webhookUrl": "",
+    "enableAccountingSync": false,
+    "accountingProvider": "none"
+  },
+  "about": {
+    "appVersion": "1.0.0",
+    "lastUpdated": null,
+    "developerInfo": "Ruiz POS Development Team",
+    "licenseType": "Proprietary",
+    "footerCredits": "Ruiz POS System",
+    "privacyPolicyUrl": "",
+    "termsUrl": ""
+  }
+}')
+ON DUPLICATE KEY UPDATE id = id;
+
+-- -----------------------------------------------------------
 -- Sample Transactions (so dashboard/reports have data)
 -- -----------------------------------------------------------
 -- Reference IDs: admin = 1, staff = 2

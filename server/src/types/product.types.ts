@@ -12,6 +12,7 @@ export interface ProductRow {
   default_type: 'rt' | 'ws';
   category_id: number;
   category_name?: string;
+  image_url?: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

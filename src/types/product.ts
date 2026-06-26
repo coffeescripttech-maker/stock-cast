@@ -12,4 +12,5 @@ export interface Product {
   wholesaleStock: number;
   defaultType: SaleType;
   category: ProductCategory;
+  imageUrl?: string | null;
 }

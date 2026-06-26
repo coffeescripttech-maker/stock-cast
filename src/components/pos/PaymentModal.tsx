@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Dialog } from '../ui/Dialog';
 import { fmtCurrency } from '../../lib/formatters';
+import { cn } from '../../lib/cn';
 
 interface PaymentModalProps {
   open: boolean;
@@ -25,12 +26,22 @@ export function PaymentModal({ open, onOpenChange, total, onComplete }: PaymentM
     }
   }, [open]);
 
+  // Quick amounts: round up to nearest denomination
+  const quickAmounts = [
+    { label: 'Exact', value: total },
+    ...([500, 1000, 2000, 5000] as const)
+      .filter((d) => d > total)
+      .map((d) => ({ label: `₱${d.toLocaleString()}`, value: d })),
+  ];
+
+  function handleQuickAmount(value: number) {
+    setAmount(String(value));
+    inputRef.current?.focus();
+  }
+
   function handleConfirm() {
     if (!isValid) return;
-    onComplete({
-      amountTendered: parsedAmount,
-      change,
-    });
+    onComplete({ amountTendered: parsedAmount, change });
     onOpenChange(false);
   }
 
@@ -67,6 +78,24 @@ export function PaymentModal({ open, onOpenChange, total, onComplete }: PaymentM
           />
         </div>
 
+        {/* Quick amount buttons */}
+        <div className="flex flex-wrap gap-2">
+          {quickAmounts.map((qa) => (
+            <button
+              key={qa.label}
+              onClick={() => handleQuickAmount(qa.value)}
+              className={cn(
+                'px-4 py-2 text-sm font-bold rounded-xl border transition-all active:scale-[0.96]',
+                parsedAmount === qa.value
+                  ? 'bg-brand text-white border-brand'
+                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-brand hover:text-brand'
+              )}
+            >
+              {qa.label}
+            </button>
+          ))}
+        </div>
+
         {/* Change display */}
         {isValid && (
           <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800">
@@ -88,7 +117,7 @@ export function PaymentModal({ open, onOpenChange, total, onComplete }: PaymentM
         {/* Hint */}
         {amount === '' && (
           <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
-            Enter amount · Press <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700">Enter</kbd> to confirm
+            Enter amount or tap a quick button · Press <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700">Enter</kbd> to confirm
           </p>
         )}
       </div>
