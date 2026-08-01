@@ -18,14 +18,14 @@ export default function ReceiptSection() {
     showToast('Receipt settings saved', 'success');
   };
 
-  const Toggle = ({ key, label }: { key: keyof ReceiptSettings; label: string }) => (
+  const Toggle = ({ field, label }: { field: keyof ReceiptSettings; label: string }) => (
     <div className="flex items-center justify-between py-2">
       <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{label}</p>
       <button
-        onClick={() => setForm({ ...form, [key]: !form[key] })}
-        className={`relative w-11 h-6 rounded-full transition-all ${form[key] ? 'bg-brand' : 'bg-slate-300 dark:bg-slate-600'}`}
+        onClick={() => setForm({ ...form, [field]: !form[field] })}
+        className={`relative w-11 h-6 rounded-full transition-all ${form[field] ? 'bg-brand' : 'bg-slate-300 dark:bg-slate-600'}`}
       >
-        <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${form[key] ? 'left-[22px]' : 'left-0.5'}`} />
+        <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${form[field] ? 'left-[22px]' : 'left-0.5'}`} />
       </button>
     </div>
   );
@@ -89,10 +89,10 @@ export default function ReceiptSection() {
       </div>
 
       <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-1">
-        <Toggle key="showLogoOnReceipt" label="Show Logo on Receipt" />
-        <Toggle key="showCustomerInfo" label="Show Customer Info" />
-        <Toggle key="showBarcodeOnReceipt" label="Show Barcode" />
-        <Toggle key="showQrCodeOnReceipt" label="Show QR Code" />
+        <Toggle field="showLogoOnReceipt" label="Show Logo on Receipt" />
+        <Toggle field="showCustomerInfo" label="Show Customer Info" />
+        <Toggle field="showBarcodeOnReceipt" label="Show Barcode" />
+        <Toggle field="showQrCodeOnReceipt" label="Show QR Code" />
       </div>
 
       <div className="flex justify-end pt-2">

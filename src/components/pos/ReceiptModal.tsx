@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react';
+import QRCode from 'qrcode';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { fmtCurrency, fmtDate } from '../../lib/formatters';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { BarcodeVisual } from './BarcodeVisual';
 import type { Transaction } from '../../types/transaction';
 
 interface ReceiptModalProps {
@@ -17,6 +20,24 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
   const taxSettings = useSettingsStore((s) => s.settings.tax);
   const generalSettings = useSettingsStore((s) => s.settings.general);
   const brandingSettings = useSettingsStore((s) => s.settings.branding);
+
+  // Generate a QR data URL of the transaction ID when the QR toggle is on
+  const [qrData, setQrData] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!receipt || !receiptSettings.showQrCodeOnReceipt) {
+      setQrData(null);
+      return;
+    }
+    QRCode.toDataURL(receipt.id, {
+      width: 128,
+      margin: 1,
+      color: { dark: '#17171c', light: '#ffffff' },
+    })
+      .then((url) => { if (!cancelled) setQrData(url); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [receipt, receiptSettings.showQrCodeOnReceipt]);
 
   if (!receipt) return null;
 
@@ -166,6 +187,19 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
           <div className="text-center text-[10px] text-brand font-mono mt-1">
             ★ +{receipt.pointsEarned} points earned{receipt.customerName ? ` for ${receipt.customerName}` : ''}
           </div>
+        )}
+
+        {/* Barcode / QR (gated by the Receipt & Invoice settings) */}
+        {(receiptSettings.showBarcodeOnReceipt || receiptSettings.showQrCodeOnReceipt) && (
+          <>
+            <div className="font-mono text-[10px] text-slate-300">{dash}</div>
+            <div className="flex justify-center items-center gap-4 pt-1">
+              {receiptSettings.showBarcodeOnReceipt && <BarcodeVisual code={receipt.id} />}
+              {receiptSettings.showQrCodeOnReceipt && qrData && (
+                <img src={qrData} alt="QR Code" className="w-14 h-14" />
+              )}
+            </div>
+          </>
         )}
 
         <div className="font-mono text-[10px] text-slate-300">{dash}</div>

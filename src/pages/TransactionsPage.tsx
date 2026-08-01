@@ -207,9 +207,9 @@ export default function TransactionsPage() {
               <button
                 key={tx.id}
                 onClick={() => setDetailTx(tx)}
-                className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors text-left group"
+                className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors text-left group"
               >
-                <div className="flex items-center gap-4 min-w-0">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className={cn(
                     'w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-colors',
                     tx.status === 'voided'
@@ -219,13 +219,13 @@ export default function TransactionsPage() {
                     <Receipt size={16} className={tx.status === 'voided' ? 'text-red-400' : 'text-slate-400'} />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate max-w-[160px]">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                         {tx.id}
                       </span>
-                      <TypeBadge type={tx.type} />
+                      <TypeBadge type={tx.type} className="flex-shrink-0" />
                       <span className={cn(
-                        'text-[10px] font-bold px-2 py-0.5 rounded-full',
+                        'text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0',
                         tx.status === 'completed'
                           ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
                           : 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-300'
@@ -233,7 +233,7 @@ export default function TransactionsPage() {
                         {tx.status}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-[12px] text-slate-400 dark:text-slate-500">
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-0.5 text-[12px] text-slate-400 dark:text-slate-500">
                       <span>{fmtDate(tx.date)}</span>
                       <span className="text-slate-300 dark:text-slate-600">·</span>
                       <span className="flex items-center gap-1">
@@ -242,13 +242,13 @@ export default function TransactionsPage() {
                       {tx.customerName && (
                         <>
                           <span className="text-slate-300 dark:text-slate-600">·</span>
-                          <span>{tx.customerName}</span>
+                          <span className="truncate">{tx.customerName}</span>
                         </>
                       )}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="text-right">
                     <div className={cn(
                       'text-base font-black font-mono',
@@ -262,7 +262,7 @@ export default function TransactionsPage() {
                       </div>
                     )}
                   </div>
-                  <svg className="w-4 h-4 text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-slate-300 dark:text-slate-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>

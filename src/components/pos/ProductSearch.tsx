@@ -1,5 +1,5 @@
 import { useRef, useState, useMemo } from 'react';
-import { Search, Package } from 'lucide-react';
+import { Search, Package, ScanLine } from 'lucide-react';
 import { useDataStore } from '../../stores/dataStore';
 import { usePOSStore } from '../../stores/posStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -13,7 +13,12 @@ const LOW_STOCK_WS = 3;
 
 type ViewType = 'all' | SaleType;
 
-export function ProductSearch() {
+interface ProductSearchProps {
+  /** Opens the camera barcode scanner (mobile only — desktop uses USB wedge / F12) */
+  onScan?: () => void;
+}
+
+export function ProductSearch({ onScan }: ProductSearchProps) {
   const products = useDataStore(s => s.products);
   const addToCart = usePOSStore(s => s.addToCart);
   const showToast = useUIStore(s => s.showToast);
@@ -89,6 +94,15 @@ export function ProductSearch() {
             className="w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-white dark:bg-slate-800 outline-none transition-colors border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-brand dark:focus:border-brand placeholder:text-slate-400"
           />
         </div>
+        {onScan && (
+          <button
+            onClick={onScan}
+            aria-label="Scan barcode with camera"
+            className="lg:hidden flex-shrink-0 w-11 h-[46px] rounded-xl bg-brand text-[#1C1C1C] flex items-center justify-center transition-all active:scale-95 hover:brightness-110"
+          >
+            <ScanLine size={18} />
+          </button>
+        )}
         <div className="flex rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 flex-shrink-0">
           {(['all', 'rt', 'ws'] as const).map(v => (
             <button

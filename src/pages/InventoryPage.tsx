@@ -254,7 +254,7 @@ export default function InventoryPage() {
           >
             <Download size={13} /> Export
           </button>
-          <Button variant="primary" size="sm" onClick={openAddForm}>
+          <Button variant="primary" size="md" onClick={openAddForm}>
             <Plus size={14} /> Add Product
           </Button>
         </div>

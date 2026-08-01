@@ -77,18 +77,18 @@ export function TopNavNew() {
         {/* Settings */}
         <button
           onClick={() => navigate('/settings')}
-          className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-[#ECECEC] dark:border-slate-700 shadow-sm flex items-center justify-center text-slate-400 hover:text-slate-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+          className="hidden lg:flex w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-[#ECECEC] dark:border-slate-700 shadow-sm items-center justify-center text-slate-400 hover:text-slate-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
           title="Settings">
           <Settings size={15} />
         </button>
 
         {/* Theme Toggle */}
-        <ThemeToggle className="!w-9 !h-9 !rounded-full !border-[#ECECEC] !shadow-sm !text-slate-400 hover:!text-slate-600 hover:!shadow-md hover:-translate-y-0.5 !transition-all !duration-200" />
+        <ThemeToggle className="hidden lg:flex !w-9 !h-9 !rounded-full !border-[#ECECEC] !shadow-sm !text-slate-400 hover:!text-slate-600 hover:!shadow-md hover:-translate-y-0.5 !transition-all !duration-200" />
 
         {/* New Transaction */}
         <button
           onClick={() => navigate('/pos')}
-          className="h-8 px-4 rounded-full bg-brand text-[#1C1C1C] font-bold text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-1.5">
+          className="hidden lg:flex h-8 px-4 rounded-full bg-brand text-[#1C1C1C] font-bold text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 items-center gap-1.5">
           <Plus size={15} />
           <span className="hidden md:inline">New Transaction</span>
         </button>

@@ -7,6 +7,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { ProductSearch } from '../components/pos/ProductSearch';
 import { Cart } from '../components/pos/Cart';
 import { OrderSummary } from '../components/pos/OrderSummary';
+import { CheckoutBar } from '../components/pos/CheckoutBar';
 import { PaymentModal } from '../components/pos/PaymentModal';
 import { ScannerModal } from '../components/pos/ScannerModal';
 import { NFCLinkModal } from '../components/pos/NFCLinkModal';
@@ -168,8 +169,8 @@ export default function POSPage() {
         </p>
       </div>
 
-      {/* Shortcuts bar */}
-      <div className="flex flex-wrap gap-1.5 mb-5">
+      {/* Shortcuts bar — desktop only; F-keys don't exist on phones */}
+      <div className="hidden lg:flex flex-wrap gap-1.5 mb-5">
         {[
           { kbd: 'F4', label: 'Print' },
           { kbd: 'F8', label: 'Checkout' },
@@ -199,7 +200,7 @@ export default function POSPage() {
             </svg>
             Product Search / Barcode
           </h2>
-          <ProductSearch />
+          <ProductSearch onScan={() => setScannerOpen(true)} />
         </div>
 
         {/* Right: Cart + Order Summary stacked */}
@@ -225,6 +226,12 @@ export default function POSPage() {
           />
         </div>
       </div>
+
+      {/* Sticky mobile checkout pill (hidden on desktop) */}
+      <CheckoutBar onCheckout={processCheckout} submitting={submitting} />
+
+      {/* Spacer so the sticky bar never covers the OrderSummary checkout when scrolled */}
+      <div className="lg:hidden h-24" />
 
       {/* Modals */}
       <PaymentModal

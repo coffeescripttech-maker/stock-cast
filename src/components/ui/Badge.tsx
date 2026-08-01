@@ -27,10 +27,11 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
 // Type badge for RT/WS/Mixed
 interface TypeBadgeProps {
   type: 'rt' | 'ws' | 'mixed';
+  className?: string;
 }
 
-export function TypeBadge({ type }: TypeBadgeProps) {
-  if (type === 'ws') return <Badge variant="warning" className="text-[11px]">WS</Badge>;
-  if (type === 'rt') return <Badge variant="success" className="text-[11px]">RT</Badge>;
-  return <Badge variant="purple" className="text-[11px]">Mixed</Badge>;
+export function TypeBadge({ type, className }: TypeBadgeProps) {
+  if (type === 'ws') return <Badge variant="warning" className={cn('text-[11px]', className)}>WS</Badge>;
+  if (type === 'rt') return <Badge variant="success" className={cn('text-[11px]', className)}>RT</Badge>;
+  return <Badge variant="purple" className={cn('text-[11px]', className)}>Mixed</Badge>;
 }

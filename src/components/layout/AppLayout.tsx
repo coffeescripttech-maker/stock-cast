@@ -2,6 +2,7 @@ import { Suspense, useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopNavNew } from './TopNavNew';
+import { BottomNav } from './BottomNav';
 import { CommandPalette } from './CommandPalette';
 import { HelpModalContent } from './HelpButton';
 import { Dialog } from '../ui/Dialog';
@@ -59,12 +60,15 @@ export function AppLayout() {
           sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-[220px]'
         )}>
         <TopNavNew />
-        <main className="px-4 sm:px-6 lg:px-8 pb-8 animate-[fadeUp_0.25s_ease]">
+        <main className="px-4 sm:px-6 lg:px-8 pb-28 lg:pb-8 animate-[fadeUp_0.25s_ease]">
           <Suspense fallback={<LoadingFallback />}>
             <Outlet />
           </Suspense>
         </main>
       </div>
+
+      {/* Mobile/tablet bottom navigation */}
+      <BottomNav />
 
       {/* Command Palette overlay */}
       <CommandPalette />
