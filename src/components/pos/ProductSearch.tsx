@@ -5,6 +5,7 @@ import { usePOSStore } from '../../stores/posStore';
 import { useUIStore } from '../../stores/uiStore';
 import { cn } from '../../lib/cn';
 import { fmtCurrency } from '../../lib/formatters';
+import { resolveApiUrl } from '../../lib/apiBase';
 import { CATEGORIES, CATEGORY_COLORS } from '../../lib/constants';
 import type { Product, SaleType, ProductCategory } from '../../types/product';
 
@@ -188,7 +189,7 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
                   }>
                   {p.imageUrl ? (
                     <img
-                      src={p.imageUrl}
+                      src={resolveApiUrl(p.imageUrl)}
                       alt={p.name}
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

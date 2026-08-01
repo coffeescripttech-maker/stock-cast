@@ -34,7 +34,11 @@ const PORT = Number(process.env.PORT) || 3001;
 const EMBEDDED = process.env.RUIZ_POS_EMBEDDED === '1';
 
 // ---- Global middleware ----
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173', credentials: true }));
+// CORS allow-list (comma-separated in CORS_ORIGIN). Includes the Capacitor
+// Android WebView origin (https://localhost) so the phone app can call the PC server.
+const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,https://localhost,capacitor://localhost')
+  .split(',').map((s) => s.trim()).filter(Boolean);
+app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json());
 app.use(morgan('dev'));
 

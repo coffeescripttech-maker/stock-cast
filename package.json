@@ -18,7 +18,9 @@
     "dist:dir": "npm run build && npm run build:server && electron-builder --dir",
     "dist:mac": "npm run build && npm run build:server && electron-builder --mac",
     "dist:linux": "npm run build && npm run build:server && electron-builder --linux",
-    "dist:all": "npm run build && npm run build:server && electron-builder -mwl"
+    "dist:all": "npm run build && npm run build:server && electron-builder -mwl",
+    "cap:sync": "npx cap sync android",
+    "apk": "npm run build && npm run cap:sync && cd android && .\\gradlew.bat assembleDebug"
   },
   "build": {
     "appId": "com.ruizstore.pos",
@@ -88,6 +90,9 @@
     }
   },
   "dependencies": {
+    "@capacitor/android": "^7.6.8",
+    "@capacitor/cli": "^7.6.8",
+    "@capacitor/core": "^7.6.8",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-select": "^2.2.3",

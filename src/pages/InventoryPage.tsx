@@ -14,6 +14,7 @@ import { Button } from '../components/ui/Button';
 import { Dialog } from '../components/ui/Dialog';
 import { BarcodeVisual } from '../components/pos/BarcodeVisual';
 import { cn } from '../lib/cn';
+import { resolveApiUrl } from '../lib/apiBase';
 import { CATEGORIES, CATEGORY_COLORS } from '../lib/constants';
 import { fmtCurrency } from '../lib/formatters';
 import type { Product, ProductCategory } from '../types/product';
@@ -686,7 +687,7 @@ export default function InventoryPage() {
                         <div className="flex items-center gap-3">
                           {p.imageUrl ? (
                             <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 shadow-sm ring-1 ring-black/5">
-                              <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                              <img src={resolveApiUrl(p.imageUrl)} alt={p.name} className="w-full h-full object-cover" />
                             </div>
                           ) : (
                             <div
@@ -806,7 +807,7 @@ export default function InventoryPage() {
                       style={!p.imageUrl ? { background: `linear-gradient(135deg, ${catColor.bg}, ${catColor.bg}88)` } : undefined}
                     >
                       {p.imageUrl ? (
-                        <img src={p.imageUrl} alt={p.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <img src={resolveApiUrl(p.imageUrl)} alt={p.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style={{ background: `${catColor.color}22`, color: catColor.color }}>
@@ -1234,7 +1235,7 @@ function ProductFormModal({
               {previewUrl ? (
                 <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
               ) : liveProduct?.imageUrl ? (
-                <img src={liveProduct.imageUrl} alt={liveProduct.name} className="w-full h-full object-cover" />
+                <img src={resolveApiUrl(liveProduct.imageUrl)} alt={liveProduct.name} className="w-full h-full object-cover" />
               ) : (
                 <Package size={24} className="text-slate-300 dark:text-slate-600" />
               )}

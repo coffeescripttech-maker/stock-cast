@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '../../components/ui/Button';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
+import { resolveApiUrl } from '../../lib/apiBase';
 import { Palette, Upload, X } from 'lucide-react';
 
 const BRAND_COLORS = [
@@ -60,7 +61,7 @@ export default function BrandingSection() {
           <div className="flex items-center gap-4">
             {form.storeLogo && (
               <div className="relative w-20 h-20 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-800">
-                <img src={form.storeLogo} alt="Store logo" className="w-full h-full object-contain" />
+                <img src={resolveApiUrl(form.storeLogo)} alt="Store logo" className="w-full h-full object-contain" />
                 <button
                   onClick={() => setForm({ ...form, storeLogo: null })}
                   className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white shadow"
@@ -97,7 +98,7 @@ export default function BrandingSection() {
           <div className="flex items-center gap-4">
             {form.favicon && (
               <div className="relative w-10 h-10 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-800">
-                <img src={form.favicon} alt="Favicon" className="w-full h-full object-contain" />
+                <img src={resolveApiUrl(form.favicon)} alt="Favicon" className="w-full h-full object-contain" />
                 <button
                   onClick={() => setForm({ ...form, favicon: null })}
                   className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white shadow"

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { SystemSettings, SettingsSection } from '../types/settings';
 import { defaultSettings } from '../types/settings';
 import * as api from '../api/client';
+import { resolveApiUrl } from '../lib/apiBase';
 
 interface SettingsState {
   settings: SystemSettings;
@@ -43,7 +44,7 @@ function applySettingsToDOM(settings: SystemSettings) {
       link.rel = 'icon';
       document.head.appendChild(link);
     }
-    link.href = settings.branding.favicon;
+    link.href = resolveApiUrl(settings.branding.favicon);
   }
 }
 

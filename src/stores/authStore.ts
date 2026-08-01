@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { UserSession } from '../types/auth';
 import * as api from '../api/client';
+import { ApiError } from '../api/client';
+import { getApiBase } from '../lib/apiBase';
 
 const TOKEN_KEY = 'ruizpos_token';
 
@@ -10,7 +12,7 @@ interface AuthState {
   token: string | null;
   authLoading: boolean;
 
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<string | null>;
   logout: () => void;
   initAuth: () => Promise<void>;
 }
@@ -37,9 +39,16 @@ export const useAuthStore = create<AuthState>()((set) => ({
       });
 
       localStorage.setItem(TOKEN_KEY, token);
-      return true;
-    } catch {
-      return false;
+      return null; // success
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 0) {
+          return `Cannot reach the server at ${getApiBase()}. Make sure the PC server is running and the phone is on the same Wi-Fi.`;
+        }
+        if (err.status === 401) return 'Invalid username or password';
+        return err.message;
+      }
+      return 'Login failed. Please try again.';
     }
   },
 

@@ -5,6 +5,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { ThemeToggle } from './ThemeToggle';
 import { cn } from '../../lib/cn';
+import { resolveApiUrl } from '../../lib/apiBase';
 import {
   LayoutDashboard, ShoppingCart, Package, Receipt, Star, BarChart3, ScrollText, LogOut, Store, Settings,
 } from 'lucide-react';
@@ -50,7 +51,7 @@ export function TopNav() {
       {/* Brand */}
       <div className="flex items-center gap-2.5 mr-4">
         {storeLogo ? (
-          <img src={storeLogo} alt={storeName} className="w-9 h-9 rounded-lg object-contain bg-white/10" />
+          <img src={resolveApiUrl(storeLogo)} alt={storeName} className="w-9 h-9 rounded-lg object-contain bg-white/10" />
         ) : (
           <div className="w-9 h-9 bg-brand rounded-lg flex items-center justify-center shadow-sm">
             <Store size={18} className="text-white" />

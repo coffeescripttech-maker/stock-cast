@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import {
   Globe, Palette, Monitor, ShoppingCart, Package, Receipt, Percent,
-  Barcode, Shield, Bell, Mail, Database, Link, Info,
+  Barcode, Shield, Bell, Mail, Database, Link, Info, Smartphone,
 } from 'lucide-react';
 import { cn } from '../lib/cn';
 import GeneralSection from './settings/GeneralSection';
 import BrandingSection from './settings/BrandingSection';
+import MobileAppSection from './settings/MobileAppSection';
 import AppearanceSection from './settings/AppearanceSection';
 import PosSettingsSection from './settings/PosSettingsSection';
 import InventorySettingsSection from './settings/InventorySettingsSection';
@@ -40,6 +41,7 @@ const SECTIONS: Section[] = [
   { id: 'emailSms', label: 'Email & SMS', icon: <Mail size={16} />, component: <EmailSmsSection /> },
   { id: 'backup', label: 'Backup', icon: <Database size={16} />, component: <BackupSection /> },
   { id: 'integrations', label: 'Integrations', icon: <Link size={16} />, component: <IntegrationsSection /> },
+  { id: 'mobile', label: 'Mobile App', icon: <Smartphone size={16} />, component: <MobileAppSection /> },
   { id: 'about', label: 'About', icon: <Info size={16} />, component: <AboutSection /> },
 ];
 

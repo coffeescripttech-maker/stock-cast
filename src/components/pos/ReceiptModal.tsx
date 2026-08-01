@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { fmtCurrency, fmtDate } from '../../lib/formatters';
+import { resolveApiUrl } from '../../lib/apiBase';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { BarcodeVisual } from './BarcodeVisual';
 import type { Transaction } from '../../types/transaction';
@@ -64,7 +65,7 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
         {/* Header */}
         <div className="text-center">
           {receiptSettings.showLogoOnReceipt && brandingSettings.storeLogo && (
-            <img src={brandingSettings.storeLogo} alt="" className="h-10 mx-auto mb-1" />
+            <img src={resolveApiUrl(brandingSettings.storeLogo)} alt="" className="h-10 mx-auto mb-1" />
           )}
           <h3 className="text-lg font-bold tracking-widest">
             {receiptSettings.headerText || generalSettings.storeName}

@@ -9,6 +9,7 @@
  */
 
 import { toCamelCase, toSnakeCase } from './transform';
+import { getApiBase, resolveApiUrl } from '../lib/apiBase';
 
 export class ApiError extends Error {
   status: number;
@@ -46,8 +47,8 @@ async function request<T>(
   body?: unknown,
   params?: Record<string, string | number | undefined>
 ): Promise<T> {
-  // Build URL with query params
-  const url = new URL(path, window.location.origin);
+  // Build URL with query params (absolute — on Android the base is the LAN server)
+  const url = new URL(path, getApiBase());
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== '') {
@@ -73,10 +74,10 @@ async function request<T>(
     options.body = JSON.stringify(toSnakeCase(body));
   }
 
-  // Fetch
+  // Fetch (absolute URL so the configured base is honored)
   let res: Response;
   try {
-    res = await fetch(url.pathname + url.search, options);
+    res = await fetch(url.href, options);
   } catch {
     throw new ApiError(0, 'Network error — unable to reach the server');
   }
@@ -147,7 +148,7 @@ export function del<T>(path: string): Promise<T> {
  * Does NOT set Content-Type — browser sets it for FormData.
  */
 export async function upload<T>(path: string, formData: FormData): Promise<T> {
-  const url = `/api${path}`;
+  const url = resolveApiUrl(`/api${path}`);
   const headers: Record<string, string> = {};
   const token = await getToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;

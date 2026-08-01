@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import * as api from '../api/client';
+import { getApiBase } from '../lib/apiBase';
 import { useAuthStore } from './authStore';
 import type { AppNotification } from '../types/notification';
 
@@ -47,7 +48,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // ── 1. Open SSE connection (real-time) ──
     const token = useAuthStore.getState().token;
     if (token) {
-      const url = `${window.location.origin}/api/notifications/stream?token=${encodeURIComponent(token)}`;
+      const url = `${getApiBase()}/api/notifications/stream?token=${encodeURIComponent(token)}`;
       const source = new EventSource(url);
 
       source.addEventListener('notification', (e) => {
