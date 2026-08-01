@@ -8,76 +8,71 @@ interface StatCardProps {
   icon?: ReactNode;
   iconBg?: string;
   className?: string;
-  /** Use gradient background instead of solid white */
-  gradient?: 'brand' | 'red' | 'orange' | 'emerald' | 'indigo';
+  /** Accent color for the icon background */
+  accent?: 'brand' | 'red' | 'orange' | 'emerald' | 'indigo';
+  /** Color for the left accent strip — overrides accent-based color */
+  stripColor?: string;
 }
 
-const GRADIENTS: Record<string, string> = {
-  brand: 'bg-gradient-to-br from-brand to-brand-dark text-white',
-  red: 'bg-gradient-to-br from-rose-500 to-red-600 text-white',
-  orange: 'bg-gradient-to-br from-orange-400 to-orange-600 text-white',
-  emerald: 'bg-gradient-to-br from-emerald-500 to-emerald-700 text-white',
-  indigo: 'bg-gradient-to-br from-indigo-500 to-indigo-700 text-white',
+const ACCENTS: Record<string, string> = {
+  brand: 'text-brand bg-brand/15',
+  red: 'text-red-500 bg-red-50 dark:bg-red-950',
+  orange: 'text-orange-500 bg-orange-50 dark:bg-orange-950',
+  emerald: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950',
+  indigo: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950',
 };
 
-export function StatCard({ label, value, sub, icon, iconBg, className, gradient }: StatCardProps) {
-  const isGradient = !!gradient;
+const STRIP_CLASSES: Record<string, string> = {
+  brand: 'bg-brand',
+  red: 'bg-red-500',
+  orange: 'bg-orange-500',
+  emerald: 'bg-emerald-500',
+  indigo: 'bg-indigo-500',
+};
 
+export function StatCard({ label, value, sub, icon, iconBg, className, accent = 'brand' }: StatCardProps) {
   return (
-    <div className={cn(
-      'relative overflow-hidden rounded-2xl p-5 shadow-sm border',
-      isGradient
-        ? GRADIENTS[gradient!] + ' border-transparent shadow-lg'
-        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700',
-      className
-    )}>
-      {/* Decorative circles (gradient mode only) */}
-      {isGradient && (
-        <>
-          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/5" />
-          <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/5" />
-        </>
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-[20px] bg-white dark:bg-[#1C1C1C]',
+        'border border-[#ECECEC] dark:border-[#2a2a2a] p-6',
+        'shadow-[0_4px_16px_rgba(0,0,0,0.05)]',
+        'hover:-translate-y-1 hover:shadow-lg transition-all duration-250',
+        className
       )}
+    >
+      {/* Left accent strip — rounded from the left edge (pill shape) */}
+      <span
+        className={cn(
+          'absolute left-0 top-3 bottom-3 w-[3.5px] rounded-r-full',
+          STRIP_CLASSES[accent]
+        )}
+      />
 
-      <div className="relative">
-        <div className="flex items-center justify-between mb-3">
-          <span className={cn(
-            'text-xs font-semibold uppercase tracking-wider',
-            isGradient ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'
-          )}>
-            {label}
-          </span>
-          {icon && (
-            <div
-              className={cn(
-                'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
-                isGradient ? 'bg-white/15' : undefined
-              )}
-              style={!isGradient && iconBg ? { background: iconBg } : undefined}
-            >
-              <div className={cn(
-                isGradient ? 'text-white' : undefined
-              )}>
-                {icon}
-              </div>
-            </div>
-          )}
-        </div>
-        <div className={cn(
-          'leading-none mb-1',
-          isGradient ? 'text-3xl font-black font-mono tracking-tight' : 'text-2xl font-bold'
-        )}>
-          {value}
-        </div>
-        {sub && (
-          <div className={cn(
-            'text-xs',
-            isGradient ? 'text-white/60' : 'text-slate-400 dark:text-slate-500'
-          )}>
-            {sub}
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF] dark:text-slate-400">
+          {label}
+        </span>
+        {icon && (
+          <div
+            className={cn(
+              'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
+              accent ? ACCENTS[accent] : ''
+            )}
+            style={!accent && iconBg ? { background: iconBg } : undefined}
+          >
+            {icon}
           </div>
         )}
       </div>
+      <div className="text-3xl font-black font-mono tracking-tight text-[#181818] dark:text-white leading-none mb-1">
+        {value}
+      </div>
+      {sub && (
+        <div className="text-xs text-[#6B7280] dark:text-slate-400 mt-2">
+          {sub}
+        </div>
+      )}
     </div>
   );
 }

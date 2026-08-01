@@ -537,12 +537,9 @@ export default function RewardsPage() {
     <div className="animate-[fadeUp_0.25s_ease] space-y-6 max-w-[1600px] mx-auto">
       {/* ═══ HEADER ═══ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Rewards &amp; Customers</h1>
-          <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
-            {customers.length} registered customer{customers.length !== 1 && 's'} · {totalPoints.toLocaleString()} total points
-          </p>
-        </div>
+        <p className="text-sm text-slate-400 dark:text-slate-500">
+          {customers.length} registered customer{customers.length !== 1 && 's'} · {totalPoints.toLocaleString()} total points
+        </p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={printAllVisible} disabled={paginated.length === 0}>
             <Download size={13} /> Print All
@@ -586,7 +583,7 @@ export default function RewardsPage() {
               </div>
             </div>
             <div className="text-4xl font-black font-mono tracking-tight">{totalPoints.toLocaleString()}</div>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">₱{fmtCurrency(totalSpentAll)} total spend</div>
+            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">{fmtCurrency(totalSpentAll)} total spend</div>
           </div>
         </div>
 
@@ -783,7 +780,7 @@ export default function RewardsPage() {
                       </td>
                       {/* Total Spent */}
                       <td className="px-4 py-3.5 text-right">
-                        <span className="font-mono font-semibold text-sm text-emerald-600 dark:text-emerald-400">₱{fmtCurrency(c.totalSpent)}</span>
+                        <span className="font-mono font-semibold text-sm text-emerald-600 dark:text-emerald-400">{fmtCurrency(c.totalSpent)}</span>
                       </td>
                       {/* Tier */}
                       <td className="px-4 py-3.5 text-center">

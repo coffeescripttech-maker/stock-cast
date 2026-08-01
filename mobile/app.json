@@ -1,0 +1,80 @@
+{
+  "expo": {
+    "name": "SafeHaven",
+    "slug": "safehaven-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/logo.png",
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0038A8"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.safehaven.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SafeHaven needs your location to show nearby evacuation centers and send location-based disaster alerts.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "SafeHaven needs your location to send you relevant disaster alerts even when the app is in the background."
+      }
+    },
+    "android": {
+      "icon": "./assets/logo.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#0038A8"
+      },
+      "package": "com.safehaven.app",
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.WAKE_LOCK",
+        "android.permission.SEND_SMS"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao"
+        }
+      }
+    },
+    "plugins": [
+      "expo-location",
+      "expo-image-picker",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/logo.png",
+          "color": "#0038A8",
+          "sounds": [
+            "./assets/sounds/critical_alert.wav",
+            "./assets/sounds/high_alert.wav",
+            "./assets/sounds/medium_alert.wav",
+            "./assets/sounds/low_alert.wav"
+          ]
+        }
+      ],
+      "./plugins/withSilentSMS.js"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "658ac31a-7930-47e9-9adc-8126ed6a438a"
+      },
+      "EXPO_PUBLIC_MAPBOX_TOKEN": "pk.eyJ1IjoieGVkdGVyIiwiYSI6ImNtcHNjY3hlajBnZHQyeHFvcmFxM2txNTEifQ.9s15PhURPTCwuftfVeLQtQ"
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/658ac31a-7930-47e9-9adc-8126ed6a438a"
+    }
+  }
+}

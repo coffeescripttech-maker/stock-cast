@@ -94,12 +94,12 @@ export function OrderSummary({
               {totalUnits} unit{totalUnits !== 1 && 's'} · {cart.length} line
               {cart.length !== 1 && 's'}
             </span>
-            <span className="font-mono">₱{fmtCurrency(rawTotal)}</span>
+            <span className="font-mono">{fmtCurrency(rawTotal)}</span>
           </div>
           {discount > 0 && (
             <div className="flex justify-between text-xs text-emerald-200">
               <span>Points discount</span>
-              <span className="font-mono">−₱{fmtCurrency(discount)}</span>
+              <span className="font-mono">−{fmtCurrency(discount)}</span>
             </div>
           )}
         </div>

@@ -58,7 +58,7 @@ export function PaymentModal({ open, onOpenChange, total, onComplete }: PaymentM
         {/* Total due */}
         <div className="text-center p-5 rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white">
           <div className="text-xs font-semibold opacity-80 mb-1">Total Amount Due</div>
-          <div className="text-3xl font-bold font-mono">₱{fmtCurrency(total)}</div>
+          <div className="text-3xl font-bold font-mono">{fmtCurrency(total)}</div>
         </div>
 
         {/* Cash input */}
@@ -101,7 +101,7 @@ export function PaymentModal({ open, onOpenChange, total, onComplete }: PaymentM
           <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800">
             <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Change</span>
             <span className="text-lg font-bold font-mono text-emerald-700 dark:text-emerald-300">
-              ₱{fmtCurrency(change)}
+              {fmtCurrency(change)}
             </span>
           </div>
         )}
@@ -110,7 +110,7 @@ export function PaymentModal({ open, onOpenChange, total, onComplete }: PaymentM
         {isShort && (
           <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
             <span>⚠</span>
-            <span>Short by ₱{fmtCurrency(total - parsedAmount)}</span>
+            <span>Short by {fmtCurrency(total - parsedAmount)}</span>
           </div>
         )}
 

@@ -230,11 +230,11 @@ export function ProductSearch() {
                   {/* Price */}
                   <div className="flex items-baseline justify-between">
                     <span className="text-xl font-black font-mono text-brand">
-                      ₱{fmtCurrency(primaryPrice)}
+                      {fmtCurrency(primaryPrice)}
                     </span>
                     {viewType === 'all' && otherPrice > 0 && (
                       <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                        ₱{fmtCurrency(otherPrice)}
+                        {fmtCurrency(otherPrice)}
                       </span>
                     )}
                   </div>

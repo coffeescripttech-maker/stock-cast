@@ -48,7 +48,14 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
           <h3 className="text-lg font-bold tracking-widest">
             {receiptSettings.headerText || generalSettings.storeName}
           </h3>
-          <p className="text-[10px] text-slate-400 mt-0.5">Point of Sale Receipt</p>
+          {(generalSettings.address || generalSettings.phone || generalSettings.taxId) && (
+            <div className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">
+              {generalSettings.address && <p>{generalSettings.address}</p>}
+              {generalSettings.phone && <p>Tel: {generalSettings.phone}</p>}
+              {generalSettings.taxId && <p>TIN: {generalSettings.taxId}</p>}
+            </div>
+          )}
+          <p className="text-[10px] text-slate-400 mt-0.5">{receiptSettings.receiptTitle || 'Official Receipt'}</p>
         </div>
         <div className="font-mono text-[10px] text-slate-300">{dash}</div>
 

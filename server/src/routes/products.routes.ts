@@ -5,16 +5,16 @@ import path from 'path';
 import fs from 'fs';
 import { pool } from '../db/pool.js';
 import { requireRole } from '../middleware/role.js';
+import { uploadsDir } from '../config.js';
 import type { MySqlRow, MySqlOk } from '../types/common.types.js';
 import type { ProductRow, ProductCreateInput, ProductUpdateInput } from '../types/product.types.js';
 
 const router = Router();
 
 // ---- Multer config for product image uploads ----
-const UPLOADS_DIR = path.resolve('uploads');
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
+// uploadsDir resolves to server/uploads in dev and to the writable Electron
+// userData folder when packaged (see config.ts).
+const UPLOADS_DIR = uploadsDir;
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),

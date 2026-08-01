@@ -49,6 +49,7 @@ export interface InventorySettings {
 export interface ReceiptSettings {
   headerText: string;
   footerText: string;
+  receiptTitle: string;
   showLogoOnReceipt: boolean;
   showCustomerInfo: boolean;
   showBarcodeOnReceipt: boolean;
@@ -166,8 +167,8 @@ export const defaultSettings: SystemSettings = {
   branding: {
     storeLogo: null,
     favicon: null,
-    primaryBrandColor: '#4f46e5',
-    secondaryBrandColor: '#818cf8',
+    primaryBrandColor: '#C8FF5A',
+    secondaryBrandColor: '#A8DF3A',
     loginPageBackground: null,
   },
   appearance: {
@@ -199,6 +200,7 @@ export const defaultSettings: SystemSettings = {
   receipt: {
     headerText: 'RUIZ STORE',
     footerText: 'Thank you for shopping at Ruiz Store!',
+    receiptTitle: 'Official Receipt',
     showLogoOnReceipt: false,
     showCustomerInfo: true,
     showBarcodeOnReceipt: false,

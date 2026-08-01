@@ -163,8 +163,7 @@ export default function POSPage() {
     <div className="animate-[fadeUp_0.25s_ease]">
       {/* Header */}
       <div className="mb-5">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Point of Sale</h1>
-        <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+        <p className="text-sm text-slate-400 dark:text-slate-500">
           Search by name or scan a barcode — sale type is auto-detected per product
         </p>
       </div>
@@ -190,22 +189,10 @@ export default function POSPage() {
         ))}
       </div>
 
-      {/* Main grid — 3-column: Cart sidebar | Products | Order Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_360px] gap-6 items-start">
-        {/* Left: Cart sidebar (always visible on desktop) */}
-        <div className="order-2 lg:order-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 lg:sticky lg:top-5 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto">
-          <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57l1.65-8.43H6" />
-            </svg>
-            Cart
-          </h2>
-          <Cart />
-        </div>
-
-        {/* Center: Product Search grid */}
-        <div className="order-1 lg:order-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5">
+      {/* Main grid — 2-column: Product Search | Cart + Order Total */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 items-start">
+        {/* Left: Product Search / Barcode */}
+        <div className="bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-5">
           <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
@@ -215,8 +202,18 @@ export default function POSPage() {
           <ProductSearch />
         </div>
 
-        {/* Right: Order Summary */}
-        <div className="order-3">
+        {/* Right: Cart + Order Summary stacked */}
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-5">
+            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57l1.65-8.43H6" />
+              </svg>
+              Cart
+            </h2>
+            <Cart />
+          </div>
           <OrderSummary
             onCheckout={processCheckout}
             onClear={() => {

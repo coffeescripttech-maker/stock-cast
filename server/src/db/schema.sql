@@ -167,6 +167,27 @@ CREATE TABLE IF NOT EXISTS audit_log (
 -- -----------------------------------------------------------
 -- System Settings (single-row JSON document — CMS module)
 -- -----------------------------------------------------------
+-- -----------------------------------------------------------
+-- Notifications (persistent event-driven notification records)
+-- -----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS notifications (
+  id         BIGINT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
+  type       ENUM('low_stock','large_txn','new_customer') NOT NULL,
+  message    VARCHAR(255)     NOT NULL,
+  severity   ENUM('warning','info','success') NOT NULL DEFAULT 'info',
+  link       VARCHAR(255)     NULL,
+  metadata   JSON             NULL,
+  is_read    TINYINT(1)       NOT NULL DEFAULT 0,
+  created_at DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  INDEX idx_read (is_read),
+  INDEX idx_created (created_at),
+  INDEX idx_type_created (type, created_at)
+) ENGINE=InnoDB;
+
+-- -----------------------------------------------------------
+-- System Settings (single-row JSON document — CMS module)
+-- -----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS system_settings (
   id         TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   settings   JSON             NOT NULL,

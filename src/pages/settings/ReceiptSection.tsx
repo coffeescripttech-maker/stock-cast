@@ -50,6 +50,13 @@ export default function ReceiptSection() {
             className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 resize-none" />
         </div>
         <div>
+          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">Receipt Title</label>
+          <input type="text" value={form.receiptTitle}
+            onChange={(e) => setForm({ ...form, receiptTitle: e.target.value })}
+            placeholder="Official Receipt"
+            className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
+        </div>
+        <div>
           <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">Footer Text</label>
           <textarea value={form.footerText} rows={2}
             onChange={(e) => setForm({ ...form, footerText: e.target.value })}
@@ -89,7 +96,7 @@ export default function ReceiptSection() {
       </div>
 
       <div className="flex justify-end pt-2">
-        <Button variant="primary" onClick={handleSave}>Save Section</Button>
+        <Button variant="brand" onClick={handleSave}>Save Section</Button>
       </div>
     </div>
   );

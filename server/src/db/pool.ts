@@ -1,7 +1,10 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// When the desktop app embeds this server it points DOTENV_PATH at the bundled
+// .env file (the working directory differs inside a packaged app).
+if (process.env.DOTENV_PATH) dotenv.config({ path: process.env.DOTENV_PATH });
+else dotenv.config();
 
 export const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',

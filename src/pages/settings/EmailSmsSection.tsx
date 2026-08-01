@@ -69,7 +69,7 @@ export default function EmailSmsSection() {
       </div>
 
       <div className="flex justify-end pt-2">
-        <Button variant="primary" onClick={handleSave}>Save Section</Button>
+        <Button variant="brand" onClick={handleSave}>Save Section</Button>
       </div>
     </div>
   );

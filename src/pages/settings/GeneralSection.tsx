@@ -76,7 +76,7 @@ export default function GeneralSection() {
       </div>
 
       <div className="flex justify-end pt-2">
-        <Button variant="primary" onClick={handleSave} disabled={saving}>
+        <Button variant="brand" onClick={handleSave} disabled={saving}>
           {saving ? 'Saving...' : 'Save Section'}
         </Button>
       </div>

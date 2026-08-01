@@ -83,10 +83,7 @@ export default function AuditPage() {
     <div className="animate-[fadeUp_0.25s_ease] space-y-6 max-w-[1600px] mx-auto">
       {/* ═══ HEADER ═══ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Audit Trail</h1>
-          <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">System activity log · {auditLog.length} entries</p>
-        </div>
+        <p className="text-sm text-slate-400 dark:text-slate-500">System activity log · {auditLog.length} entries</p>
         <Button variant="danger" size="sm" onClick={() => setClearOpen(true)} disabled={auditLog.length === 0}>
           <Trash2 size={13} /> Clear Log
         </Button>

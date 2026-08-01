@@ -206,10 +206,7 @@ export default function ReportsPage() {
     <div className="animate-[fadeUp_0.25s_ease] space-y-6 max-w-[1600px] mx-auto">
       {/* ═══ HEADER ═══ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Reports</h1>
-          <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Analyze sales and inventory data</p>
-        </div>
+        <p className="text-sm text-slate-400 dark:text-slate-500">Analyze sales and inventory data</p>
         <Button variant="outline" size="sm" onClick={exportExcel}>
           <Download size={13} /> Export CSV
         </Button>
@@ -273,7 +270,7 @@ export default function ReportsPage() {
                     <DollarSign size={18} className="text-white" />
                   </div>
                 </div>
-                <div className="text-3xl font-black font-mono tracking-tight">₱{fmtCurrency(totalSales)}</div>
+                <div className="text-3xl font-black font-mono tracking-tight">{fmtCurrency(totalSales)}</div>
                 <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">
                   <TrendingUp size={12} /> {reportFilter === 'all' ? 'All time' : `Filtered (${reportFilter})`}
                 </div>
@@ -305,7 +302,7 @@ export default function ReportsPage() {
                     <Layers size={18} className="text-white" />
                   </div>
                 </div>
-                <div className="text-3xl font-black font-mono tracking-tight">₱{fmtCurrency(avgTx)}</div>
+                <div className="text-3xl font-black font-mono tracking-tight">{fmtCurrency(avgTx)}</div>
                 <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Average order value</div>
               </div>
             </div>
@@ -459,7 +456,7 @@ export default function ReportsPage() {
                             )}>{tx.type.toUpperCase()}</span>
                           </td>
                           <td className="px-3 py-2.5 text-center text-slate-500">{tx.items.reduce((s, i) => s + i.qty, 0)}</td>
-                          <td className="px-3 py-2.5 text-right font-bold text-slate-800 dark:text-slate-200">₱{fmtCurrency(tx.total)}</td>
+                          <td className="px-3 py-2.5 text-right font-bold text-slate-800 dark:text-slate-200">{fmtCurrency(tx.total)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -558,7 +555,7 @@ export default function ReportsPage() {
                     <DollarSign size={18} className="text-white" />
                   </div>
                 </div>
-                <div className="text-3xl font-black font-mono tracking-tight">₱{fmtCurrency(invTotalValue)}</div>
+                <div className="text-3xl font-black font-mono tracking-tight">{fmtCurrency(invTotalValue)}</div>
                 <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Combined RT + WS value</div>
               </div>
             </div>
@@ -573,8 +570,8 @@ export default function ReportsPage() {
                     <Layers size={18} className="text-white" />
                   </div>
                 </div>
-                <div className="text-lg font-black font-mono tracking-tight">₱{fmtCurrency(invRTValue)}</div>
-                <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">WS: ₱{fmtCurrency(invWSValue)}</div>
+                <div className="text-lg font-black font-mono tracking-tight">{fmtCurrency(invRTValue)}</div>
+                <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">WS: {fmtCurrency(invWSValue)}</div>
               </div>
             </div>
           </div>
@@ -688,9 +685,9 @@ export default function ReportsPage() {
                           <td className="px-3 py-2.5 font-semibold text-slate-800 dark:text-slate-200">{p.name}</td>
                           <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-400">{p.retailStock}</td>
                           <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-400">{p.wholesaleStock}</td>
-                          <td className="px-3 py-2.5 text-right text-emerald-600 dark:text-emerald-400 font-medium">₱{fmtCurrency(p.retailStock * p.retailPrice)}</td>
-                          <td className="px-3 py-2.5 text-right text-amber-600 dark:text-amber-400 font-medium">₱{fmtCurrency(p.wholesaleStock * p.wholesalePrice)}</td>
-                          <td className="px-3 py-2.5 text-right font-bold text-slate-800 dark:text-slate-200">₱{fmtCurrency(p.retailStock * p.retailPrice + p.wholesaleStock * p.wholesalePrice)}</td>
+                          <td className="px-3 py-2.5 text-right text-emerald-600 dark:text-emerald-400 font-medium">{fmtCurrency(p.retailStock * p.retailPrice)}</td>
+                          <td className="px-3 py-2.5 text-right text-amber-600 dark:text-amber-400 font-medium">{fmtCurrency(p.wholesaleStock * p.wholesalePrice)}</td>
+                          <td className="px-3 py-2.5 text-right font-bold text-slate-800 dark:text-slate-200">{fmtCurrency(p.retailStock * p.retailPrice + p.wholesaleStock * p.wholesalePrice)}</td>
                         </tr>
                       ))}
                     </tbody>

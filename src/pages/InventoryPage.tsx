@@ -239,14 +239,11 @@ export default function InventoryPage() {
     <div className="animate-[fadeUp_0.25s_ease] space-y-6 max-w-[1600px] mx-auto">
       {/* ═══ TOP SECTION: Header ═══ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Inventory Overview</h1>
-          <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
-            {products.length} product{products.length !== 1 && 's'} · {stats.totalValue > 0
-              ? `₱${Math.round(stats.totalValue).toLocaleString()} total value`
-              : 'No stock data'}
-          </p>
-        </div>
+        <p className="text-sm text-slate-400 dark:text-slate-500">
+          {products.length} product{products.length !== 1 && 's'} · {stats.totalValue > 0
+            ? `₱${Math.round(stats.totalValue).toLocaleString()} total value`
+            : 'No stock data'}
+        </p>
         <div className="flex items-center gap-2">
           <button
             onClick={() => window.print()}
@@ -721,11 +718,11 @@ export default function InventoryPage() {
                       </td>
                       {/* RT Price */}
                       <td className="px-4 py-3.5 text-right">
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm">₱{fmtCurrency(p.retailPrice)}</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm">{fmtCurrency(p.retailPrice)}</span>
                       </td>
                       {/* WS Price */}
                       <td className="px-4 py-3.5 text-right">
-                        <span className="font-mono font-bold text-amber-600 dark:text-amber-400 text-sm">₱{fmtCurrency(p.wholesalePrice)}</span>
+                        <span className="font-mono font-bold text-amber-600 dark:text-amber-400 text-sm">{fmtCurrency(p.wholesalePrice)}</span>
                       </td>
                       {/* RT Stock */}
                       <td className="px-4 py-3.5 text-right">
@@ -852,7 +849,7 @@ export default function InventoryPage() {
                             <span className="text-slate-400 font-semibold">RT</span>
                           </div>
                           <span className={cn('font-mono font-bold', rtOut ? 'text-red-400' : rtLow ? 'text-amber-500' : 'text-slate-700 dark:text-slate-300')}>
-                            ₱{fmtCurrency(p.retailPrice)} · {p.retailStock}
+                            {fmtCurrency(p.retailPrice)} · {p.retailStock}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -861,7 +858,7 @@ export default function InventoryPage() {
                             <span className="text-slate-400 font-semibold">WS</span>
                           </div>
                           <span className={cn('font-mono font-bold', wsOut ? 'text-red-400' : wsLow ? 'text-amber-500' : 'text-amber-600 dark:text-amber-400')}>
-                            ₱{fmtCurrency(p.wholesalePrice)} · {p.wholesaleStock}
+                            {fmtCurrency(p.wholesalePrice)} · {p.wholesaleStock}
                           </span>
                         </div>
                       </div>

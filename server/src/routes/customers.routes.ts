@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { pool } from '../db/pool.js';
+import { createNotification } from './notifications.routes.js';
 import type { MySqlRow, MySqlOk } from '../types/common.types.js';
 import type { CustomerRow, CustomerCreateInput } from '../types/customer.types.js';
 
@@ -153,6 +154,27 @@ router.post('/', async (req, res, next) => {
       req.user!.display_name,
       req.user!.role
     );
+
+    // ── Event-driven notification ──────────────────
+    try {
+      const [[settingsRow]] = await pool.query<MySqlRow[]>(
+        'SELECT settings FROM system_settings WHERE id = 1'
+      );
+      const settings = settingsRow
+        ? JSON.parse((settingsRow as { settings: string }).settings)
+        : {};
+      if (settings.notifications?.newCustomerAlert) {
+        await createNotification(
+          'new_customer',
+          `New customer: ${input.name}`,
+          'success',
+          '/rewards',
+          { customer_id: result.insertId }
+        );
+      }
+    } catch {
+      // Swallow — notifications must never break customer creation
+    }
 
     const [rows] = await pool.query<MySqlRow[]>(
       'SELECT * FROM customers WHERE id = ?',

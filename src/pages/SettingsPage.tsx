@@ -52,8 +52,7 @@ export default function SettingsPage() {
     <div className="animate-[fadeUp_0.25s_ease] max-w-[1600px] mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">System Settings</h1>
-        <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+        <p className="text-sm text-slate-400 dark:text-slate-500">
           Configure your POS system — changes take effect immediately
         </p>
       </div>

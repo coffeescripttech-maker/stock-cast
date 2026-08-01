@@ -6,7 +6,7 @@ import { useUIStore } from '../stores/uiStore';
 export function useKeyboardShortcuts() {
   const { currentUser } = useAuthStore();
   const { cart, receiptIsShowing, clearCart, lastReceipt, setReceiptShowing } = usePOSStore();
-  const { showToast, closeModal } = useUIStore();
+  const { showToast, closeModal, setCommandPaletteOpen } = useUIStore();
 
   useEffect(() => {
     if (!currentUser) return;
@@ -26,6 +26,13 @@ export function useKeyboardShortcuts() {
           e.preventDefault();
           if (!lastReceipt) {
             showToast('No receipt to print', 'info');
+          }
+          break;
+        // Ctrl+K / Cmd+K — Open command palette
+        case 'k':
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            setCommandPaletteOpen(true);
           }
           break;
         case 'F8':

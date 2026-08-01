@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { pool } from '../db/pool.js';
 import { requireRole } from '../middleware/role.js';
+import { createNotification } from './notifications.routes.js';
 import type { MySqlRow, MySqlOk } from '../types/common.types.js';
 import type { TransactionRow, TransactionItemRow } from '../types/transaction.types.js';
 
@@ -264,6 +265,56 @@ router.post('/', async (req, res, next) => {
     }
 
     await conn.commit();
+
+    // ── Event-driven notifications ──────────────────────────
+    try {
+      // Read notification settings
+      const [[settingsRow]] = await pool.query<MySqlRow[]>(
+        'SELECT settings FROM system_settings WHERE id = 1'
+      );
+      const settings = settingsRow
+        ? JSON.parse((settingsRow as { settings: string }).settings)
+        : {};
+      const notif = settings.notifications || {};
+      const inv = settings.inventory || {};
+
+      // Low stock alert — check product(s) in this transaction
+      if (notif.lowStockAlert) {
+        const rtThreshold = inv.lowStockThresholdRt ?? 10;
+        const wsThreshold = inv.lowStockThresholdWs ?? 30;
+        const [lowRows] = await pool.query<MySqlRow[]>(
+          `SELECT COUNT(*) AS cnt FROM products
+           WHERE is_active = 1
+             AND id IN (SELECT product_id FROM transaction_items WHERE transaction_id = ?)
+             AND (retail_stock <= ? OR wholesale_stock <= ?)`,
+          [headerResult.insertId, rtThreshold, wsThreshold]
+        );
+        const lowCount = Number((lowRows[0] as { cnt: number }).cnt) || 0;
+        if (lowCount > 0) {
+          await createNotification(
+            'low_stock',
+            `${lowCount} item${lowCount === 1 ? '' : 's'} low on stock`,
+            'warning',
+            '/inventory',
+            { transaction_id: headerResult.insertId }
+          );
+        }
+      }
+
+      // Large transaction alert
+      const txnThreshold = notif.largeTransactionThreshold;
+      if (txnThreshold && txnThreshold > 0 && total >= txnThreshold) {
+        await createNotification(
+          'large_txn',
+          `Transaction ${txNumber} — ₱${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+          'info',
+          '/transactions',
+          { tx_number: txNumber, total, transaction_id: headerResult.insertId }
+        );
+      }
+    } catch {
+      // Swallow — notifications must never break the sale flow
+    }
 
     // Log audit
     const cashierName = req.user?.display_name || `User#${input.cashier_id}`;

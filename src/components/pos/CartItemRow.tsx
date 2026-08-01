@@ -55,7 +55,7 @@ export function CartItemRow({ item, index, onUpdateQty, onSetQty, onToggleType, 
           </div>
         </div>
         <div className="text-sm font-black font-mono text-brand">
-          ₱{fmtCurrency(item.qty * item.price)}
+          {fmtCurrency(item.qty * item.price)}
         </div>
         <button
           onClick={() => onRemove(index)}
@@ -69,7 +69,7 @@ export function CartItemRow({ item, index, onUpdateQty, onSetQty, onToggleType, 
       <div className="flex items-center justify-between mt-1.5">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-mono text-slate-400">
-            ₱{fmtCurrency(item.price)}/{item.type === 'ws' ? 'case' : 'pc'}
+            {fmtCurrency(item.price)}/{item.type === 'ws' ? 'case' : 'pc'}
           </span>
           <button
             onClick={() => onToggleType(index, item.type === 'rt' ? 'ws' : 'rt')}

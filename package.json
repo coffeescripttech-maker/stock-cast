@@ -2,11 +2,90 @@
   "name": "ruiz-store-pos",
   "private": true,
   "version": "5.0.0",
+  "description": "Ruiz Store POS — desktop point-of-sale application",
+  "author": "Ruiz Store",
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm --prefix server run dev",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build:server": "npm --prefix server run build",
+    "preview": "vite preview",
+    "electron": "node electron/scripts/launch.cjs .",
+    "electron:dev": "concurrently -k -n SERVER,VITE,ELECTRON -c blue,green,magenta \"npm:dev:server\" \"npm:dev\" \"wait-on http-get://localhost:5173 http-get://localhost:3001/api/health && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 node electron/scripts/launch.cjs .\"",
+    "dist": "npm run build && npm run build:server && electron-builder --win",
+    "dist:dir": "npm run build && npm run build:server && electron-builder --dir",
+    "dist:mac": "npm run build && npm run build:server && electron-builder --mac",
+    "dist:linux": "npm run build && npm run build:server && electron-builder --linux",
+    "dist:all": "npm run build && npm run build:server && electron-builder -mwl"
+  },
+  "build": {
+    "appId": "com.ruizstore.pos",
+    "productName": "Ruiz Store POS",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "dist/**/*",
+      "server/**/*",
+      "build/icon.png",
+      "!server/src/**/*",
+      "!server/tsconfig.json",
+      "!node_modules/**/*",
+      "!**/*.map",
+      "!server/node_modules/typescript/**",
+      "!server/node_modules/@esbuild/**",
+      "!server/node_modules/esbuild/**",
+      "!server/node_modules/tsx/**",
+      "!server/node_modules/@types/**"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "dist/**/*",
+      "server/**/*",
+      "build/icon.png"
+    ],
+    "npmRebuild": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Ruiz Store POS",
+      "installerIcon": "build/icon.png",
+      "uninstallerIcon": "build/icon.png",
+      "uninstallDisplayName": "Ruiz Store POS"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/icon.png",
+      "category": "Office"
+    }
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
@@ -35,8 +114,13 @@
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.4.2",
+    "concurrently": "^9.2.4",
+    "cross-env": "^10.1.0",
+    "electron": "^41.7.1",
+    "electron-builder": "^26.15.3",
     "tailwindcss": "^4.1.6",
     "typescript": "~5.6.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "wait-on": "^9.1.0"
   }
 }

@@ -6,6 +6,8 @@ interface UIState {
   theme: Theme;
   toasts: Toast[];
   activeModal: React.ReactNode | null;
+  sidebarCollapsed: boolean;
+  commandPaletteOpen: boolean;
 
   toggleTheme: () => void;
   initTheme: () => void;
@@ -13,6 +15,9 @@ interface UIState {
   dismissToast: (id: string) => void;
   openModal: (content: React.ReactNode) => void;
   closeModal: () => void;
+  toggleSidebar: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  setCommandPaletteOpen: (open: boolean) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -21,6 +26,8 @@ export const useUIStore = create<UIState>()(
       theme: 'light',
       toasts: [],
       activeModal: null,
+      sidebarCollapsed: false,
+      commandPaletteOpen: false,
 
       toggleTheme: () => set((s) => {
         const next = s.theme === 'dark' ? 'light' : 'dark';
@@ -50,10 +57,16 @@ export const useUIStore = create<UIState>()(
       openModal: (content) => set({ activeModal: content }),
 
       closeModal: () => set({ activeModal: null }),
+
+      toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+
+      setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+
+      setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
     }),
     {
       name: 'ruizpos_theme',
-      partialize: (state) => ({ theme: state.theme }),
+      partialize: (state) => ({ theme: state.theme, sidebarCollapsed: state.sidebarCollapsed }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           document.documentElement.setAttribute('data-theme', state.theme);

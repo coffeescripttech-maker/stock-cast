@@ -71,7 +71,7 @@ export default function TransactionsPage() {
 
   function handleVoid(tx: Transaction) {
     voidTransaction(tx.id);
-    logAudit('TRANSACTION_VOIDED', `Voided TX ${tx.id} · ₱${fmtCurrency(tx.total)}`, currentUser?.name, currentUser?.role);
+    logAudit('TRANSACTION_VOIDED', `Voided TX ${tx.id} · ${fmtCurrency(tx.total)}`, currentUser?.name, currentUser?.role);
     showToast(`Transaction ${tx.id} voided`, 'error');
     setVoidTx(null);
     setDetailTx(null);
@@ -81,12 +81,9 @@ export default function TransactionsPage() {
     <div className="animate-[fadeUp_0.25s_ease] space-y-6 max-w-[1600px] mx-auto">
       {/* ═══ HEADER ═══ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Transactions</h1>
-          <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
-            {stats.totalTx} total · ₱{Math.round(stats.totalRevenue).toLocaleString()} all-time revenue
-          </p>
-        </div>
+        <p className="text-sm text-slate-400 dark:text-slate-500">
+          {stats.totalTx} total · ₱{Math.round(stats.totalRevenue).toLocaleString()} all-time revenue
+        </p>
       </div>
 
       {/* ═══ KPI CARDS ═══ */}
@@ -102,7 +99,7 @@ export default function TransactionsPage() {
                 <TrendingUp size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">₱{fmtCurrency(stats.todaySales)}</div>
+            <div className="text-4xl font-black font-mono tracking-tight">{fmtCurrency(stats.todaySales)}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">
               <ShoppingBag size={12} /> {stats.todayCount} transaction{stats.todayCount !== 1 && 's'} today
             </div>
@@ -136,7 +133,7 @@ export default function TransactionsPage() {
                 <Activity size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">₱{fmtCurrency(stats.avgTx)}</div>
+            <div className="text-4xl font-black font-mono tracking-tight">{fmtCurrency(stats.avgTx)}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Per completed sale</div>
           </div>
         </div>
@@ -257,7 +254,7 @@ export default function TransactionsPage() {
                       'text-base font-black font-mono',
                       tx.status === 'voided' ? 'text-slate-300 dark:text-slate-600 line-through' : 'text-slate-900 dark:text-slate-100'
                     )}>
-                      ₱{fmtCurrency(tx.total)}
+                      {fmtCurrency(tx.total)}
                     </div>
                     {tx.items.length > 0 && (
                       <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
@@ -406,8 +403,8 @@ export default function TransactionsPage() {
                       </span>
                     </div>
                     <span className="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0 ml-3">
-                      {item.qty} × ₱{fmtCurrency(item.price)}
-                      <span className="ml-2 font-bold text-slate-800 dark:text-slate-200">₱{fmtCurrency(item.qty * item.price)}</span>
+                      {item.qty} × {fmtCurrency(item.price)}
+                      <span className="ml-2 font-bold text-slate-800 dark:text-slate-200">{fmtCurrency(item.qty * item.price)}</span>
                     </span>
                   </div>
                 ))}
@@ -418,27 +415,27 @@ export default function TransactionsPage() {
             <div className="border-t border-slate-100 dark:border-slate-700/50 pt-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Subtotal</span>
-                <span className="font-semibold text-slate-700 dark:text-slate-300">₱{fmtCurrency(detailTx.rawTotal)}</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">{fmtCurrency(detailTx.rawTotal)}</span>
               </div>
               {detailTx.discount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-emerald-600 dark:text-emerald-400">Points discount</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">-₱{fmtCurrency(detailTx.discount)}</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">-{fmtCurrency(detailTx.discount)}</span>
                 </div>
               )}
               <div className="flex justify-between text-lg font-black pt-3 border-t border-slate-100 dark:border-slate-700/50">
                 <span className="text-slate-900 dark:text-slate-100">Total</span>
-                <span className="text-brand">₱{fmtCurrency(detailTx.total)}</span>
+                <span className="text-brand">{fmtCurrency(detailTx.total)}</span>
               </div>
               {detailTx.amountTendered > 0 && (
                 <>
                   <div className="flex justify-between text-sm text-slate-500">
                     <span>Cash Tendered</span>
-                    <span>₱{fmtCurrency(detailTx.amountTendered)}</span>
+                    <span>{fmtCurrency(detailTx.amountTendered)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Change</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">₱{fmtCurrency(detailTx.change)}</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmtCurrency(detailTx.change)}</span>
                   </div>
                 </>
               )}

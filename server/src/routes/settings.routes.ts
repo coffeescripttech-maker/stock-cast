@@ -2,18 +2,17 @@ import { Router } from 'express';
 import { z } from 'zod';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { pool } from '../db/pool.js';
 import { requireRole } from '../middleware/role.js';
+import { brandingDir } from '../config.js';
 import type { MySqlRow, MySqlOk } from '../types/common.types.js';
 
 const router = Router();
 
 // ---- Multer config for branding uploads (logo / favicon) ----
-const BRANDING_DIR = path.resolve('uploads', 'branding');
-if (!fs.existsSync(BRANDING_DIR)) {
-  fs.mkdirSync(BRANDING_DIR, { recursive: true });
-}
+// brandingDir resolves to server/uploads/branding in dev and to the writable
+// Electron userData folder when packaged (see config.ts).
+const BRANDING_DIR = brandingDir;
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, BRANDING_DIR),

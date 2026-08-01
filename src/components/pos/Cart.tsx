@@ -45,29 +45,31 @@ export function Cart() {
   }
 
   return (
-    <div className="space-y-2">
+    <div>
       {/* Mini summary bar */}
-      <div className="flex items-center justify-between px-1 pb-1 border-b border-slate-100 dark:border-slate-700/50">
+      <div className="flex items-center justify-between px-1 pb-1 border-b border-slate-100 dark:border-slate-700/50 mb-2">
         <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
           {cart.length} line{cart.length !== 1 && 's'} · {totalUnits} unit{totalUnits !== 1 && 's'}
         </span>
         <span className="text-xs font-bold font-mono text-slate-500 dark:text-slate-400">
-          ₱{fmtCurrency(subtotal)}
+          {fmtCurrency(subtotal)}
         </span>
       </div>
 
-      {/* Cart items */}
-      {cart.map((item, i) => (
-        <CartItemRow
-          key={`${item.productId}-${item.type}`}
-          item={item}
-          index={i}
-          onUpdateQty={updateCartItemQty}
-          onSetQty={setCartItemQty}
-          onToggleType={handleToggleType}
-          onRemove={removeFromCart}
-        />
-      ))}
+      {/* Scrollable cart items — keeps Order Summary always visible */}
+      <div className="max-h-[280px] overflow-y-auto space-y-1 pr-1">
+        {cart.map((item, i) => (
+          <CartItemRow
+            key={`${item.productId}-${item.type}`}
+            item={item}
+            index={i}
+            onUpdateQty={updateCartItemQty}
+            onSetQty={setCartItemQty}
+            onToggleType={handleToggleType}
+            onRemove={removeFromCart}
+          />
+        ))}
+      </div>
     </div>
   );
 }
