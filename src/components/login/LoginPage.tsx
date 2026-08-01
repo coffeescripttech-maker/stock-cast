@@ -53,7 +53,7 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-50 dark:from-indigo-950 dark:via-slate-950 dark:to-slate-900">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-11 w-[400px] shadow-2xl border border-brand/5 animate-[fadeUp_0.4s_ease]">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-[400px] mx-4 p-8 sm:p-11 shadow-2xl border border-brand/5 animate-[fadeUp_0.4s_ease]">
         {/* Logo */}
         <div className="w-13 h-13 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-5">
           {storeLogo ? (

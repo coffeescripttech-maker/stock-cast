@@ -59,7 +59,7 @@ export function CartItemRow({ item, index, onUpdateQty, onSetQty, onToggleType, 
         </div>
         <button
           onClick={() => onRemove(index)}
-          className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all flex-shrink-0"
+          className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 w-7 h-7 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all flex-shrink-0"
         >
           <X size={12} />
         </button>
@@ -85,7 +85,7 @@ export function CartItemRow({ item, index, onUpdateQty, onSetQty, onToggleType, 
           {/* -10 */}
           <button
             onClick={() => onUpdateQty(index, -10)}
-            className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="w-6 h-6 sm:w-5 sm:h-5 rounded flex items-center justify-center text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             title="-10"
           >
             -10
@@ -94,7 +94,7 @@ export function CartItemRow({ item, index, onUpdateQty, onSetQty, onToggleType, 
           {/* -1 */}
           <button
             onClick={() => onUpdateQty(index, -1)}
-            className="w-6 h-6 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="w-7 h-7 sm:w-6 sm:h-6 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
             <Minus size={10} />
           </button>
@@ -127,7 +127,7 @@ export function CartItemRow({ item, index, onUpdateQty, onSetQty, onToggleType, 
           {/* +1 */}
           <button
             onClick={() => onUpdateQty(index, 1)}
-            className="w-6 h-6 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="w-7 h-7 sm:w-6 sm:h-6 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
             <Plus size={10} />
           </button>
@@ -135,7 +135,7 @@ export function CartItemRow({ item, index, onUpdateQty, onSetQty, onToggleType, 
           {/* +10 */}
           <button
             onClick={() => onUpdateQty(index, 10)}
-            className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="w-6 h-6 sm:w-5 sm:h-5 rounded flex items-center justify-center text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             title="+10"
           >
             +10

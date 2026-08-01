@@ -91,62 +91,62 @@ export default function AuditPage() {
 
       {/* ═══ KPI CARDS ═══ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-5 sm:p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Entries</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Activity size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{auditLog.length}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{auditLog.length}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Recorded system events</div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5 sm:p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Today</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Clock size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{todayEntries}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{todayEntries}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Events recorded today</div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-sky-500 to-sky-700 text-white p-6 shadow-lg shadow-sky-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-sky-500 to-sky-700 text-white p-5 sm:p-6 shadow-lg shadow-sky-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Unique Users</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Users size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{uniqueUsers}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{uniqueUsers}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Distinct users tracked</div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-amber-400 to-amber-600 text-white p-6 shadow-lg shadow-amber-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-amber-400 to-amber-600 text-white p-5 sm:p-6 shadow-lg shadow-amber-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Action Types</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <AlertTriangle size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{actions.length - 1}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{actions.length - 1}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Unique action categories</div>
           </div>
         </div>
@@ -224,7 +224,7 @@ export default function AuditPage() {
 
         {/* Pagination */}
         {filtered.length > 0 && (
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">
                 {filtered.length} of {auditLog.length} entries

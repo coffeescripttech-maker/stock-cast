@@ -84,65 +84,65 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats grid — gradient cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-5 sm:p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Today's Sales</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <TrendingUp size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{fmtCurrency(todaySales)}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{fmtCurrency(todaySales)}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">
               <TrendingUp size={12} /> Sales today
             </div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-red-500 to-red-700 text-white p-6 shadow-lg shadow-red-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-red-500 to-red-700 text-white p-5 sm:p-6 shadow-lg shadow-red-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Retail Low Stock</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <AlertTriangle size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{rtLow.length}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{rtLow.length}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">≤ 10 units remaining</div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-orange-400 to-orange-600 text-white p-6 shadow-lg shadow-orange-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-orange-400 to-orange-600 text-white p-5 sm:p-6 shadow-lg shadow-orange-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Wholesale Low Stock</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Package size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{wsLow.length}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{wsLow.length}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">≤ 30 units remaining</div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5 sm:p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Transactions Today</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <ShoppingCart size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{todayTx.length}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{todayTx.length}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Completed sales</div>
           </div>
         </div>

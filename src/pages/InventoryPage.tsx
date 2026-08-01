@@ -3,12 +3,13 @@ import {
   Search, Plus, Trash2, Edit3, Package, AlertTriangle, DollarSign, ScanLine,
   ArrowUpDown, Grid3X3, List, Download, BarChart3,
   TrendingUp, X, ChevronLeft, ChevronRight,
-  Activity, Clock, Truck,
+  Activity, Clock, Truck, Camera,
 } from 'lucide-react';
 import { useDataStore } from '../stores/dataStore';
 import { useUIStore } from '../stores/uiStore';
 import { useAuthStore } from '../stores/authStore';
 import { useSettingsStore } from '../stores/settingsStore';
+import { useIsMobile } from '../hooks/useMediaQuery';
 import { Button } from '../components/ui/Button';
 import { Dialog } from '../components/ui/Dialog';
 import { BarcodeVisual } from '../components/pos/BarcodeVisual';
@@ -69,7 +70,9 @@ export default function InventoryPage() {
   type SortField = (typeof sortFields)[number];
   const [sortBy, setSortBy] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+  // Grid view is the friendlier default on phones/tablets (table needs horizontal scroll).
+  const isMobile = useIsMobile();
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>(() => (isMobile ? 'grid' : 'table'));
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -260,17 +263,17 @@ export default function InventoryPage() {
       {/* ═══ KPI CARDS ROW ═══ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Total Products */}
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-5 sm:p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Products</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Package size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{stats.total}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{stats.total}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">
               <TrendingUp size={12} /> All time
             </div>
@@ -278,33 +281,33 @@ export default function InventoryPage() {
         </div>
 
         {/* Inventory Value */}
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5 sm:p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Stock Value</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <DollarSign size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">₱{Math.round(stats.totalValue).toLocaleString()}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">₱{Math.round(stats.totalValue).toLocaleString()}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">At retail pricing</div>
           </div>
         </div>
 
         {/* Low Stock Items */}
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-orange-400 to-orange-600 text-white p-6 shadow-lg shadow-orange-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-orange-400 to-orange-600 text-white p-5 sm:p-6 shadow-lg shadow-orange-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Low Stock Items</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <AlertTriangle size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{stats.lowStock}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{stats.lowStock}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">
               RT ≤{LOW_STOCK_RT} · WS ≤{LOW_STOCK_WS}
             </div>
@@ -312,17 +315,17 @@ export default function InventoryPage() {
         </div>
 
         {/* Out of Stock */}
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-rose-500 to-red-600 text-white p-6 shadow-lg shadow-red-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-rose-500 to-red-600 text-white p-5 sm:p-6 shadow-lg shadow-red-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Out of Stock</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <X size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{stats.outOfStock}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{stats.outOfStock}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">No retail or wholesale stock</div>
           </div>
         </div>
@@ -474,7 +477,7 @@ export default function InventoryPage() {
                       </div>
                       <button
                         onClick={() => openEditForm(p)}
-                        className="opacity-0 group-hover/alert:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all flex-shrink-0"
+                        className="opacity-100 sm:opacity-0 sm:group-hover/alert:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all flex-shrink-0"
                       >
                         <Edit3 size={12} />
                       </button>
@@ -740,7 +743,7 @@ export default function InventoryPage() {
                       <td className="px-4 py-3.5 text-center"><StockBadge p={p} /></td>
                       {/* Actions */}
                       <td className="px-4 py-3.5">
-                        <div className="flex items-center justify-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button onClick={() => showBarcode(p)} className="p-1.5 rounded-lg text-slate-400 hover:text-brand hover:bg-brand/5 transition-all" title="Barcodes">
                             <ScanLine size={13} />
                           </button>
@@ -787,7 +790,7 @@ export default function InventoryPage() {
                         'absolute top-2.5 left-2.5 z-20 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all',
                         isSelected
                           ? 'bg-brand border-brand'
-                          : 'border-slate-300 dark:border-slate-600 bg-white/80 dark:bg-slate-800/80 opacity-0 group-hover:opacity-100'
+                          : 'border-slate-300 dark:border-slate-600 bg-white/80 dark:bg-slate-800/80 opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
                       )}
                     >
                       {isSelected && (
@@ -873,7 +876,7 @@ export default function InventoryPage() {
                         )}>
                           {rtOut && wsOut ? 'Out' : rtLow || wsLow ? 'Low' : 'OK'}
                         </span>
-                        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button onClick={(e) => { e.stopPropagation(); showBarcode(p); }} className="p-1.5 rounded-lg text-slate-400 hover:text-brand hover:bg-brand/5 transition-all" title="Barcodes">
                             <ScanLine size={11} />
                           </button>
@@ -895,7 +898,7 @@ export default function InventoryPage() {
 
         {/* Pagination */}
         {filtered.length > 0 && (
-          <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">
                 {filtered.length} product{filtered.length !== 1 ? 's' : ''}
@@ -1002,7 +1005,7 @@ export default function InventoryPage() {
         className="w-[400px]"
       >
         {barcodeTarget && (
-          <div className="grid grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
             <div className="border-2 border-emerald-500/30 rounded-xl p-4 text-center bg-emerald-50/50 dark:bg-emerald-950/30">
               <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-3">🛒 RETAIL</div>
               <div className="flex justify-center mb-3"><BarcodeVisual code={barcodeTarget.retailBarcode} /></div>
@@ -1015,7 +1018,7 @@ export default function InventoryPage() {
               <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">{barcodeTarget.wholesaleBarcode || '—'}</div>
               <div className="text-xs text-slate-400 mt-1">₱{barcodeTarget.wholesalePrice}/case</div>
             </div>
-            <div className="col-span-2 flex justify-center mt-2">
+            <div className="col-span-1 sm:col-span-2 flex justify-center mt-2">
               <Button variant="primary" onClick={() => window.print()}>Print Barcodes</Button>
             </div>
           </div>
@@ -1066,6 +1069,7 @@ function ProductFormModal({
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -1184,14 +1188,14 @@ function ProductFormModal({
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <BarcodeField label="Retail Barcode" color="emerald" value={form.retailBarcode}
             onChange={(v) => update('retailBarcode', v)} onSimulate={() => simulateBarcode('retailBarcode')} />
           <BarcodeField label="Wholesale Barcode" color="amber" value={form.wholesaleBarcode}
             onChange={(v) => update('wholesaleBarcode', v)} onSimulate={() => simulateBarcode('wholesaleBarcode')} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">🛒 Retail Price (₱)</label>
             <input type="number" value={form.retailPrice || ''} onChange={(e) => update('retailPrice', parseFloat(e.target.value) || 0)}
@@ -1206,7 +1210,7 @@ function ProductFormModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Retail Stock</label>
             <input type="number" value={form.retailStock} onChange={(e) => update('retailStock', parseInt(e.target.value) || 0)}
@@ -1236,6 +1240,7 @@ function ProductFormModal({
               )}
             </div>
             <div className="flex flex-col gap-1.5">
+              {/* File picker (gallery) */}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -1243,12 +1248,29 @@ function ProductFormModal({
                 onChange={handleFileChange}
                 className="hidden"
               />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-              >
-                Choose File
-              </button>
+              {/* Camera capture — mobile browsers open the camera directly; desktop falls back to a file picker */}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand text-white hover:bg-brand-dark transition-colors flex items-center gap-1.5"
+                >
+                  <Camera size={13} /> Take Photo
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Choose File
+                </button>
+              </div>
               {previewUrl && (
                 <div className="flex gap-1.5">
                   <button

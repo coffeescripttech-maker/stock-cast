@@ -555,60 +555,60 @@ export default function RewardsPage() {
 
       {/* ═══ KPI CARDS ═══ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-5 sm:p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Registered Members</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Users size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{customers.length}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{customers.length}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">
               <TrendingUp size={12} /> Loyalty program members
             </div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5 sm:p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Points Issued</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <PiggyBank size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{totalPoints.toLocaleString()}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{totalPoints.toLocaleString()}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">{fmtCurrency(totalSpentAll)} total spend</div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-amber-400 to-amber-600 text-white p-6 shadow-lg shadow-amber-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-amber-400 to-amber-600 text-white p-5 sm:p-6 shadow-lg shadow-amber-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Gold Tier</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Award size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{goldCount}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{goldCount}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">{silverCount} silver members</div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-purple-500 to-purple-700 text-white p-6 shadow-lg shadow-purple-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-purple-500 to-purple-700 text-white p-5 sm:p-6 shadow-lg shadow-purple-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Redeem Rate</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Star size={18} className="text-white" />
               </div>
             </div>
@@ -841,7 +841,7 @@ export default function RewardsPage() {
 
         {/* Pagination */}
         {filtered.length > 0 && (
-          <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">
                 {filtered.length} customer{filtered.length !== 1 ? 's' : ''}

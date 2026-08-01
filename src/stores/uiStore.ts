@@ -7,6 +7,8 @@ interface UIState {
   toasts: Toast[];
   activeModal: React.ReactNode | null;
   sidebarCollapsed: boolean;
+  /** Mobile drawer open state (below `lg`). Session-only — not persisted. */
+  mobileMenuOpen: boolean;
   commandPaletteOpen: boolean;
 
   toggleTheme: () => void;
@@ -17,6 +19,8 @@ interface UIState {
   closeModal: () => void;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
+  setMobileMenuOpen: (open: boolean) => void;
+  toggleMobileMenu: () => void;
   setCommandPaletteOpen: (open: boolean) => void;
 }
 
@@ -27,6 +31,7 @@ export const useUIStore = create<UIState>()(
       toasts: [],
       activeModal: null,
       sidebarCollapsed: false,
+      mobileMenuOpen: false,
       commandPaletteOpen: false,
 
       toggleTheme: () => set((s) => {
@@ -61,6 +66,10 @@ export const useUIStore = create<UIState>()(
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
 
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+
+      setMobileMenuOpen: (open) => set({ mobileMenuOpen: open }),
+
+      toggleMobileMenu: () => set((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
 
       setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
     }),

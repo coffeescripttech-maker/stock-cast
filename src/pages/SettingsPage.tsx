@@ -57,17 +57,17 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar */}
-        <aside className="w-56 flex-shrink-0">
-          <nav className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden sticky top-20">
-            <div className="p-2 space-y-0.5 max-h-[calc(100vh-12rem)] overflow-y-auto">
+        <aside className="w-full lg:w-56 flex-shrink-0">
+          <nav className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden lg:sticky lg:top-20">
+            <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-x-hidden lg:overflow-y-auto px-2 py-2 max-h-none lg:max-h-[calc(100vh-12rem)]">
               {SECTIONS.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setActive(s.id)}
                   className={cn(
-                    'w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-left',
+                    'flex-shrink-0 lg:w-full whitespace-nowrap flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-left',
                     active === s.id
                       ? 'bg-brand text-white shadow-sm'
                       : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-200'

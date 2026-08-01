@@ -89,17 +89,17 @@ export default function TransactionsPage() {
       {/* ═══ KPI CARDS ═══ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Today's Sales */}
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-5 sm:p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Today's Sales</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <TrendingUp size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{fmtCurrency(stats.todaySales)}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{fmtCurrency(stats.todaySales)}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">
               <ShoppingBag size={12} /> {stats.todayCount} transaction{stats.todayCount !== 1 && 's'} today
             </div>
@@ -107,49 +107,49 @@ export default function TransactionsPage() {
         </div>
 
         {/* Total Revenue */}
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5 sm:p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Revenue</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <DollarSign size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">₱{Math.round(stats.totalRevenue).toLocaleString()}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">₱{Math.round(stats.totalRevenue).toLocaleString()}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">All completed transactions</div>
           </div>
         </div>
 
         {/* Avg Transaction */}
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-sky-400 to-sky-600 text-white p-6 shadow-lg shadow-sky-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-sky-400 to-sky-600 text-white p-5 sm:p-6 shadow-lg shadow-sky-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Avg Transaction</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Activity size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{fmtCurrency(stats.avgTx)}</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{fmtCurrency(stats.avgTx)}</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Per completed sale</div>
           </div>
         </div>
 
         {/* Void Rate */}
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-orange-400 to-orange-600 text-white p-6 shadow-lg shadow-orange-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-orange-400 to-orange-600 text-white p-5 sm:p-6 shadow-lg shadow-orange-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Void Rate</span>
-              <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                 <Ban size={18} className="text-white" />
               </div>
             </div>
-            <div className="text-4xl font-black font-mono tracking-tight">{stats.voidRate.toFixed(1)}%</div>
+            <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{stats.voidRate.toFixed(1)}%</div>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">{stats.voided} voided transaction{stats.voided !== 1 && 's'}</div>
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function TransactionsPage() {
 
         {/* Pagination */}
         {sorted.length > 0 && (
-          <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">
                 {sorted.length} transaction{sorted.length !== 1 ? 's' : ''}

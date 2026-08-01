@@ -259,50 +259,50 @@ export default function ReportsPage() {
           </div>
 
           {/* ═══ KPI CARDS ═══ */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-5 sm:p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
               <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
               <div className="relative">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Sales</span>
-                  <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                     <DollarSign size={18} className="text-white" />
                   </div>
                 </div>
-                <div className="text-3xl font-black font-mono tracking-tight">{fmtCurrency(totalSales)}</div>
+                <div className="text-xl sm:text-3xl font-black font-mono tracking-tight">{fmtCurrency(totalSales)}</div>
                 <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">
                   <TrendingUp size={12} /> {reportFilter === 'all' ? 'All time' : `Filtered (${reportFilter})`}
                 </div>
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5 sm:p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
               <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
               <div className="relative">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Transactions</span>
-                  <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                     <ShoppingCart size={18} className="text-white" />
                   </div>
                 </div>
-                <div className="text-3xl font-black font-mono tracking-tight">{totalTx}</div>
+                <div className="text-xl sm:text-3xl font-black font-mono tracking-tight">{totalTx}</div>
                 <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Total completed sales</div>
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-sky-500 to-sky-700 text-white p-6 shadow-lg shadow-sky-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-sky-500 to-sky-700 text-white p-5 sm:p-6 shadow-lg shadow-sky-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
               <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
               <div className="relative">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Avg per Transaction</span>
-                  <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                     <Layers size={18} className="text-white" />
                   </div>
                 </div>
-                <div className="text-3xl font-black font-mono tracking-tight">{fmtCurrency(avgTx)}</div>
+                <div className="text-xl sm:text-3xl font-black font-mono tracking-tight">{fmtCurrency(avgTx)}</div>
                 <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Average order value</div>
               </div>
             </div>
@@ -467,7 +467,7 @@ export default function ReportsPage() {
 
             {/* Pagination */}
             {txFiltered.length > 0 && (
-              <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     {txFiltered.length} transaction{txFiltered.length !== 1 ? 's' : ''}
@@ -529,44 +529,44 @@ export default function ReportsPage() {
         <div className="space-y-6">
 
           {/* ═══ KPI CARDS ═══ */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-5 sm:p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
               <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
               <div className="relative">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Products</span>
-                  <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                     <Package size={18} className="text-white" />
                   </div>
                 </div>
-                <div className="text-3xl font-black font-mono tracking-tight">{products.length}</div>
+                <div className="text-xl sm:text-3xl font-black font-mono tracking-tight">{products.length}</div>
                 <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Registered in inventory</div>
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5 sm:p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
               <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
               <div className="relative">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Stock Value</span>
-                  <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                     <DollarSign size={18} className="text-white" />
                   </div>
                 </div>
-                <div className="text-3xl font-black font-mono tracking-tight">{fmtCurrency(invTotalValue)}</div>
+                <div className="text-xl sm:text-3xl font-black font-mono tracking-tight">{fmtCurrency(invTotalValue)}</div>
                 <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Combined RT + WS value</div>
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-amber-400 to-amber-600 text-white p-6 shadow-lg shadow-amber-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-amber-400 to-amber-600 text-white p-5 sm:p-6 shadow-lg shadow-amber-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
               <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
               <div className="relative">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Retail Stock</span>
-                  <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
                     <Layers size={18} className="text-white" />
                   </div>
                 </div>
@@ -698,7 +698,7 @@ export default function ReportsPage() {
 
             {/* Pagination */}
             {invFiltered.length > 0 && (
-              <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     {invFiltered.length} product{invFiltered.length !== 1 ? 's' : ''}

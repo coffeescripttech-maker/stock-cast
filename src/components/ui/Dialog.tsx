@@ -37,7 +37,7 @@ export function Dialog({
           className={cn(
             'fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
             'w-[500px] max-w-[94vw] max-h-[90vh] overflow-y-auto',
-            'rounded-2xl bg-white dark:bg-slate-800 p-8 shadow-2xl',
+            'rounded-2xl bg-white dark:bg-slate-800 p-5 sm:p-8 shadow-2xl',
             'data-[state=open]:animate-[scaleIn_0.2s_ease]',
             className
           )}

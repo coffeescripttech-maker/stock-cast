@@ -39,10 +39,10 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] dark:bg-slate-950 text-[#181818] dark:text-slate-100">
-      {/* ═══ DARK BACKDROP — straight right edge, matches sidebar width exactly ═══ */}
+      {/* ═══ DARK BACKDROP — straight right edge, matches sidebar width exactly (desktop only) ═══ */}
       <div
         className={cn(
-          'fixed top-0 left-0 h-screen bg-[#1C1C1C]',
+          'hidden lg:block fixed top-0 left-0 h-screen bg-[#1C1C1C]',
           'rounded-br-[48px] z-0',
           'transition-all duration-300 ease-in-out',
           sidebarCollapsed ? 'w-[72px]' : 'w-[220px]'
@@ -52,14 +52,14 @@ export function AppLayout() {
       {/* Sidebar — fixed left, sits inside the dark backdrop */}
       <Sidebar />
 
-      {/* Main content — pushed right with margin to sit flush against sidebar */}
+      {/* Main content — full width on mobile, pushed right beside the sidebar on desktop */}
       <div
         className={cn(
-          'relative z-10 transition-all duration-300 ease-in-out',
-          sidebarCollapsed ? 'ml-[72px]' : 'ml-[220px]'
+          'relative z-10 ml-0 transition-all duration-300 ease-in-out',
+          sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-[220px]'
         )}>
         <TopNavNew />
-        <main className="px-8 pb-8 animate-[fadeUp_0.25s_ease]">
+        <main className="px-4 sm:px-6 lg:px-8 pb-8 animate-[fadeUp_0.25s_ease]">
           <Suspense fallback={<LoadingFallback />}>
             <Outlet />
           </Suspense>
