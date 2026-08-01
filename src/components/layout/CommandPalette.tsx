@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUIStore } from '../../stores/uiStore';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, ArrowRight, LayoutDashboard, ShoppingCart, Package, Receipt, Star, BarChart3, ScrollText, Settings } from 'lucide-react';
+import { Search, ArrowRight, LayoutDashboard, ShoppingCart, Package, Receipt, Star, BarChart3, ScrollText, Usb, Settings } from 'lucide-react';
 
 interface CommandItem {
   id: string;
@@ -21,6 +21,7 @@ const COMMANDS: CommandItem[] = [
   { id: 'rewards', label: 'Rewards', description: 'Customer loyalty', path: '/rewards', icon: <Star size={16} /> },
   { id: 'reports', label: 'Reports', description: 'Sales analytics', path: '/reports', icon: <BarChart3 size={16} /> },
   { id: 'audit', label: 'Audit Trail', description: 'System activity log', path: '/audit', icon: <ScrollText size={16} /> },
+  { id: 'devices', label: 'Device Testing', description: 'Test printer, scanner & RFID', path: '/devices', icon: <Usb size={16} /> },
   { id: 'settings', label: 'Settings', description: 'System configuration', path: '/settings', icon: <Settings size={16} /> },
 ];
 

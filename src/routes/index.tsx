@@ -12,6 +12,7 @@ const TransactionsPage = lazy(() => import('../pages/TransactionsPage'));
 const RewardsPage = lazy(() => import('../pages/RewardsPage'));
 const ReportsPage = lazy(() => import('../pages/ReportsPage'));
 const AuditPage = lazy(() => import('../pages/AuditPage'));
+const DeviceTestPage = lazy(() => import('../pages/DeviceTestPage'));
 const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 
 export const router = createBrowserRouter([
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
               { path: 'transactions', element: <TransactionsPage /> },
               { path: 'reports', element: <ReportsPage /> },
               { path: 'audit', element: <AuditPage /> },
+              { path: 'devices', element: <DeviceTestPage /> },
               { path: 'settings', element: <SettingsPage /> },
             ],
           },

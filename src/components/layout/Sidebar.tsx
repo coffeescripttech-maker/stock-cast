@@ -11,6 +11,7 @@ import {
   Star,
   BarChart3,
   ScrollText,
+  Usb,
   Settings,
   HelpCircle,
   LogOut,
@@ -52,7 +53,8 @@ export function Sidebar() {
     },
     { path: '/rewards', icon: <Star size={20} />, label: 'Rewards' },
     { path: '/reports', icon: <BarChart3 size={20} />, label: 'Reports' },
-    { path: '/audit', icon: <ScrollText size={20} />, label: 'Audit' }
+    { path: '/audit', icon: <ScrollText size={20} />, label: 'Audit' },
+    { path: '/devices', icon: <Usb size={20} />, label: 'Devices' }
   ];
 
   const bottomItems: SidebarItem[] = [

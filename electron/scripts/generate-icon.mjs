@@ -1,12 +1,14 @@
 /**
- * Generates `build/icon.png` — a 512×512 app icon for Ruiz Store POS.
+ * Generates the Ruiz Store POS app icon:
+ *   - `build/icon.png`  — 512×512 source (also used for macOS .icns conversion)
+ *   - `build/icon.ico`  — multi-size Windows icon (16→256 px, PNG-compressed),
+ *     used directly by electron-builder so no runtime image conversion is needed.
  *
  * Uses only Node built-ins (zlib for PNG IDAT compression), so it runs on any
- * machine without extra dependencies. electron-builder converts this PNG to
- * .ico (Windows) and .icns (macOS) automatically during packaging.
+ * machine without extra dependencies.
  *
- * Replace build/icon.png with a real brand logo whenever you want — nothing
- * else changes.
+ * Replace build/icon.png (and re-run this script for the .ico) with a real
+ * brand logo whenever you want — nothing else changes.
  *
  * Run:  node electron/scripts/generate-icon.mjs
  */
@@ -16,7 +18,8 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT = resolve(__dirname, '..', '..', 'build', 'icon.png');
+const OUT_PNG = resolve(__dirname, '..', '..', 'build', 'icon.png');
+const OUT_ICO = resolve(__dirname, '..', '..', 'build', 'icon.ico');
 const SIZE = 512;
 
 const BRAND = [0x86, 0x3b, 0xff, 255]; // #863bff — matches public/favicon.svg
@@ -135,7 +138,81 @@ fillRect(160, 240, 204, 292, BRAND); // left window
 fillRect(308, 240, 352, 292, BRAND); // right window
 
 // ---------------------------------------------------------------------------
+// ICO container (multi-size, PNG-compressed entries — Windows Vista+ renders
+// PNG entries at any size, so the shell picks the best match and scales down).
+// ---------------------------------------------------------------------------
 
-mkdirSync(dirname(OUT), { recursive: true });
-writeFileSync(OUT, encodePng(SIZE, SIZE, px));
-console.log(`Wrote ${OUT}`);
+function downscale(rgba, from, to) {
+  // Premultiplied-alpha box average keeps rounded-corner edges clean.
+  const out = Buffer.alloc(to * to * 4);
+  const ratio = from / to;
+  for (let y = 0; y < to; y += 1) {
+    for (let x = 0; x < to; x += 1) {
+      const x0 = Math.floor(x * ratio);
+      const x1 = Math.max(Math.floor((x + 1) * ratio), x0 + 1);
+      const y0 = Math.floor(y * ratio);
+      const y1 = Math.max(Math.floor((y + 1) * ratio), y0 + 1);
+      let r = 0, g = 0, b = 0, a = 0, n = 0;
+      for (let sy = y0; sy < y1; sy += 1) {
+        for (let sx = x0; sx < x1; sx += 1) {
+          const i = (sy * from + sx) * 4;
+          const al = rgba[i + 3] / 255;
+          r += rgba[i] * al;
+          g += rgba[i + 1] * al;
+          b += rgba[i + 2] * al;
+          a += rgba[i + 3];
+          n += 1;
+        }
+      }
+      const o = (y * to + x) * 4;
+      const outA = a / n;
+      if (outA > 0) {
+        const scale = 255 / outA;
+        out[o] = Math.round((r / n) * scale);
+        out[o + 1] = Math.round((g / n) * scale);
+        out[o + 2] = Math.round((b / n) * scale);
+      }
+      out[o + 3] = Math.round(outA);
+    }
+  }
+  return out;
+}
+
+function encodeIco(images) {
+  // images: [{ size, png: Buffer }]
+  const count = images.length;
+  const offset = 6 + count * 16;
+  const buf = Buffer.alloc(offset + images.reduce((s, im) => s + im.png.length, 0));
+  buf.writeUInt16LE(0, 0); // reserved
+  buf.writeUInt16LE(1, 2); // type: icon
+  buf.writeUInt16LE(count, 4);
+  let cursor = offset;
+  images.forEach((im, i) => {
+    const e = 6 + i * 16;
+    buf[e] = im.size >= 256 ? 0 : im.size; // width (0 = 256)
+    buf[e + 1] = im.size >= 256 ? 0 : im.size; // height
+    buf[e + 2] = 0; // palette colors
+    buf[e + 3] = 0; // reserved
+    buf.writeUInt16LE(1, e + 4); // color planes
+    buf.writeUInt16LE(32, e + 6); // bits per pixel
+    buf.writeUInt32LE(im.png.length, e + 8); // bytes in resource
+    buf.writeUInt32LE(cursor, e + 12); // image data offset
+    im.png.copy(buf, cursor);
+    cursor += im.png.length;
+  });
+  return buf;
+}
+
+// ---------------------------------------------------------------------------
+
+mkdirSync(dirname(OUT_PNG), { recursive: true });
+writeFileSync(OUT_PNG, encodePng(SIZE, SIZE, px));
+console.log(`Wrote ${OUT_PNG}`);
+
+const ICO_SIZES = [256, 128, 64, 48, 32, 24, 16];
+const icoImages = ICO_SIZES.map((s) => ({
+  size: s,
+  png: encodePng(s, s, downscale(px, SIZE, s)),
+}));
+writeFileSync(OUT_ICO, encodeIco(icoImages));
+console.log(`Wrote ${OUT_ICO} (sizes: ${ICO_SIZES.join(', ')})`);
