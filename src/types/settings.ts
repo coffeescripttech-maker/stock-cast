@@ -28,6 +28,7 @@ export interface AppearanceSettings {
 export interface PosSettings {
   defaultSaleType: 'rt' | 'ws';
   autoPrintReceipt: boolean;
+  useBluetoothPrinter: boolean;
   soundOnScan: boolean;
   quickAddMode: boolean;
   defaultQuantity: number;
@@ -181,6 +182,7 @@ export const defaultSettings: SystemSettings = {
   pos: {
     defaultSaleType: 'rt',
     autoPrintReceipt: false,
+    useBluetoothPrinter: false,
     soundOnScan: true,
     quickAddMode: false,
     defaultQuantity: 1,

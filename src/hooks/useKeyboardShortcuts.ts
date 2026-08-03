@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { usePOSStore } from '../stores/posStore';
 import { useUIStore } from '../stores/uiStore';
+import { printReceipt } from '../lib/printReceipt';
 
 export function useKeyboardShortcuts() {
   const { currentUser } = useAuthStore();
@@ -12,10 +13,11 @@ export function useKeyboardShortcuts() {
     if (!currentUser) return;
 
     const handler = (e: KeyboardEvent) => {
-      // Enter in receipt mode -> print
+      // Enter in receipt mode -> print (Bluetooth thermal if configured)
       if (e.key === 'Enter' && receiptIsShowing) {
         e.preventDefault();
-        window.print();
+        const printed = printReceipt(lastReceipt);
+        if (printed === 'fallback') window.print();
         setReceiptShowing(false);
         closeModal();
         return;

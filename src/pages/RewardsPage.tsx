@@ -901,6 +901,7 @@ export default function RewardsPage() {
         open={customerFormOpen}
         onOpenChange={setCustomerFormOpen}
         customer={editingCustomer}
+        customers={customers}
         onSave={handleSaveCustomer}
       />
 
@@ -1031,11 +1032,13 @@ function CustomerFormModal({
   open,
   onOpenChange,
   customer,
+  customers,
   onSave,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   customer: Customer | null;
+  customers: Customer[];
   onSave: (data: Omit<Customer, 'id'>) => void;
 }) {
   const showToast = useUIStore((s) => s.showToast);
@@ -1048,6 +1051,14 @@ function CustomerFormModal({
   const [points, setPoints] = useState(0);
   const [totalSpent, setTotalSpent] = useState(0);
 
+  // Same NFC tag on another customer (ignoring the one being edited) → block.
+  const trimmedTag = (nfcTag || '').trim();
+  const duplicateOwner = trimmedTag
+    ? customers.find(
+        (c) => c.id !== customer?.id && (c.nfcTag || '').trim().toLowerCase() === trimmedTag.toLowerCase()
+      )
+    : undefined;
+
   // Auto-generate NFC tag for new customers
   useEffect(() => {
     if (open && !customer) {
@@ -1055,12 +1066,14 @@ function CustomerFormModal({
       setGenerating(true);
       setNfcTag('');
       get<{ data: { nfc_tag: string } }>('/customers/generate-nfc')
-        .then((res) => setNfcTag(res.data.nfc_tag))
+        // Only fill the auto-generated tag if the cashier hasn't already typed
+        // or scanned a card into the field — their value takes priority.
+        .then((res) => setNfcTag((prev) => (prev ? prev : res.data.nfc_tag)))
         .catch(() => {
           const rand = Array.from({ length: 8 }, () =>
             'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.charAt(Math.floor(Math.random() * 36))
           ).join('');
-          setNfcTag(`NFC-${rand}`);
+          setNfcTag((prev) => (prev ? prev : `NFC-${rand}`));
         })
         .finally(() => setGenerating(false));
     } else if (open && customer) {
@@ -1078,8 +1091,9 @@ function CustomerFormModal({
       showToast('Please fill in Name and Phone', 'error');
       return;
     }
-    if (!isEdit && generating) {
-      showToast('Please wait for NFC tag to generate', 'error');
+    // Reject a card that's already assigned to another customer.
+    if (duplicateOwner) {
+      showToast(`NFC tag is already assigned to ${duplicateOwner.name}`, 'error');
       return;
     }
     onSave({
@@ -1128,9 +1142,8 @@ function CustomerFormModal({
                 type="text"
                 value={nfcTag}
                 onChange={(e) => setNfcTag(e.target.value)}
-                placeholder={generating ? 'Generating...' : 'Auto-generated'}
-                readOnly
-                className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-100 dark:bg-slate-800 outline-none dark:border-slate-600 dark:text-slate-400 text-slate-500 cursor-not-allowed pr-9"
+                placeholder={generating ? 'Scan card or generating…' : 'Scan card or type tag ID'}
+                className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
               />
               {generating && (
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
@@ -1141,7 +1154,13 @@ function CustomerFormModal({
                 </div>
               )}
             </div>
-            <p className="text-[10px] text-slate-400">System-generated unique ID · auto-assigned</p>
+            {duplicateOwner ? (
+              <p className="text-[10px] font-semibold text-red-500">
+                This card is already assigned to <strong>{duplicateOwner.name}</strong> — use a different card.
+              </p>
+            ) : (
+              <p className="text-[10px] text-slate-400">Scan your card to auto-fill, or type the ID.</p>
+            )}
           </div>
         </div>
         {isEdit && (

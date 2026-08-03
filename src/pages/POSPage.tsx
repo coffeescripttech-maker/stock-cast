@@ -12,36 +12,44 @@ import { PaymentModal } from '../components/pos/PaymentModal';
 import { ScannerModal } from '../components/pos/ScannerModal';
 import { NFCLinkModal } from '../components/pos/NFCLinkModal';
 import { ReceiptModal } from '../components/pos/ReceiptModal';
+import { BluetoothPrinterButton } from '../components/pos/BluetoothPrinterButton';
+import { buildSaleReceipt } from '../lib/escpos';
+import { printReceipt } from '../lib/printReceipt';
+import { printerReady, usePrinterStore } from '../stores/printerStore';
 import type { Transaction } from '../types/transaction';
 
 export default function POSPage() {
-  const cart = usePOSStore((s) => s.cart);
-  const clearCart = usePOSStore((s) => s.clearCart);
-  const linkedCustomer = usePOSStore((s) => s.linkedCustomer);
-  const redeemPoints = usePOSStore((s) => s.redeemPoints);
-  const setLastReceipt = usePOSStore((s) => s.setLastReceipt);
-  const setReceiptShowing = usePOSStore((s) => s.setReceiptShowing);
+  const cart = usePOSStore(s => s.cart);
+  const clearCart = usePOSStore(s => s.clearCart);
+  const linkedCustomer = usePOSStore(s => s.linkedCustomer);
+  const redeemPoints = usePOSStore(s => s.redeemPoints);
+  const setLastReceipt = usePOSStore(s => s.setLastReceipt);
+  const setReceiptShowing = usePOSStore(s => s.setReceiptShowing);
 
-  const rewardsConfig = useDataStore((s) => s.rewardsConfig);
-  const completeSale = useDataStore((s) => s.completeSale);
+  const rewardsConfig = useDataStore(s => s.rewardsConfig);
+  const completeSale = useDataStore(s => s.completeSale);
 
-  const currentUser = useAuthStore((s) => s.currentUser);
-  const showToast = useUIStore((s) => s.showToast);
+  const currentUser = useAuthStore(s => s.currentUser);
+  const showToast = useUIStore(s => s.showToast);
 
   // Modal state
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [nfcOpen, setNfcOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
-  const [currentReceipt, setCurrentReceipt] = useState<Transaction | null>(null);
+  const [currentReceipt, setCurrentReceipt] = useState<Transaction | null>(
+    null
+  );
   const [pendingTotal, setPendingTotal] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
   // Compute totals
   const rawTotal = cart.reduce((s, c) => s + c.qty * c.price, 0);
-  const discount = redeemPoints > 0
-    ? Math.floor(redeemPoints / rewardsConfig.redeemEvery) * rewardsConfig.redeemValue
-    : 0;
+  const discount =
+    redeemPoints > 0
+      ? Math.floor(redeemPoints / rewardsConfig.redeemEvery) *
+        rewardsConfig.redeemValue
+      : 0;
   const grandTotal = Math.max(0, rawTotal - discount);
 
   // ---- Event listeners for keyboard shortcuts ----
@@ -72,7 +80,15 @@ export default function POSPage() {
       document.removeEventListener('pos:nfc-link', onNfcLink);
       document.removeEventListener('pos:scanner', onScanner);
     };
-  }, [cart.length, rawTotal, discount, grandTotal, linkedCustomer, redeemPoints, currentUser]);
+  }, [
+    cart.length,
+    rawTotal,
+    discount,
+    grandTotal,
+    linkedCustomer,
+    redeemPoints,
+    currentUser
+  ]);
 
   // ---- Handlers ----
 
@@ -87,8 +103,24 @@ export default function POSPage() {
     setPaymentOpen(true);
   }, [cart.length, grandTotal, linkedCustomer]);
 
-  function handlePaymentComplete(payment: { amountTendered: number; change: number }) {
+  function handlePaymentComplete(payment: {
+    amountTendered: number;
+    change: number;
+  }) {
     finalizeSale(payment.amountTendered, payment.change);
+  }
+
+  /**
+   * Send a completed sale to the printer via the shared router. Bluetooth
+   * thermal printing (when enabled) handles it, otherwise we fall back to the
+   * browser/Electron system print dialog.
+   */
+  function printTransaction(tx: Transaction) {
+    if (printReceipt(tx) === 'fallback') {
+      setReceiptShowing(false);
+      window.print();
+      setReceiptOpen(false);
+    }
   }
 
   async function finalizeSale(amountTendered: number, _change: number) {
@@ -96,22 +128,22 @@ export default function POSPage() {
 
     setSubmitting(true);
 
-    const types = [...new Set(cart.map((c) => c.type))];
+    const types = [...new Set(cart.map(c => c.type))];
     const txType = types.length > 1 ? 'mixed' : types[0];
 
     // Send sale to API (handles stock deduction, customer points, audit atomically)
     const tx = await completeSale({
       cashierId: currentUser.id || 1,
       type: txType,
-      items: cart.map((c) => ({
+      items: cart.map(c => ({
         productId: c.productId,
         type: c.type,
         qty: c.qty,
-        price: c.price,
+        price: c.price
       })),
       amountTendered,
       customerId: linkedCustomer?.id ?? null,
-      pointsRedeemed: redeemPoints,
+      pointsRedeemed: redeemPoints
     });
 
     setSubmitting(false);
@@ -134,9 +166,23 @@ export default function POSPage() {
 
     showToast('Sale completed! Press Enter to print receipt.', 'success');
 
-    // Auto-print if enabled
+    // Auto-print after each sale.
+    // A connected Bluetooth printer is used immediately and silently — the
+    // exact same store.printRaw() the Device Test "Connect & Print" button
+    // calls, so there is NO browser print dialog at checkout.
     const pSettings = useSettingsStore.getState().settings.pos;
-    if (pSettings.autoPrintReceipt) {
+    if (printerReady()) {
+      setTimeout(() => {
+        usePrinterStore
+          .getState()
+          .printRaw(buildSaleReceipt(tx, useSettingsStore.getState().settings))
+          .then(() => showToast('Receipt sent to Bluetooth printer', 'success'))
+          .catch((err: unknown) =>
+            showToast(err instanceof Error ? err.message : 'Bluetooth print failed', 'error')
+          );
+      }, 500);
+    } else if (pSettings.autoPrintReceipt) {
+      // No Bluetooth printer but Auto-Print is on → system print dialog.
       setTimeout(() => {
         setReceiptShowing(false);
         window.print();
@@ -146,9 +192,7 @@ export default function POSPage() {
   }
 
   function handlePrintReceipt() {
-    setReceiptShowing(false);
-    window.print();
-    setReceiptOpen(false);
+    if (currentReceipt) printTransaction(currentReceipt);
   }
 
   // The keyboard shortcut hook checks receiptIsShowing to handle Enter -> print
@@ -163,10 +207,12 @@ export default function POSPage() {
   return (
     <div className="animate-[fadeUp_0.25s_ease]">
       {/* Header */}
-      <div className="mb-5">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-400 dark:text-slate-500">
-          Search by name or scan a barcode — sale type is auto-detected per product
+          Search by name or scan a barcode — sale type is auto-detected per
+          product
         </p>
+        <BluetoothPrinterButton />
       </div>
 
       {/* Shortcuts bar — desktop only; F-keys don't exist on phones */}
@@ -178,13 +224,14 @@ export default function POSPage() {
           { kbd: 'F11', label: 'NFC Link' },
           { kbd: 'F12', label: 'Scanner' },
           { kbd: '↑↓', label: 'Navigate' },
-          { kbd: 'Enter', label: 'Select' },
-        ].map((s) => (
+          { kbd: 'Enter', label: 'Select' }
+        ].map(s => (
           <span
             key={s.kbd}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-[10px] font-medium text-slate-500 dark:text-slate-400"
-          >
-            <kbd className="font-mono font-bold text-slate-700 dark:text-slate-300">{s.kbd}</kbd>
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+            <kbd className="font-mono font-bold text-slate-700 dark:text-slate-300">
+              {s.kbd}
+            </kbd>
             {s.label}
           </span>
         ))}
@@ -195,8 +242,15 @@ export default function POSPage() {
         {/* Left: Product Search / Barcode */}
         <div className="bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-5">
           <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
             </svg>
             Product Search / Barcode
           </h2>
@@ -207,8 +261,15 @@ export default function POSPage() {
         <div className="space-y-6">
           <div className="bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-5">
             <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24">
+                <circle cx="9" cy="21" r="1" />
+                <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57l1.65-8.43H6" />
               </svg>
               Cart
@@ -241,15 +302,9 @@ export default function POSPage() {
         onComplete={handlePaymentComplete}
       />
 
-      <ScannerModal
-        open={scannerOpen}
-        onOpenChange={setScannerOpen}
-      />
+      <ScannerModal open={scannerOpen} onOpenChange={setScannerOpen} />
 
-      <NFCLinkModal
-        open={nfcOpen}
-        onOpenChange={setNfcOpen}
-      />
+      <NFCLinkModal open={nfcOpen} onOpenChange={setNfcOpen} />
 
       <ReceiptModal
         open={receiptOpen}

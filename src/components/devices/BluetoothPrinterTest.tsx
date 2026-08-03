@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Bluetooth, CheckCircle2, Loader2, Printer, Trash2, XCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { buildTestReceipt } from '../../lib/escpos';
+import { MTU_CHUNK_BYTES } from '../../lib/ble';
+import { usePrinterStore } from '../../stores/printerStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { DeviceCard, DeviceLog, useDeviceLog } from './DeviceLog';
 import type { DeviceStatus } from './DeviceLog';
@@ -13,33 +15,17 @@ import type { DeviceStatus } from './DeviceLog';
  * discover writable characteristic → send an ESC/POS test receipt → confirm
  * the write. Disconnect / print-again are available while connected.
  *
+ * The live connection lives in the shared `printerStore`, so a printer paired
+ * here is the same one the POS checkout prints receipts to.
+ *
  * Works in Chrome/Edge and the packaged Electron app — http://127.0.0.1 is a
  * secure context, and modern Electron shows the OS Bluetooth chooser for
  * requestDevice() with no extra main-process handler.
  *
- * Common ESC/POS-over-BLE vendor service UUIDs are listed in optionalServices
- * so GATT access is granted; if the printer uses a different one, the log shows
- * the services we could see so the UUID can be added here.
+ * Common ESC/POS-over-BLE vendor service UUIDs are listed in lib/ble.ts so
+ * GATT access is granted; if the printer uses a different one, the log shows
+ * the services we could see so the UUID can be added there.
  */
-
-const PRINTER_SERVICE_UUIDS: string[] = [
-  'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // common 58mm ESC/POS over BLE
-  '0000ff00-0000-1000-8000-00805f9b34fb', // vendor "FF00" service
-  '0000ffe0-0000-1000-8000-00805f9b34fb', // vendor "FFE0" service
-];
-
-function bluetoothSupported(): boolean {
-  return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
-}
-
-function describeError(err: unknown): string {
-  if (err instanceof Error) {
-    const m = err.message;
-    if (/cancel/i.test(m)) return 'cancelled';
-    return m;
-  }
-  return String(err);
-}
 
 interface BluetoothPrinterTestProps {
   onStatusChange?: (online: boolean) => void;
@@ -49,147 +35,90 @@ interface BluetoothPrinterTestProps {
 export function BluetoothPrinterTest({ onStatusChange, onResult }: BluetoothPrinterTestProps) {
   const storeName = useSettingsStore((s) => s.settings.general.storeName);
   const { entries, addLog, clearLog } = useDeviceLog();
+
+  const storeDevice = usePrinterStore((s) => s.device);
+  const connected = usePrinterStore((s) => s.connected);
+  const connecting = usePrinterStore((s) => s.connecting);
+  const error = usePrinterStore((s) => s.error);
+  const storeConnect = usePrinterStore((s) => s.connect);
+  const storeDisconnect = usePrinterStore((s) => s.disconnect);
+  const printRaw = usePrinterStore((s) => s.printRaw);
+
   const [status, setStatus] = useState<DeviceStatus>('idle');
-  const [device, setDevice] = useState<BluetoothDevice | null>(null);
-  const [busy, setBusy] = useState(false);
 
-  const writableRef = useRef<BluetoothRemoteGATTCharacteristic | null>(null);
-  const manualDisconnectRef = useRef(false);
-
-  // Reset UI if the device is dropped by the OS while the page is open.
+  // Derive the visual status from the shared connection so the card stays in
+  // sync even when the connection is dropped from elsewhere.
   useEffect(() => {
-    const d = device;
-    if (!d) return;
+    if (connecting) setStatus('connecting');
+    else if (connected) setStatus('connected');
+    else if (error) setStatus('error');
+    else setStatus('idle');
+  }, [connecting, connected, error]);
+
+  // Sync the parent's online flag with the shared connection.
+  useEffect(() => {
+    onStatusChange?.(connected);
+  }, [connected, onStatusChange]);
+
+  // Report a dropped link back to the log.
+  useEffect(() => {
+    if (!storeDevice) return;
     const onDisconnected = () => {
-      if (manualDisconnectRef.current) {
-        manualDisconnectRef.current = false;
-        return;
-      }
-      writableRef.current = null;
-      setDevice(null);
-      setStatus('idle');
-      onStatusChange?.(false);
+      setStatus((s) => (s === 'connected' || s === 'ok' ? 'idle' : s));
       addLog('info', 'Device disconnected.');
     };
-    d.addEventListener('gattserverdisconnected', onDisconnected);
-    return () => d.removeEventListener('gattserverdisconnected', onDisconnected);
-  }, [device, addLog, onStatusChange]);
+    storeDevice.addEventListener('gattserverdisconnected', onDisconnected);
+    return () => storeDevice.removeEventListener('gattserverdisconnected', onDisconnected);
+  }, [storeDevice, addLog]);
 
-  const sendReceipt = useCallback(
-    async (writable: BluetoothRemoteGATTCharacteristic) => {
-      const bytes = buildTestReceipt(storeName);
-      addLog('info', `Sending ESC/POS test receipt (${bytes.length} bytes)…`);
-      if (writable.properties.writeWithoutResponse) {
-        await writable.writeValueWithoutResponse(bytes);
-      } else {
-        await writable.writeValueWithResponse(bytes);
-      }
-      addLog('success', `Write OK — ${bytes.length} bytes sent to printer.`);
-    },
-    [storeName, addLog]
-  );
+  const sendReceipt = useCallback(async () => {
+    const bytes = buildTestReceipt(storeName);
+    addLog(
+      'info',
+      `Sending ESC/POS test receipt (${bytes.length} bytes in ${MTU_CHUNK_BYTES}B chunks)…`
+    );
+    await printRaw(bytes);
+    addLog('success', `Write OK — ${bytes.length} bytes sent to printer.`);
+  }, [storeName, addLog, printRaw]);
 
   const connectAndPrint = async () => {
-    if (busy) return;
-    if (!bluetoothSupported()) {
-      addLog('error', 'Web Bluetooth is not available in this browser. Use Chrome/Edge or the desktop app.');
-      setStatus('error');
-      return;
-    }
-    setBusy(true);
-    setStatus('connecting');
+    if (connecting) return;
     addLog('info', 'Requesting Bluetooth device…');
-    let btDevice: BluetoothDevice | null = null;
     try {
-      btDevice = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: PRINTER_SERVICE_UUIDS,
-      });
-      addLog('data', `Device: ${btDevice.name ?? 'Unnamed device'}`);
-      setDevice(btDevice);
-
-      const server = await btDevice.gatt?.connect();
-      if (!server) throw new Error('Device has no GATT server.');
-
-      const services = await server.getPrimaryServices();
-      addLog('info', `GATT connected — ${services.length} service(s) exposed.`);
-
-      let writable: BluetoothRemoteGATTCharacteristic | null = null;
-      for (const svc of services) {
-        addLog('data', `Service ${svc.uuid}`);
-        const characteristics = await svc.getCharacteristics();
-        for (const ch of characteristics) {
-          if (ch.properties.write || ch.properties.writeWithoutResponse) {
-            writable = ch;
-            addLog(
-              'data',
-              `  → writable characteristic ${ch.uuid} (write=${ch.properties.write}, no-response=${ch.properties.writeWithoutResponse})`
-            );
-            break;
-          }
-        }
-        if (writable) break;
+      const ok = await storeConnect();
+      if (!ok) {
+        const msg = usePrinterStore.getState().error;
+        if (msg) addLog('error', msg);
+        else addLog('info', 'Device selection cancelled.');
+        setStatus('idle');
+        return;
       }
-
-      if (!writable) {
-        throw new Error(
-          'No writable characteristic found on this printer. The log lists the services this device exposes — if your printer uses a different vendor service, add its UUID to PRINTER_SERVICE_UUIDS.'
-        );
-      }
-
-      writableRef.current = writable;
-      setStatus('connected');
-      onStatusChange?.(true);
-
-      await sendReceipt(writable);
+      const dev = usePrinterStore.getState().device;
+      addLog('data', `Device: ${dev?.name ?? 'Unnamed device'}`);
+      addLog('info', 'GATT connected — finding writable characteristic…');
+      await sendReceipt();
       setStatus('ok');
       onResult?.(true);
     } catch (err) {
-      const message = describeError(err);
-      if (message === 'cancelled') {
-        addLog('info', 'Device selection cancelled.');
-        setStatus('idle');
-      } else {
-        addLog('error', message);
-        setStatus('error');
-      }
-      try {
-        btDevice?.gatt?.disconnect();
-      } catch {
-        /* already gone */
-      }
-    } finally {
-      setBusy(false);
+      addLog('error', err instanceof Error ? err.message : String(err));
+      setStatus('error');
     }
   };
 
   const printAgain = async () => {
-    const writable = writableRef.current;
-    if (!writable || busy) return;
-    setBusy(true);
     try {
-      await sendReceipt(writable);
+      await sendReceipt();
       setStatus('ok');
       onResult?.(true);
     } catch (err) {
-      addLog('error', describeError(err));
+      addLog('error', err instanceof Error ? err.message : String(err));
       setStatus('error');
-    } finally {
-      setBusy(false);
     }
   };
 
   const disconnect = () => {
-    manualDisconnectRef.current = true;
-    try {
-      device?.gatt?.disconnect();
-    } catch {
-      /* ignore */
-    }
-    writableRef.current = null;
-    setDevice(null);
+    storeDisconnect();
     setStatus('idle');
-    onStatusChange?.(false);
     addLog('info', 'Disconnected.');
   };
 
@@ -204,7 +133,7 @@ export function BluetoothPrinterTest({ onStatusChange, onResult }: BluetoothPrin
             ? 'Error'
             : 'Idle';
 
-  const connected = status === 'connected' || status === 'ok';
+  const showConnected = status === 'connected' || status === 'ok';
 
   return (
     <DeviceCard
@@ -216,15 +145,15 @@ export function BluetoothPrinterTest({ onStatusChange, onResult }: BluetoothPrin
       statusLabel={statusLabel}
       footer={
         <>
-          {!connected ? (
-            <Button variant="brand" size="sm" onClick={connectAndPrint} disabled={busy}>
-              {busy ? <Loader2 size={14} className="animate-spin" /> : <Bluetooth size={14} />}
-              {busy ? 'Working…' : 'Connect & Print'}
+          {!showConnected ? (
+            <Button variant="brand" size="sm" onClick={connectAndPrint} disabled={connecting}>
+              {connecting ? <Loader2 size={14} className="animate-spin" /> : <Bluetooth size={14} />}
+              {connecting ? 'Working…' : 'Connect & Print'}
             </Button>
           ) : (
             <>
-              <Button variant="brand" size="sm" onClick={printAgain} disabled={busy}>
-                {busy ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+              <Button variant="brand" size="sm" onClick={printAgain}>
+                <CheckCircle2 size={14} />
                 Print Test Receipt
               </Button>
               <Button variant="secondary" size="sm" onClick={disconnect}>
@@ -241,8 +170,9 @@ export function BluetoothPrinterTest({ onStatusChange, onResult }: BluetoothPrin
       }
     >
       <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
-        Connect to your Bluetooth thermal printer and print a test receipt. Make sure the printer is powered on and
-        in pairing mode. Works in Chrome/Edge and the desktop app.
+        Connect to your Bluetooth thermal printer and print a test receipt. The connection is shared
+        with the POS checkout — receipts print here too. Make sure the printer is powered on and in
+        pairing mode. Works in Chrome/Edge and the desktop app.
       </p>
       <DeviceLog entries={entries} placeholder="— not connected yet —" className="h-48" />
     </DeviceCard>

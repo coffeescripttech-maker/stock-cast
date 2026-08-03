@@ -5,6 +5,7 @@ import {
   TrendingUp, X, ChevronLeft, ChevronRight,
   Activity, Clock, Truck, Camera,
 } from 'lucide-react';
+import { Camera as CapCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { useDataStore } from '../stores/dataStore';
 import { useUIStore } from '../stores/uiStore';
 import { useAuthStore } from '../stores/authStore';
@@ -18,6 +19,22 @@ import { resolveApiUrl } from '../lib/apiBase';
 import { CATEGORIES, CATEGORY_COLORS } from '../lib/constants';
 import { fmtCurrency } from '../lib/formatters';
 import type { Product, ProductCategory } from '../types/product';
+
+/* ─── Running inside the Capacitor Android app (WebView)? ─── */
+const isNativeApp =
+  typeof window !== 'undefined' &&
+  !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
+    ?.isNativePlatform?.();
+
+/* ─── Convert a data URL (from the camera plugin) into a File for upload ─── */
+function dataUrlToFile(dataUrl: string, filename: string): File {
+  const [meta, b64] = dataUrl.split(',');
+  const mime = meta.match(/data:([^;]+);/)?.[1] ?? 'image/jpeg';
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new File([bytes], filename, { type: mime });
+}
 
 /* ─── Stock thresholds (from settings) ─── */
 function getThresholds() {
@@ -1069,12 +1086,14 @@ function ProductFormModal({
   const [key, setKey] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setPreviewUrl(null);
+      setPhotoFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       if (product) {
         setForm({
@@ -1138,20 +1157,48 @@ function ProductFormModal({
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPhotoFile(file);
     setPreviewUrl(URL.createObjectURL(file));
+  }
+
+  /** Take Photo: native camera/gallery chooser in the Android app; on desktop it falls back to the file picker. */
+  async function handleTakePhoto() {
+    if (!isNativeApp) {
+      cameraInputRef.current?.click();
+      return;
+    }
+    try {
+      const photo = await CapCamera.getPhoto({
+        source: CameraSource.Prompt,
+        resultType: CameraResultType.DataUrl,
+        quality: 85,
+        width: 1280,
+        correctOrientation: true,
+      });
+      if (!photo.dataUrl) return;
+      const file = dataUrlToFile(photo.dataUrl, `product-${Date.now()}.jpg`);
+      setPhotoFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    } catch {
+      // User cancelled the picker — nothing to do
+    }
   }
 
   function handleRemoveImage() {
     setPreviewUrl(null);
+    setPhotoFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
   async function handleUploadImage() {
-    if (!product || !fileInputRef.current?.files?.[0]) return;
+    if (!product) return;
+    const file = photoFile ?? fileInputRef.current?.files?.[0];
+    if (!file) return;
     setUploading(true);
-    await uploadProductImage(product.id, fileInputRef.current.files[0]);
+    await uploadProductImage(product.id, file);
     setUploading(false);
     setPreviewUrl(null);
+    setPhotoFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
     showToast('Image uploaded', 'success');
   }
@@ -1260,7 +1307,7 @@ function ProductFormModal({
               />
               <div className="flex flex-wrap gap-1.5">
                 <button
-                  onClick={() => cameraInputRef.current?.click()}
+                  onClick={handleTakePhoto}
                   className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-brand text-white hover:bg-brand-dark transition-colors flex items-center gap-1.5"
                 >
                   <Camera size={13} /> Take Photo

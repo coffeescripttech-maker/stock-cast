@@ -7,6 +7,7 @@ import type { PosSettings } from '../../types/settings';
 
 const TOGGLES: { key: keyof PosSettings; label: string; desc: string }[] = [
   { key: 'autoPrintReceipt', label: 'Auto-Print Receipt', desc: 'Automatically print receipt after each sale' },
+  { key: 'useBluetoothPrinter', label: 'Bluetooth Printer', desc: 'Print receipts to a connected Bluetooth thermal printer' },
   { key: 'soundOnScan', label: 'Sound on Scan', desc: 'Play a sound when a barcode is scanned' },
   { key: 'quickAddMode', label: 'Quick-Add Mode', desc: 'Auto-add product on scan without quantity prompt' },
   { key: 'customerRequired', label: 'Customer Required', desc: 'Force customer selection before checkout' },
