@@ -14,6 +14,7 @@ import { useIsMobile } from '../hooks/useMediaQuery';
 import { Button } from '../components/ui/Button';
 import { Dialog } from '../components/ui/Dialog';
 import { BarcodeVisual } from '../components/pos/BarcodeVisual';
+import { ScanBarcodeModal } from '../components/pos/ScanBarcodeModal';
 import { cn } from '../lib/cn';
 import { resolveApiUrl } from '../lib/apiBase';
 import { CATEGORIES, CATEGORY_COLORS } from '../lib/constants';
@@ -1061,6 +1062,20 @@ interface FormData {
   category: string;
 }
 
+/** Per-field validation messages shown inline under each input. */
+interface FormErrors {
+  name?: string;
+  retailBarcode?: string;
+  wholesaleBarcode?: string;
+  retailPrice?: string;
+  wholesalePrice?: string;
+  retailStock?: string;
+  wholesaleStock?: string;
+}
+
+/** Characters allowed in a barcode: digits, letters, dashes, spaces. */
+const BARCODE_RE = /^[A-Za-z0-9\- ]+$/;
+
 function ProductFormModal({
   open, onOpenChange, product, products, onSave,
 }: {
@@ -1084,6 +1099,8 @@ function ProductFormModal({
     category: 'Beverage',
   });
   const [key, setKey] = useState(0);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [scanField, setScanField] = useState<'retailBarcode' | 'wholesaleBarcode' | null>(null);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -1092,6 +1109,7 @@ function ProductFormModal({
 
   useEffect(() => {
     if (open) {
+      setErrors({});
       setPreviewUrl(null);
       setPhotoFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -1115,24 +1133,59 @@ function ProductFormModal({
 
   function update(field: keyof FormData, value: string | number) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    // Clear this field's inline error as soon as the user corrects it.
+    setErrors((prev) => {
+      const errField = field as keyof FormErrors;
+      if (!prev[errField]) return prev;
+      const next = { ...prev };
+      delete next[errField];
+      return next;
+    });
+  }
+
+  /** True if `code` is already assigned to another product's retail or wholesale barcode. */
+  function barcodeTaken(code: string): boolean {
+    return products.some(
+      (p) =>
+        p.id !== product?.id &&
+        (p.retailBarcode.trim() === code || (p.wholesaleBarcode || '').trim() === code)
+    );
+  }
+
+  function validate(form: FormData): FormErrors {
+    const errs: FormErrors = {};
+    const name = form.name.trim();
+    const rt = form.retailBarcode.trim();
+    const ws = form.wholesaleBarcode.trim();
+
+    if (!name) errs.name = 'Product name is required.';
+    else if (name.length < 2) errs.name = 'Name must be at least 2 characters.';
+
+    if (!rt) errs.retailBarcode = 'Retail barcode is required.';
+    else if (!BARCODE_RE.test(rt)) errs.retailBarcode = 'Only letters, numbers, dashes or spaces allowed.';
+    else if (barcodeTaken(rt)) errs.retailBarcode = 'This barcode is already used by another product.';
+    else if (ws && rt.toLowerCase() === ws.toLowerCase())
+      errs.retailBarcode = 'Retail and wholesale barcodes must be different.';
+
+    if (ws) {
+      if (!BARCODE_RE.test(ws)) errs.wholesaleBarcode = 'Only letters, numbers, dashes or spaces allowed.';
+      else if (barcodeTaken(ws)) errs.wholesaleBarcode = 'This barcode is already used by another product.';
+    }
+
+    if (form.retailPrice < 0) errs.retailPrice = 'Price cannot be negative.';
+    if (form.wholesalePrice < 0) errs.wholesalePrice = 'Price cannot be negative.';
+    if (form.retailStock < 0) errs.retailStock = 'Stock cannot be negative.';
+    if (form.wholesaleStock < 0) errs.wholesaleStock = 'Stock cannot be negative.';
+
+    return errs;
   }
 
   function handleSubmit() {
-    if (!form.name.trim() || !form.retailBarcode.trim()) {
-      showToast('Please fill in Product Name and Retail Barcode', 'error');
+    const errs = validate(form);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      showToast('Please fix the highlighted fields', 'error');
       return;
-    }
-
-    const barcodeConflict = products.find(
-      (p) => p.id !== product?.id && (p.retailBarcode === form.retailBarcode || p.wholesaleBarcode === form.retailBarcode)
-    );
-    if (barcodeConflict) { showToast('Retail barcode already in use', 'error'); return; }
-
-    if (form.wholesaleBarcode) {
-      const wsConflict = products.find(
-        (p) => p.id !== product?.id && (p.retailBarcode === form.wholesaleBarcode || p.wholesaleBarcode === form.wholesaleBarcode)
-      );
-      if (wsConflict) { showToast('Wholesale barcode already in use', 'error'); return; }
     }
 
     onSave({
@@ -1213,6 +1266,7 @@ function ProductFormModal({
   }
 
   return (
+    <>
     <Dialog
       key={key}
       open={open}
@@ -1225,7 +1279,9 @@ function ProductFormModal({
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Product Name</label>
           <input type="text" value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Product name"
-            className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
+            className={cn('w-full px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none focus:bg-white dark:bg-slate-900 dark:text-slate-100',
+              errors.name ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-brand dark:border-slate-600')} />
+          {errors.name && <p className="text-[11px] font-medium text-red-500">{errors.name}</p>}
         </div>
 
         <div className="space-y-1.5">
@@ -1238,38 +1294,46 @@ function ProductFormModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <BarcodeField label="Retail Barcode" color="emerald" value={form.retailBarcode}
-            onChange={(v) => update('retailBarcode', v)} onSimulate={() => simulateBarcode('retailBarcode')} />
+            error={errors.retailBarcode} onChange={(v) => update('retailBarcode', v)}
+            onScan={() => setScanField('retailBarcode')} onSimulate={() => simulateBarcode('retailBarcode')} />
           <BarcodeField label="Wholesale Barcode" color="amber" value={form.wholesaleBarcode}
-            onChange={(v) => update('wholesaleBarcode', v)} onSimulate={() => simulateBarcode('wholesaleBarcode')} />
+            error={errors.wholesaleBarcode} onChange={(v) => update('wholesaleBarcode', v)}
+            onScan={() => setScanField('wholesaleBarcode')} onSimulate={() => simulateBarcode('wholesaleBarcode')} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">🛒 Retail Price (₱)</label>
             <input type="number" value={form.retailPrice || ''} onChange={(e) => update('retailPrice', parseFloat(e.target.value) || 0)}
-              placeholder="0.00" step="0.01"
-              className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
+              placeholder="0.00" step="0.01" min="0"
+              className={cn('w-full px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none focus:bg-white dark:bg-slate-900 dark:text-slate-100',
+                errors.retailPrice ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-brand dark:border-slate-600')} />
+          {errors.retailPrice && <p className="text-[11px] font-medium text-red-500">{errors.retailPrice}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-amber-600 dark:text-amber-400">📦 Wholesale Price (₱)</label>
             <input type="number" value={form.wholesalePrice || ''} onChange={(e) => update('wholesalePrice', parseFloat(e.target.value) || 0)}
-              placeholder="0.00" step="0.01"
-              className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
+              placeholder="0.00" step="0.01" min="0"
+              className={cn('w-full px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none focus:bg-white dark:bg-slate-900 dark:text-slate-100',
+                errors.wholesalePrice ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-brand dark:border-slate-600')} />
+          {errors.wholesalePrice && <p className="text-[11px] font-medium text-red-500">{errors.wholesalePrice}</p>}
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Retail Stock</label>
-            <input type="number" value={form.retailStock} onChange={(e) => update('retailStock', parseInt(e.target.value) || 0)}
-              className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
-            <p className="text-[10px] text-slate-400">Alert at ≤{invSettings.lowStockThresholdRt}</p>
+            <input type="number" value={form.retailStock} onChange={(e) => update('retailStock', parseInt(e.target.value) || 0)} min="0"
+              className={cn('w-full px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none dark:bg-slate-900 dark:text-slate-100',
+                errors.retailStock ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-brand dark:border-slate-600')} />
+            {errors.retailStock ? <p className="text-[11px] font-medium text-red-500">{errors.retailStock}</p> : <p className="text-[10px] text-slate-400">Alert at ≤{invSettings.lowStockThresholdRt}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Wholesale Stock</label>
-            <input type="number" value={form.wholesaleStock} onChange={(e) => update('wholesaleStock', parseInt(e.target.value) || 0)}
-              className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
-            <p className="text-[10px] text-slate-400">Alert at ≤{invSettings.lowStockThresholdWs}</p>
+            <input type="number" value={form.wholesaleStock} onChange={(e) => update('wholesaleStock', parseInt(e.target.value) || 0)} min="0"
+              className={cn('w-full px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none dark:bg-slate-900 dark:text-slate-100',
+                errors.wholesaleStock ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-brand dark:border-slate-600')} />
+            {errors.wholesaleStock ? <p className="text-[11px] font-medium text-red-500">{errors.wholesaleStock}</p> : <p className="text-[10px] text-slate-400">Alert at ≤{invSettings.lowStockThresholdWs}</p>}
           </div>
         </div>
 
@@ -1357,32 +1421,86 @@ function ProductFormModal({
         </Button>
       </div>
     </Dialog>
+    <ScanBarcodeModal
+      open={scanField !== null}
+      title={scanField === 'retailBarcode' ? 'Scan Retail Barcode' : scanField === 'wholesaleBarcode' ? 'Scan Wholesale Barcode' : 'Scan Barcode'}
+      onClose={() => setScanField(null)}
+      onScan={(code) => { if (scanField) update(scanField, code); }}
+    />
+    </>
   );
 }
 
 /* ─── Barcode Input Field ─── */
 
-function BarcodeField({ label, color, value, onChange, onSimulate }: {
-  label: string; color: 'emerald' | 'amber'; value: string; onChange: (v: string) => void; onSimulate: () => void;
+function BarcodeField({ label, color, value, onChange, onSimulate, onScan, error }: {
+  label: string; color: 'emerald' | 'amber'; value: string; onChange: (v: string) => void; onSimulate: () => void; onScan?: () => void; error?: string;
 }) {
   const cc = color === 'emerald'
     ? 'border-emerald-200 focus:border-emerald-500 text-emerald-600'
     : 'border-amber-200 focus:border-amber-500 text-amber-600';
+
+  // Keyboard-wedge barcode scanners behave like a fast typist followed by Enter.
+  // We own a buffer and reset it on Enter (or any long press) so a second scan
+  // replaces the value instead of concatenating onto the first one.
+  const bufferRef = useRef(value);
+  useEffect(() => {
+    // Keep the buffer in sync when the value is set from outside this field
+    // (form load, "Simulate" button) — but not on every keystroke, where the
+    // buffer is already up to date.
+    if (bufferRef.current !== value) bufferRef.current = value;
+  }, [value]);
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Enter') {
+      // Scanner terminator — end the current read.
+      e.preventDefault();
+      bufferRef.current = '';
+      return;
+    }
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      bufferRef.current = bufferRef.current.slice(0, -1);
+      onChange(bufferRef.current);
+      return;
+    }
+    if (e.key.length === 1) {
+      // A printable character (from a real key or a scanner): append it.
+      e.preventDefault();
+      bufferRef.current += e.key;
+      onChange(bufferRef.current);
+    }
+  }
+
+  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault();
+    bufferRef.current = e.clipboardData.getData('text').trim();
+    onChange(bufferRef.current);
+  }
+
   return (
     <div className="space-y-1.5">
       <label className={cn('text-xs font-semibold', color === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
         {color === 'emerald' ? '🛒' : '📦'} {label}
       </label>
       <div className="flex gap-1.5">
-        <input type="text" value={value} onChange={(e) => onChange(e.target.value)}
+        <input type="text" value={value} onChange={() => {}} onKeyDown={handleKeyDown} onPaste={handlePaste}
           placeholder={color === 'emerald' ? 'e.g. 1234567890' : 'e.g. 2234567890'}
-          className={cn('flex-1 px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none dark:bg-slate-900 dark:text-slate-100', cc)} />
-        <button onClick={onSimulate}
+          className={cn('flex-1 px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none dark:bg-slate-900 dark:text-slate-100',
+            error ? 'border-red-400 focus:border-red-500' : cc)} />
+        <button onClick={onSimulate} title="Generate a random barcode"
           className={cn('px-2.5 py-2 rounded-lg border text-xs font-semibold transition-colors hover:bg-slate-50 dark:hover:bg-slate-800', cc)}>
           <ScanLine size={13} />
         </button>
+        {onScan && (
+          <button onClick={onScan} title="Scan with camera"
+            className={cn('px-2.5 py-2 rounded-lg border bg-brand text-[#1C1C1C] text-xs font-semibold transition-transform active:scale-95', cc)}>
+            <Camera size={13} />
+          </button>
+        )}
       </div>
-      <BarcodeVisual small code={value} />
+      {error ? <p className="text-[11px] font-medium text-red-500">{error}</p> : <BarcodeVisual small code={value} />}
     </div>
   );
 }

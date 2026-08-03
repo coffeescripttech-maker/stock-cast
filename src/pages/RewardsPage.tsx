@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useMemo } from 'react';
+﻿import { useEffect, useState, useMemo, useRef } from 'react';
 import { Star, Search, Trash2, Edit3, Award, Settings, PiggyBank, UserPlus, Users, TrendingUp, ChevronLeft, ChevronRight, Printer, Download, Phone, Calendar, Tag, ArrowUpDown, List, Grid3X3 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { get } from '../api/client';
@@ -1051,6 +1051,42 @@ function CustomerFormModal({
   const [points, setPoints] = useState(0);
   const [totalSpent, setTotalSpent] = useState(0);
 
+  // Scan buffer for the NFC field. The RFID reader types like a keyboard, so
+  // repeated scans would otherwise concatenate ("...2816...2816"). We build
+  // the value here and RESET the buffer at the end of each scan (Enter), so
+  // every scan starts clean and replaces the previous tag instead of appending.
+  const bufferRef = useRef('');
+
+  function commitNfc(value: string) {
+    bufferRef.current = value;
+    setNfcTag(value);
+  }
+
+  // Handle scanner keystrokes + hand typing in one place.
+  function handleNfcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return; // allow shortcuts (paste etc.)
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      bufferRef.current = ''; // end of scan → next scan starts fresh
+      return;
+    }
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      commitNfc(bufferRef.current.slice(0, -1));
+      return;
+    }
+    if (e.key.length === 1) {
+      e.preventDefault();
+      commitNfc(bufferRef.current + e.key);
+    }
+  }
+
+  function handleNfcPaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault();
+    const text = (e.clipboardData?.getData('text') || '').replace(/\s+/g, '');
+    commitNfc(bufferRef.current + text);
+  }
+
   // Same NFC tag on another customer (ignoring the one being edited) → block.
   const trimmedTag = (nfcTag || '').trim();
   const duplicateOwner = trimmedTag
@@ -1064,6 +1100,7 @@ function CustomerFormModal({
     if (open && !customer) {
       setName(''); setPhone(''); setPoints(0); setTotalSpent(0);
       setGenerating(true);
+      bufferRef.current = '';
       setNfcTag('');
       get<{ data: { nfc_tag: string } }>('/customers/generate-nfc')
         // Only fill the auto-generated tag if the cashier hasn't already typed
@@ -1080,7 +1117,7 @@ function CustomerFormModal({
       setGenerating(false);
       setName(customer.name);
       setPhone(customer.phone);
-      setNfcTag(customer.nfcTag);
+      commitNfc(customer.nfcTag || '');
       setPoints(customer.points);
       setTotalSpent(customer.totalSpent);
     }
@@ -1141,7 +1178,9 @@ function CustomerFormModal({
               <input
                 type="text"
                 value={nfcTag}
-                onChange={(e) => setNfcTag(e.target.value)}
+                onChange={() => {}}
+                onKeyDown={handleNfcKeyDown}
+                onPaste={handleNfcPaste}
                 placeholder={generating ? 'Scan card or generating…' : 'Scan card or type tag ID'}
                 className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
               />
