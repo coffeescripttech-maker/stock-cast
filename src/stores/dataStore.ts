@@ -33,6 +33,9 @@ function normalizeTx(raw: Record<string, any>): Transaction {
     pointsRedeemed: Number(raw.pointsRedeemed) || 0,
     amountTendered: Number(raw.amountTendered) || 0,
     change: Number(raw.changeAmount ?? raw.change) || 0,
+    paymentMethod: raw.paymentMethod ?? 'cash',
+    paymentRef: raw.paymentRef ?? null,
+    taxAmount: Number(raw.taxAmount) || 0,
   };
 }
 
@@ -96,6 +99,8 @@ interface CompleteSaleInput {
     price: number;
   }>;
   amountTendered: number;
+  paymentMethod?: 'cash' | 'gcash' | 'maya';
+  paymentRef?: string | null;
   customerId?: number | null;
   pointsRedeemed?: number;
 }
@@ -141,7 +146,6 @@ interface DataState {
     user?: string,
     role?: string
   ) => void;
-  clearAuditLog: () => void;
 
   // Rewards config
   updateRewardsConfig: (config: Partial<RewardsConfig>) => void;
@@ -413,18 +417,6 @@ export const useDataStore = create<DataState>()(
           state.auditLog.splice(500);
         }
         set({ auditLog: [...state.auditLog] });
-      },
-
-      clearAuditLog: async () => {
-        try {
-          await api.del('/audit-log');
-          set({ auditLog: [] });
-        } catch (err: any) {
-          const { useUIStore } = await import('./uiStore');
-          useUIStore
-            .getState()
-            .showToast(err.message || 'Failed to clear audit log', 'error');
-        }
       },
 
       // ============ REWARDS CONFIG ============

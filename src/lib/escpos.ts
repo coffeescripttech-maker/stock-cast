@@ -222,9 +222,10 @@ export function buildSaleReceipt(tx: Transaction, s: SystemSettings, now = new D
     ...(wsItems.length > 0
       ? [line(padRight('Wholesale subtotal:', 22) + money(wsItems.reduce((sum, i) => sum + i.qty * i.price, 0), s))]
       : []),
-    // Tax
+    // Tax — prefer the stored amount (computed at sale time, honors the
+    // inclusive-pricing toggle); fall back to the heuristic for old receipts
     ...(s.tax.enabled && s.tax.rate > 0
-      ? [line(padRight(`${s.tax.label} (${s.tax.rate}%):`, 22) + money((tx.total * s.tax.rate) / 100, s))]
+      ? [line(padRight(`${s.tax.label} (${s.tax.rate}%):`, 22) + money(tx.taxAmount > 0 ? tx.taxAmount : (tx.total * s.tax.rate) / 100, s))]
       : []),
     // Discount (points redeemed)
     ...(tx.discount > 0
@@ -237,11 +238,18 @@ export function buildSaleReceipt(tx: Transaction, s: SystemSettings, now = new D
     line(padRight('GRAND TOTAL', COL - 10) + padLeft(money(tx.total, s), 10)),
     bold(false),
     line(dash),
-    // Tendered / change
-    line(padRight('Cash Tendered:', 22) + money(tx.amountTendered, s)),
-    bold(true),
-    line(padRight('Change:', 22) + money(tx.change, s)),
-    bold(false),
+    // Tendered / change — cash shows change, online payments are exact + reference
+    ...(tx.paymentMethod === 'cash'
+      ? [
+          line(padRight('Cash Tendered:', 22) + money(tx.amountTendered, s)),
+          bold(true),
+          line(padRight('Change:', 22) + money(tx.change, s)),
+          bold(false),
+        ]
+      : [
+          line(padRight(`Payment (${tx.paymentMethod.toUpperCase()}):`, 22) + money(tx.amountTendered, s)),
+          ...(tx.paymentRef ? [line(padRight('Ref:', 16) + String(tx.paymentRef).slice(0, 16))] : []),
+        ]),
     // Points
     ...(tx.pointsEarned && tx.pointsEarned > 0
       ? [line(''), center(`+${tx.pointsEarned} points earned`, COL)]

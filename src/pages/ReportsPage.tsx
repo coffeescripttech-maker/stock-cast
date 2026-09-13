@@ -1,5 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { BarChart3, Package, Download, TrendingUp, ShoppingCart, DollarSign, Layers, Search, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  BarChart3, Package, Download, ShoppingCart, DollarSign, Layers,
+  Search, ArrowUpDown, ChevronLeft, ChevronRight, Wallet, CalendarDays, ReceiptText,
+} from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell,
 } from 'recharts';
@@ -7,8 +10,11 @@ import { useDataStore } from '../stores/dataStore';
 import { useReportStore } from '../stores/reportStore';
 import { useUIStore } from '../stores/uiStore';
 import { Button } from '../components/ui/Button';
+import { StatCard } from '../components/ui/StatCard';
+import { PaymentBadge } from '../components/ui/PaymentBadge';
 import { cn } from '../lib/cn';
 import { fmtCurrency, fmtDate } from '../lib/formatters';
+import type { PaymentMethod } from '../types/transaction';
 
 export default function ReportsPage() {
   const transactions = useDataStore((s) => s.transactions);
@@ -17,6 +23,9 @@ export default function ReportsPage() {
   const setReportTab = useReportStore((s) => s.setReportTab);
   const reportFilter = useReportStore((s) => s.reportFilter);
   const setReportFilter = useReportStore((s) => s.setReportFilter);
+  const dateFrom = useReportStore((s) => s.dateFrom);
+  const dateTo = useReportStore((s) => s.dateTo);
+  const setDateRange = useReportStore((s) => s.setDateRange);
   const theme = useUIStore((s) => s.theme);
   const showToast = useUIStore((s) => s.showToast);
 
@@ -44,25 +53,48 @@ export default function ReportsPage() {
 
   const filteredTransactions = useMemo(() => {
     const now = new Date();
+    let from: Date | null = null;
+    let to: Date | null = null;
+
+    if (reportFilter === 'day') {
+      from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (reportFilter === 'week') {
+      from = new Date(now);
+      from.setDate(from.getDate() - 7);
+    } else if (reportFilter === 'month') {
+      from = new Date(now);
+      from.setMonth(from.getMonth() - 1);
+    } else if (reportFilter === 'custom' && dateFrom) {
+      from = new Date(`${dateFrom}T00:00:00`);
+      if (dateTo) to = new Date(`${dateTo}T23:59:59.999`);
+    }
+
     return transactions.filter((tx) => {
-      if (reportFilter === 'all') return true;
-      if (reportFilter === 'week') {
-        const weekAgo = new Date(now);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return new Date(tx.date) >= weekAgo;
-      }
-      if (reportFilter === 'month') {
-        const monthAgo = new Date(now);
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
-        return new Date(tx.date) >= monthAgo;
-      }
+      const d = new Date(tx.date);
+      if (from && d < from) return false;
+      if (to && d > to) return false;
       return true;
     });
-  }, [transactions, reportFilter]);
+  }, [transactions, reportFilter, dateFrom, dateTo]);
 
   const totalSales = filteredTransactions.reduce((s, t) => s + t.total, 0);
   const totalTx = filteredTransactions.length;
   const avgTx = totalTx > 0 ? totalSales / totalTx : 0;
+  const taxCollected = filteredTransactions.reduce((s, t) => s + (t.taxAmount || 0), 0);
+
+  // Payment method breakdown for the current period
+  const paymentTotals: Partial<Record<PaymentMethod, number>> = {};
+  for (const tx of filteredTransactions) {
+    const m = tx.paymentMethod ?? 'cash';
+    paymentTotals[m] = (paymentTotals[m] || 0) + tx.total;
+  }
+
+  const filterLabel =
+    reportFilter === 'all' ? 'All time '
+    : reportFilter === 'day' ? 'Today'
+    : reportFilter === 'week' ? 'Past 7 days'
+    : reportFilter === 'month' ? 'Past 30 days'
+    : 'Custom range';
 
   const rtSales = filteredTransactions
     .filter((tx) => tx.type === 'rt')
@@ -181,10 +213,10 @@ export default function ReportsPage() {
   function exportExcel() {
     let csv = '';
     if (reportTab === 'transactions') {
-      csv = 'ID,Date,Cashier,Type,Items,Subtotal,Discount,Total,Tendered,Change,Status\n';
+      csv = 'ID,Date,Cashier,Type,Payment,Items,Subtotal,Discount,Tax,Total,Tendered,Change,Status\n';
       filteredTransactions.forEach((tx) => {
         const itemCount = tx.items.reduce((s, i) => s + i.qty, 0);
-        csv += `${tx.id},"${fmtDate(tx.date)}","${tx.cashier}",${tx.type},${itemCount},${tx.rawTotal},${tx.discount},${tx.total},${tx.amountTendered},${tx.change},${tx.status}\n`;
+        csv += `${tx.id},"${fmtDate(tx.date)}","${tx.cashier}",${tx.type},${tx.paymentMethod ?? 'cash'},${itemCount},${tx.rawTotal},${tx.discount},${tx.taxAmount || 0},${tx.total},${tx.amountTendered},${tx.change},${tx.status}\n`;
       });
     } else {
       csv = 'Product,Category,RT Barcode,WS Barcode,RT Price,WS Price,RT Stock,WS Stock\n';
@@ -240,71 +272,115 @@ export default function ReportsPage() {
         /* ============================================= */
         <div className="space-y-6">
 
-          {/* Filter chips */}
-          <div className="flex gap-1.5">
-            {(['week', 'month', 'all'] as const).map((f) => (
+          {/* Date filter — presets + custom range */}
+          <div className="flex flex-wrap items-center gap-2">
+            {([
+              { key: 'day', label: 'Today' },
+              { key: 'week', label: 'This Week' },
+              { key: 'month', label: 'This Month' },
+              { key: 'all', label: 'All Time' },
+            ] as const).map((f) => (
               <button
-                key={f}
-                onClick={() => setReportFilter(f)}
+                key={f.key}
+                onClick={() => setReportFilter(f.key)}
                 className={cn(
                   'px-4 py-2 text-[12px] font-bold rounded-xl transition-all',
-                  reportFilter === f
+                  reportFilter === f.key
                     ? 'bg-brand text-white shadow-sm'
                     : 'bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-600 hover:border-brand hover:text-brand'
                 )}
               >
-                {f === 'week' ? 'Past Week' : f === 'month' ? 'Past Month' : 'All Time'}
+                {f.label}
               </button>
             ))}
+
+            <button
+              onClick={() => setReportFilter('custom')}
+              className={cn(
+                'flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold rounded-xl transition-all',
+                reportFilter === 'custom'
+                  ? 'bg-brand text-white shadow-sm'
+                  : 'bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-600 hover:border-brand hover:text-brand'
+              )}
+            >
+              <CalendarDays size={13} /> Custom
+            </button>
+
+            {reportFilter === 'custom' && (
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateRange(e.target.value, dateTo)}
+                  className="px-2.5 py-1.5 text-[12px] font-semibold rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 outline-none focus:border-brand"
+                />
+                <span className="text-xs text-slate-400">→</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateRange(dateFrom, e.target.value)}
+                  className="px-2.5 py-1.5 text-[12px] font-semibold rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 outline-none focus:border-brand"
+                />
+              </div>
+            )}
           </div>
 
           {/* ═══ KPI CARDS ═══ */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-brand to-brand-dark text-white p-5 sm:p-6 shadow-lg shadow-brand/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
-              <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Sales</span>
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
-                    <DollarSign size={18} className="text-white" />
-                  </div>
-                </div>
-                <div className="text-xl sm:text-3xl font-black font-mono tracking-tight">{fmtCurrency(totalSales)}</div>
-                <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">
-                  <TrendingUp size={12} /> {reportFilter === 'all' ? 'All time' : `Filtered (${reportFilter})`}
-                </div>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <StatCard
+              label="Total Sales"
+              value={fmtCurrency(totalSales)}
+              sub={filterLabel}
+              icon={<DollarSign size={16} />}
+              accent="brand"
+            />
+            <StatCard
+              label="Transactions"
+              value={totalTx}
+              sub="Completed sales"
+              icon={<ShoppingCart size={16} />}
+              accent="emerald"
+            />
+            <StatCard
+              label="Avg per Transaction"
+              value={fmtCurrency(avgTx)}
+              sub="Average order value"
+              icon={<Layers size={16} />}
+              accent="indigo"
+            />
+            <StatCard
+              label="Taxes Collected"
+              value={fmtCurrency(taxCollected)}
+              sub="Per sales tax settings"
+              icon={<ReceiptText size={16} />}
+              accent="orange"
+            />
+          </div>
 
-            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5 sm:p-6 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
-              <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Transactions</span>
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
-                    <ShoppingCart size={18} className="text-white" />
+          {/* Payment methods breakdown */}
+          <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6">
+            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+              <Wallet size={15} /> Payment Methods
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {(['cash', 'gcash', 'maya'] as const).map((m) => {
+                const total = paymentTotals[m] || 0;
+                const pct = totalSales > 0 ? (total / totalSales) * 100 : 0;
+                return (
+                  <div
+                    key={m}
+                    className="p-3.5 rounded-[14px] bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <PaymentBadge paymentMethod={m} />
+                      <span className="text-xs text-slate-400">{pct.toFixed(0)}%</span>
+                    </div>
+                    <span className="text-sm font-bold font-mono text-slate-700 dark:text-slate-300">
+                      {fmtCurrency(total)}
+                    </span>
                   </div>
-                </div>
-                <div className="text-xl sm:text-3xl font-black font-mono tracking-tight">{totalTx}</div>
-                <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Total completed sales</div>
-              </div>
-            </div>
-
-            <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-sky-500 to-sky-700 text-white p-5 sm:p-6 shadow-lg shadow-sky-500/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
-              <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full bg-white/5" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Avg per Transaction</span>
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
-                    <Layers size={18} className="text-white" />
-                  </div>
-                </div>
-                <div className="text-xl sm:text-3xl font-black font-mono tracking-tight">{fmtCurrency(avgTx)}</div>
-                <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">Average order value</div>
-              </div>
+                );
+              })}
             </div>
           </div>
 
@@ -429,6 +505,7 @@ export default function ReportsPage() {
                             Type <ArrowUpDown size={10} className={cn('transition-transform', txSortBy === 'type' && txSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
+                        <th className="text-center px-3 py-2">Payment</th>
                         <th className="text-center px-3 py-2">
                           <button onClick={() => toggleTxSort('items')} className={cn('flex items-center gap-1 justify-center hover:text-slate-700 transition-colors', txSortBy === 'items' && 'text-brand')}>
                             Items <ArrowUpDown size={10} className={cn('transition-transform', txSortBy === 'items' && txSortDir === 'desc' && 'rotate-180')} />
@@ -454,6 +531,9 @@ export default function ReportsPage() {
                               tx.type === 'ws' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400' :
                               'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400'
                             )}>{tx.type.toUpperCase()}</span>
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <PaymentBadge paymentMethod={tx.paymentMethod} />
                           </td>
                           <td className="px-3 py-2.5 text-center text-slate-500">{tx.items.reduce((s, i) => s + i.qty, 0)}</td>
                           <td className="px-3 py-2.5 text-right font-bold text-slate-800 dark:text-slate-200">{fmtCurrency(tx.total)}</td>

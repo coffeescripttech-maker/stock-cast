@@ -20,6 +20,8 @@ const createTxSchema = z.object({
   type: z.enum(['rt', 'ws', 'mixed']),
   items: z.array(createItemSchema).min(1, 'At least one item required'),
   amount_tendered: z.number().positive(),
+  payment_method: z.enum(['cash', 'gcash', 'maya']).optional().default('cash'),
+  payment_ref: z.string().max(50).optional().nullable(),
   customer_id: z.number().int().positive().optional().nullable(),
   points_redeemed: z.number().int().min(0).optional().default(0),
 });
@@ -184,10 +186,16 @@ router.post('/', async (req, res, next) => {
     );
     const txNumber = `${dateKey}-${String(next_seq).padStart(4, '0')}`;
 
-    // 2. Get rewards config
+    // 2. Get rewards config + tax settings
     const [[config]] = await conn.query<MySqlRow[]>(
       'SELECT * FROM rewards_config WHERE id = 1'
     );
+    const [[settingsRow]] = await conn.query<MySqlRow[]>(
+      'SELECT settings FROM system_settings WHERE id = 1'
+    );
+    const settings = settingsRow
+      ? JSON.parse((settingsRow as { settings: string }).settings)
+      : {};
 
     // 3. Calculate totals
     let rawTotal = 0;
@@ -203,15 +211,30 @@ router.post('/', async (req, res, next) => {
     const changeAmount = input.amount_tendered - total;
     const pointsEarned = config && total > 0 ? Math.floor(total / config.earn_rate) : 0;
 
+    // Tax recorded per sale (display + reporting only — never alters the total).
+    // Inclusive pricing: VAT is already inside the prices → tax = total × rate/(100+rate).
+    // Exclusive pricing: tax = total × rate/100 (shown as a breakdown, not added on top).
+    const taxCfg = settings.tax;
+    let taxAmount = 0;
+    if (taxCfg?.enabled && Number(taxCfg.rate) > 0) {
+      const rate = Number(taxCfg.rate);
+      taxAmount = taxCfg.inclusivePricing
+        ? total * rate / (100 + rate)
+        : total * rate / 100;
+      taxAmount = Math.round(taxAmount * 100) / 100;
+    }
+
     // 4. Insert transaction header
     const [headerResult] = await conn.query<MySqlOk>(
       `INSERT INTO transactions
          (tx_number, cashier_id, type, raw_total, discount, total,
-          amount_tendered, change_amount, customer_id, points_earned, points_redeemed)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          amount_tendered, change_amount, payment_method, payment_ref, tax_amount,
+          customer_id, points_earned, points_redeemed)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [txNumber, input.cashier_id, input.type,
        rawTotal, discount, total,
        input.amount_tendered, changeAmount,
+       input.payment_method ?? 'cash', input.payment_ref || null, taxAmount,
        input.customer_id || null, pointsEarned, input.points_redeemed || 0]
     );
 

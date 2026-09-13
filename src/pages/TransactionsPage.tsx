@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
   Search, Receipt, XCircle, TrendingUp, DollarSign, ShoppingBag, Activity,
-  ChevronLeft, ChevronRight, User, CalendarDays, Ban,
+  ChevronLeft, ChevronRight, User, CalendarDays, Ban, Wallet,
 } from 'lucide-react';
 import { useDataStore } from '../stores/dataStore';
 import { useAuthStore } from '../stores/authStore';
@@ -9,6 +9,7 @@ import { useUIStore } from '../stores/uiStore';
 import { Button } from '../components/ui/Button';
 import { Dialog } from '../components/ui/Dialog';
 import { TypeBadge } from '../components/ui/Badge';
+import { PaymentBadge } from '../components/ui/PaymentBadge';
 import { cn } from '../lib/cn';
 import { fmtDate, fmtCurrency } from '../lib/formatters';
 import type { Transaction, TxType } from '../types/transaction';
@@ -224,6 +225,7 @@ export default function TransactionsPage() {
                         {tx.id}
                       </span>
                       <TypeBadge type={tx.type} className="flex-shrink-0" />
+                      <PaymentBadge paymentMethod={tx.paymentMethod} className="flex-shrink-0" />
                       <span className={cn(
                         'text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0',
                         tx.status === 'completed'
@@ -371,6 +373,19 @@ export default function TransactionsPage() {
                   {detailTx.status.toUpperCase()}
                 </span>
               </div>
+              <div className="p-3.5 rounded-[16px] bg-slate-50 dark:bg-slate-800/50">
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold mb-1">
+                  <Wallet size={11} /> PAYMENT
+                </div>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <PaymentBadge paymentMethod={detailTx.paymentMethod} />
+                  {detailTx.paymentRef && (
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                      #{detailTx.paymentRef}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Customer */}
@@ -423,22 +438,34 @@ export default function TransactionsPage() {
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">-{fmtCurrency(detailTx.discount)}</span>
                 </div>
               )}
+              {detailTx.taxAmount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Tax</span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">{fmtCurrency(detailTx.taxAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-lg font-black pt-3 border-t border-slate-100 dark:border-slate-700/50">
                 <span className="text-slate-900 dark:text-slate-100">Total</span>
                 <span className="text-brand">{fmtCurrency(detailTx.total)}</span>
               </div>
-              {detailTx.amountTendered > 0 && (
-                <>
+              {detailTx.amountTendered > 0 &&
+                (detailTx.paymentMethod === 'cash' ? (
+                  <>
+                    <div className="flex justify-between text-sm text-slate-500">
+                      <span>Cash Tendered</span>
+                      <span>{fmtCurrency(detailTx.amountTendered)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Change</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmtCurrency(detailTx.change)}</span>
+                    </div>
+                  </>
+                ) : (
                   <div className="flex justify-between text-sm text-slate-500">
-                    <span>Cash Tendered</span>
+                    <span>{detailTx.paymentMethod === 'gcash' ? 'GCash' : 'Maya'} Payment</span>
                     <span>{fmtCurrency(detailTx.amountTendered)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Change</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{fmtCurrency(detailTx.change)}</span>
-                  </div>
-                </>
-              )}
+                ))}
             </div>
 
             {/* Points earned indicator */}

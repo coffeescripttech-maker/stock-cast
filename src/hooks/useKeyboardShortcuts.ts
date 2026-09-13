@@ -20,6 +20,8 @@ export function useKeyboardShortcuts() {
         if (printed === 'fallback') window.print();
         setReceiptShowing(false);
         closeModal();
+        // Tell the POS page to close the visible receipt modal for the next customer.
+        document.dispatchEvent(new CustomEvent('pos:close-receipt'));
         return;
       }
 

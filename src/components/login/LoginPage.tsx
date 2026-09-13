@@ -129,11 +129,6 @@ export function LoginPage() {
 
         <hr className="border-t border-slate-200 dark:border-slate-700 my-6" />
 
-        <div className="text-xs text-slate-400 dark:text-slate-500 text-center leading-relaxed">
-          <strong className="text-slate-600 dark:text-slate-300">Demo Accounts:</strong><br />
-          <strong>Owner:</strong> admin / admin123 &nbsp;|&nbsp; <strong>Staff:</strong> staff / staff123
-        </div>
-
         {/* Android app only — point this app at the PC running the POS server */}
         {isNative && (
           <button

@@ -1,10 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Clock, Trash2, Activity, Users, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Clock, Activity, Users, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDataStore } from '../stores/dataStore';
-import { useAuthStore } from '../stores/authStore';
-import { useUIStore } from '../stores/uiStore';
-import { Button } from '../components/ui/Button';
-import { Dialog } from '../components/ui/Dialog';
 import { cn } from '../lib/cn';
 import { fmtDate } from '../lib/formatters';
 
@@ -32,14 +28,9 @@ function getActionColor(action: string): string {
 
 export default function AuditPage() {
   const auditLog = useDataStore((s) => s.auditLog);
-  const clearAuditLog = useDataStore((s) => s.clearAuditLog);
-  const logAudit = useDataStore((s) => s.logAudit);
-  const currentUser = useAuthStore((s) => s.currentUser);
-  const showToast = useUIStore((s) => s.showToast);
 
   const [search, setSearch] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('all');
-  const [clearOpen, setClearOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
@@ -72,21 +63,11 @@ export default function AuditPage() {
     return auditLog.filter((e) => new Date(e.timestamp).toDateString() === today).length;
   }, [auditLog]);
 
-  function handleClear() {
-    clearAuditLog();
-    logAudit('AUDIT_CLEARED', 'Audit log was cleared', currentUser?.name, currentUser?.role);
-    showToast('Audit log cleared', 'info');
-    setClearOpen(false);
-  }
-
   return (
     <div className="animate-[fadeUp_0.25s_ease] space-y-6 max-w-[1600px] mx-auto">
       {/* ═══ HEADER ═══ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p className="text-sm text-slate-400 dark:text-slate-500">System activity log · {auditLog.length} entries</p>
-        <Button variant="danger" size="sm" onClick={() => setClearOpen(true)} disabled={auditLog.length === 0}>
-          <Trash2 size={13} /> Clear Log
-        </Button>
       </div>
 
       {/* ═══ KPI CARDS ═══ */}
@@ -279,22 +260,6 @@ export default function AuditPage() {
         )}
       </div>
 
-      {/* Clear confirmation */}
-      <Dialog open={clearOpen} onOpenChange={(o) => { if (!o) setClearOpen(false); }} title="">
-        <div className="text-center py-4">
-          <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-950/50 flex items-center justify-center mx-auto mb-4">
-            <Trash2 size={24} className="text-red-500" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">Clear Audit Log?</h3>
-          <p className="text-sm text-slate-500">
-            This will permanently remove all {auditLog.length} audit entries.
-          </p>
-          <div className="flex justify-center gap-3 mt-6">
-            <Button variant="secondary" onClick={() => setClearOpen(false)}>Cancel</Button>
-            <Button variant="danger" onClick={handleClear}>Clear All</Button>
-          </div>
-        </div>
-      </Dialog>
-    </div>
+      </div>
   );
 }

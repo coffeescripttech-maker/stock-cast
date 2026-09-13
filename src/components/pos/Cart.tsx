@@ -56,8 +56,9 @@ export function Cart() {
         </span>
       </div>
 
-      {/* Scrollable cart items — keeps Order Summary always visible */}
-      <div className="max-h-[280px] overflow-y-auto space-y-1 pr-1">
+      {/* Scrollable cart items — taller so more punched items are visible; the
+          height grows with the viewport on desktop */}
+      <div className="max-h-[400px] lg:max-h-[calc(100vh-520px)] overflow-y-auto space-y-1 pr-1">
         {cart.map((item, i) => (
           <CartItemRow
             key={`${item.productId}-${item.type}`}

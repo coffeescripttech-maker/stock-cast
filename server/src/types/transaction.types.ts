@@ -3,6 +3,7 @@
 export type TxType = 'rt' | 'ws' | 'mixed';
 export type TxStatus = 'completed' | 'voided';
 export type ItemSaleType = 'rt' | 'ws';
+export type PaymentMethod = 'cash' | 'gcash' | 'maya';
 
 export interface TransactionRow {
   id: number;
@@ -16,6 +17,9 @@ export interface TransactionRow {
   total: number;
   amount_tendered: number;
   change_amount: number;
+  payment_method: PaymentMethod;
+  payment_ref: string | null;
+  tax_amount: number;
   customer_id: number | null;
   customer_name: string | null;
   points_earned: number | null;
@@ -49,6 +53,8 @@ export interface CreateTransactionInput {
   type: TxType;
   items: CreateTransactionItemInput[];
   amount_tendered: number;
+  payment_method?: PaymentMethod;
+  payment_ref?: string | null;
   customer_id?: number | null;
   points_redeemed?: number;
 }

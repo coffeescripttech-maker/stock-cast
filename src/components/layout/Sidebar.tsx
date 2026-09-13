@@ -31,7 +31,7 @@ interface SidebarItem {
 export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuthStore();
+  const { logout, currentUser } = useAuthStore();
   const sidebarCollapsed = useUIStore(s => s.sidebarCollapsed);
   const toggleSidebar = useUIStore(s => s.toggleSidebar);
   const mobileMenuOpen = useUIStore(s => s.mobileMenuOpen);
@@ -48,32 +48,46 @@ export function Sidebar() {
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
+  // Role-based menu filtering
+  const isOwner = currentUser?.role === 'owner';
+
   const mainItems: SidebarItem[] = [
-    {
+    // Owner-only menus
+    ...(isOwner ? [{
       path: '/dashboard',
       icon: <LayoutDashboard size={20} />,
       label: 'Dashboard'
-    },
+    }] : []),
+    // Available to both owner and staff
     { path: '/pos', icon: <ShoppingCart size={20} />, label: 'POS' },
-    { path: '/inventory', icon: <Package size={20} />, label: 'Inventory' },
-    {
-      path: '/transactions',
-      icon: <Receipt size={20} />,
-      label: 'Transactions'
-    },
+    ...(isOwner ? [
+      { path: '/inventory', icon: <Package size={20} />, label: 'Inventory' },
+      { path: '/transactions', icon: <Receipt size={20} />, label: 'Transactions' },
+    ] : []),
+    // Available to both owner and staff
     { path: '/rewards', icon: <Star size={20} />, label: 'Rewards' },
-    { path: '/reports', icon: <BarChart3 size={20} />, label: 'Reports' },
-    { path: '/audit', icon: <ScrollText size={20} />, label: 'Audit' },
-    { path: '/devices', icon: <Usb size={20} />, label: 'Devices' }
+    // Owner-only menus
+    ...(isOwner ? [
+      { path: '/reports', icon: <BarChart3 size={20} />, label: 'Reports' },
+      { path: '/audit', icon: <ScrollText size={20} />, label: 'Audit' },
+      { path: '/devices', icon: <Usb size={20} />, label: 'Devices' }
+    ] : [])
   ];
 
   const bottomItems: SidebarItem[] = [
-    { path: '/settings', icon: <Settings size={20} />, label: 'Settings' },
+    // Settings - owner only
+    ...(isOwner ? [{
+      path: '/settings',
+      icon: <Settings size={20} />,
+      label: 'Settings'
+    }] : []),
+    // Help - available to all
     {
       icon: <HelpCircle size={20} />,
       label: 'Help',
       action: () => document.dispatchEvent(new CustomEvent('pos:help'))
     },
+    // Logout - available to all
     {
       icon: <LogOut size={20} />,
       label: 'Logout',

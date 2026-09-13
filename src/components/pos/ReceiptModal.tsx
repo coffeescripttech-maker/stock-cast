@@ -56,7 +56,7 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
       open={open}
       onOpenChange={onOpenChange}
       title=""
-      showClose={!printMode}
+      showClose
       hideOverlayClose={printMode}
       className={receiptSettings.paperSize === '80mm' ? 'w-[520px]' : 'w-[420px]'}
     >
@@ -140,12 +140,13 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
           <SubtotalRow label="Wholesale subtotal:" value={wsSubtotal} />
         )}
 
-        {/* Tax line */}
+        {/* Tax line — prefer the stored amount (computed at sale time); fall back
+            to the old heuristic so pre-upgrade receipts still display correctly */}
         {taxSettings.enabled && taxSettings.rate > 0 && (
           <>
             <div className="flex justify-between text-[11px]">
               <span>{taxSettings.label} ({taxSettings.rate}%):</span>
-              <span>{fmtCurrency(receipt.total * taxSettings.rate / 100)}</span>
+              <span>{fmtCurrency(receipt.taxAmount > 0 ? receipt.taxAmount : receipt.total * taxSettings.rate / 100)}</span>
             </div>
             <div className="font-mono text-[10px] text-slate-300">{dash}</div>
           </>
@@ -173,14 +174,31 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
         {receipt.amountTendered != null && (
           <>
             <div className="font-mono text-[10px] text-slate-300">{dash}</div>
-            <div className="flex justify-between text-[11px]">
-              <span>Cash Tendered:</span>
-              <span>{fmtCurrency(receipt.amountTendered)}</span>
-            </div>
-            <div className="flex justify-between text-[11px] font-bold">
-              <span>Change:</span>
-              <span>{fmtCurrency(receipt.change)}</span>
-            </div>
+            {receipt.paymentMethod === 'cash' ? (
+              <>
+                <div className="flex justify-between text-[11px]">
+                  <span>Cash Tendered:</span>
+                  <span>{fmtCurrency(receipt.amountTendered)}</span>
+                </div>
+                <div className="flex justify-between text-[11px] font-bold">
+                  <span>Change:</span>
+                  <span>{fmtCurrency(receipt.change)}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between text-[11px]">
+                  <span>Payment ({receipt.paymentMethod.toUpperCase()}):</span>
+                  <span>{fmtCurrency(receipt.amountTendered)}</span>
+                </div>
+                {receipt.paymentRef && (
+                  <div className="flex justify-between text-[11px]">
+                    <span>Ref:</span>
+                    <span>{receipt.paymentRef}</span>
+                  </div>
+                )}
+              </>
+            )}
           </>
         )}
 
@@ -229,7 +247,10 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
         </p>
       )}
 
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-center mt-4 gap-2">
+        <Button variant="secondary" onClick={() => onOpenChange(false)}>
+          Close
+        </Button>
         <Button variant="primary" onClick={onPrint}>
           🖨️ Print Receipt
         </Button>

@@ -10,6 +10,7 @@ export interface TransactionItem {
 
 export type TxType = 'rt' | 'ws' | 'mixed';
 export type TxStatus = 'completed' | 'voided';
+export type PaymentMethod = 'cash' | 'gcash' | 'maya';
 
 export interface Transaction {
   id: string;
@@ -27,4 +28,7 @@ export interface Transaction {
   pointsRedeemed?: number;
   amountTendered: number;
   change: number;
+  paymentMethod: PaymentMethod;
+  paymentRef?: string | null;
+  taxAmount: number;
 }

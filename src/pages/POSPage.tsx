@@ -71,14 +71,23 @@ export default function POSPage() {
       setScannerOpen(true);
     }
 
+    // Enter-to-print in useKeyboardShortcuts dispatches this once printing is
+    // done, closing the receipt modal for the next customer.
+    function onCloseReceipt() {
+      setReceiptOpen(false);
+      setReceiptShowing(false);
+    }
+
     document.addEventListener('pos:checkout', onCheckout);
     document.addEventListener('pos:nfc-link', onNfcLink);
     document.addEventListener('pos:scanner', onScanner);
+    document.addEventListener('pos:close-receipt', onCloseReceipt);
 
     return () => {
       document.removeEventListener('pos:checkout', onCheckout);
       document.removeEventListener('pos:nfc-link', onNfcLink);
       document.removeEventListener('pos:scanner', onScanner);
+      document.removeEventListener('pos:close-receipt', onCloseReceipt);
     };
   }, [
     cart.length,
@@ -106,24 +115,30 @@ export default function POSPage() {
   function handlePaymentComplete(payment: {
     amountTendered: number;
     change: number;
+    paymentMethod: 'cash' | 'gcash' | 'maya';
+    paymentRef: string | null;
   }) {
-    finalizeSale(payment.amountTendered, payment.change);
+    finalizeSale(payment);
   }
 
   /**
    * Send a completed sale to the printer via the shared router. Bluetooth
    * thermal printing (when enabled) handles it, otherwise we fall back to the
-   * browser/Electron system print dialog.
+   * browser/Electron system print dialog. The receipt modal always stays open
+   * afterwards — the cashier closes it manually (X / Close / Enter).
    */
   function printTransaction(tx: Transaction) {
     if (printReceipt(tx) === 'fallback') {
-      setReceiptShowing(false);
       window.print();
-      setReceiptOpen(false);
     }
   }
 
-  async function finalizeSale(amountTendered: number, _change: number) {
+  async function finalizeSale(payment: {
+    amountTendered: number;
+    change: number;
+    paymentMethod: 'cash' | 'gcash' | 'maya';
+    paymentRef: string | null;
+  }) {
     if (!currentUser) return;
 
     setSubmitting(true);
@@ -141,7 +156,9 @@ export default function POSPage() {
         qty: c.qty,
         price: c.price
       })),
-      amountTendered,
+      amountTendered: payment.amountTendered,
+      paymentMethod: payment.paymentMethod,
+      paymentRef: payment.paymentRef,
       customerId: linkedCustomer?.id ?? null,
       pointsRedeemed: redeemPoints
     });
@@ -183,10 +200,9 @@ export default function POSPage() {
       }, 500);
     } else if (pSettings.autoPrintReceipt) {
       // No Bluetooth printer but Auto-Print is on → system print dialog.
+      // The receipt modal stays open — closed only by the cashier.
       setTimeout(() => {
-        setReceiptShowing(false);
         window.print();
-        setReceiptOpen(false);
       }, 500);
     }
   }

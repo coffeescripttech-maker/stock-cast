@@ -31,9 +31,14 @@ export function Dialog({
           className={cn(
             'fixed inset-0 bg-black/45 z-50 data-[state=open]:animate-[fadeIn_0.2s_ease]',
           )}
-          onClick={hideOverlayClose ? undefined : undefined}
         />
         <DialogPrimitive.Content
+          onPointerDownOutside={(e) => {
+            if (hideOverlayClose) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            if (hideOverlayClose) e.preventDefault();
+          }}
           className={cn(
             'fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
             'w-[500px] max-w-[94vw] max-h-[90vh] overflow-y-auto',
