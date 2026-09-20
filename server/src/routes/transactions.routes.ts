@@ -207,22 +207,28 @@ router.post('/', async (req, res, next) => {
       ? Math.floor(input.points_redeemed / config.redeem_every) * config.redeem_value
       : 0;
     const discount = redeemValue;
-    const total = rawTotal - discount;
-    const changeAmount = input.amount_tendered - total;
-    const pointsEarned = config && total > 0 ? Math.floor(total / config.earn_rate) : 0;
+    const preTaxTotal = Math.max(0, rawTotal - discount);
 
-    // Tax recorded per sale (display + reporting only — never alters the total).
-    // Inclusive pricing: VAT is already inside the prices → tax = total × rate/(100+rate).
-    // Exclusive pricing: tax = total × rate/100 (shown as a breakdown, not added on top).
+    // Tax — the VAT the customer pays on this sale.
+    // Inclusive pricing: VAT is already inside the prices → tax is the amount
+    //   embedded in the total (total × rate/(100+rate)); total stays unchanged.
+    // Exclusive pricing: VAT is added on top (total × rate/100); the stored
+    //   total therefore INCLUDES the VAT — this is what the cashier collects.
     const taxCfg = settings.tax;
     let taxAmount = 0;
     if (taxCfg?.enabled && Number(taxCfg.rate) > 0) {
       const rate = Number(taxCfg.rate);
       taxAmount = taxCfg.inclusivePricing
-        ? total * rate / (100 + rate)
-        : total * rate / 100;
+        ? preTaxTotal * rate / (100 + rate)
+        : preTaxTotal * rate / 100;
       taxAmount = Math.round(taxAmount * 100) / 100;
     }
+    const total =
+      taxAmount > 0 && !taxCfg.inclusivePricing
+        ? Math.round((preTaxTotal + taxAmount) * 100) / 100
+        : preTaxTotal;
+    const changeAmount = input.amount_tendered - total;
+    const pointsEarned = config && preTaxTotal > 0 ? Math.floor(preTaxTotal / config.earn_rate) : 0;
 
     // 4. Insert transaction header
     const [headerResult] = await conn.query<MySqlOk>(

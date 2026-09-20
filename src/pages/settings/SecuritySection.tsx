@@ -3,6 +3,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
+import UserAccountsCard from './UserAccountsCard';
 import { Shield } from 'lucide-react';
 import type { SecuritySettings } from '../../types/settings';
 
@@ -25,7 +26,8 @@ export default function SecuritySection() {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6 space-y-5">
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6 space-y-5">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-brand/10 flex items-center justify-center">
           <Shield size={20} className="text-brand" />
@@ -64,6 +66,9 @@ export default function SecuritySection() {
       <div className="flex justify-end pt-2">
         <Button variant="brand" onClick={handleSave}>Save Section</Button>
       </div>
+      </div>
+
+      <UserAccountsCard />
     </div>
   );
 }

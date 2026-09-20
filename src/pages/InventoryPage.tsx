@@ -197,11 +197,11 @@ export default function InventoryPage() {
   function handleSave(data: Omit<Product, 'id'>) {
     if (editingProduct) {
       updateProduct(editingProduct.id, data);
-      logAudit('PRODUCT_EDITED', `Edited: "${data.name}"`, currentUser?.name, currentUser?.role);
+      logAudit('PRODUCT_EDITED', `Edited: "${data.name}"`, currentUser?.displayName, currentUser?.role);
       showToast(`"${data.name}" updated`, 'success');
     } else {
       addProduct(data);
-      logAudit('PRODUCT_ADDED', `Added: "${data.name}"`, currentUser?.name, currentUser?.role);
+      logAudit('PRODUCT_ADDED', `Added: "${data.name}"`, currentUser?.displayName, currentUser?.role);
       showToast(`"${data.name}" added successfully`, 'success');
     }
     setFormOpen(false);
@@ -215,7 +215,7 @@ export default function InventoryPage() {
 
   function doDelete() {
     if (!deleteTarget) return;
-    logAudit('PRODUCT_DELETED', `Deleted: "${deleteTarget.name}"`, currentUser?.name, currentUser?.role);
+    logAudit('PRODUCT_DELETED', `Deleted: "${deleteTarget.name}"`, currentUser?.displayName, currentUser?.role);
     deleteProduct(deleteTarget.id);
     showToast(`"${deleteTarget.name}" deleted`, 'error');
     setDeleteOpen(false);
@@ -226,7 +226,7 @@ export default function InventoryPage() {
     selectedIds.forEach((id) => {
       const p = products.find((x) => x.id === id);
       if (p) {
-        logAudit('PRODUCT_DELETED', `Bulk deleted: "${p.name}"`, currentUser?.name, currentUser?.role);
+        logAudit('PRODUCT_DELETED', `Bulk deleted: "${p.name}"`, currentUser?.displayName, currentUser?.role);
         deleteProduct(id);
       }
     });

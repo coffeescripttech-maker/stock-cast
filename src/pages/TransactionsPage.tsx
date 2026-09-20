@@ -72,7 +72,7 @@ export default function TransactionsPage() {
 
   function handleVoid(tx: Transaction) {
     voidTransaction(tx.id);
-    logAudit('TRANSACTION_VOIDED', `Voided TX ${tx.id} · ${fmtCurrency(tx.total)}`, currentUser?.name, currentUser?.role);
+    logAudit('TRANSACTION_VOIDED', `Voided TX ${tx.id} · ${fmtCurrency(tx.total)}`, currentUser?.displayName, currentUser?.role);
     showToast(`Transaction ${tx.id} voided`, 'error');
     setVoidTx(null);
     setDetailTx(null);

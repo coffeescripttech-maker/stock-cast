@@ -10,6 +10,7 @@ import { errorMiddleware } from './middleware/error.js';
 import { uploadsDir } from './config.js';
 
 import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/users.routes.js';
 import categoryRoutes from './routes/categories.routes.js';
 import productRoutes from './routes/products.routes.js';
 import transactionRoutes from './routes/transactions.routes.js';
@@ -55,6 +56,7 @@ app.use('/api/transactions', authMiddleware, transactionRoutes);
 app.use('/api/customers', authMiddleware, customerRoutes);
 app.use('/api/rewards', authMiddleware, rewardRoutes);
 app.use('/api/audit-log', authMiddleware, auditRoutes);
+app.use('/api/users', authMiddleware, userRoutes);
 app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 app.use('/api/reports', authMiddleware, reportRoutes);
 app.use('/api/settings', authMiddleware, settingsRoutes);

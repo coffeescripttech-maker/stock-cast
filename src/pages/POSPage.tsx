@@ -15,6 +15,7 @@ import { ReceiptModal } from '../components/pos/ReceiptModal';
 import { BluetoothPrinterButton } from '../components/pos/BluetoothPrinterButton';
 import { buildSaleReceipt } from '../lib/escpos';
 import { printReceipt } from '../lib/printReceipt';
+import { applyTax } from '../lib/tax';
 import { printerReady, usePrinterStore } from '../stores/printerStore';
 import type { Transaction } from '../types/transaction';
 
@@ -43,14 +44,19 @@ export default function POSPage() {
   const [pendingTotal, setPendingTotal] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
-  // Compute totals
+  // Compute totals — exclusive-priced sales add VAT on top, so the grand
+  // total the cashier collects matches what the server charges.
   const rawTotal = cart.reduce((s, c) => s + c.qty * c.price, 0);
   const discount =
     redeemPoints > 0
       ? Math.floor(redeemPoints / rewardsConfig.redeemEvery) *
         rewardsConfig.redeemValue
       : 0;
-  const grandTotal = Math.max(0, rawTotal - discount);
+  const taxSettings = useSettingsStore((s) => s.settings.tax);
+  const { total: grandTotal } = applyTax(
+    Math.max(0, rawTotal - discount),
+    taxSettings
+  );
 
   // ---- Event listeners for keyboard shortcuts ----
 

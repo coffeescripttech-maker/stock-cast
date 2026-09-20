@@ -1,7 +1,9 @@
 import { ShoppingBag, Loader2 } from 'lucide-react';
 import { usePOSStore } from '../../stores/posStore';
 import { useDataStore } from '../../stores/dataStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { fmtCurrency } from '../../lib/formatters';
+import { applyTax } from '../../lib/tax';
 
 interface CheckoutBarProps {
   onCheckout: () => void;
@@ -17,6 +19,7 @@ export function CheckoutBar({ onCheckout, submitting }: CheckoutBarProps) {
   const cart = usePOSStore((s) => s.cart);
   const redeemPoints = usePOSStore((s) => s.redeemPoints);
   const rewardsConfig = useDataStore((s) => s.rewardsConfig);
+  const taxSettings = useSettingsStore((s) => s.settings.tax);
 
   if (cart.length === 0) return null;
 
@@ -27,7 +30,10 @@ export function CheckoutBar({ onCheckout, submitting }: CheckoutBarProps) {
       ? Math.floor(redeemPoints / (rewardsConfig.redeemEvery || 100)) *
         (rewardsConfig.redeemValue || 10)
       : 0;
-  const grandTotal = Math.max(0, rawTotal - discount);
+  const { total: grandTotal } = applyTax(
+    Math.max(0, rawTotal - discount),
+    taxSettings
+  );
 
   const isReady = !submitting;
 

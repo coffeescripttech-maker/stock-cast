@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useAuthStore } from '../../stores/authStore';
 import { useDataStore } from '../../stores/dataStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { ThemeToggle } from './ThemeToggle';
+import { ChangePasswordDialog } from '../ui/ChangePasswordDialog';
 import { cn } from '../../lib/cn';
 import { resolveApiUrl } from '../../lib/apiBase';
 import {
   LayoutDashboard, ShoppingCart, Package, Receipt, Star, BarChart3, ScrollText, LogOut, Store, Settings,
+  ChevronDown, Lock, User as UserIcon,
 } from 'lucide-react';
 
 interface NavTab {
@@ -35,12 +39,16 @@ export function TopNav() {
   const { logAudit } = useDataStore();
   const closeModal = useUIStore((s) => s.closeModal);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
+
   const userTabs = tabs.filter((t) => t.roles.includes(currentUser?.role || 'staff'));
   const storeName = useSettingsStore((s) => s.settings.general.storeName);
   const storeLogo = useSettingsStore((s) => s.settings.branding.storeLogo);
 
   const handleLogout = () => {
-    logAudit('LOGOUT', `${currentUser?.name} signed out`, currentUser?.name, currentUser?.role);
+    setMenuOpen(false);
+    logAudit('LOGOUT', `${currentUser?.displayName} signed out`, currentUser?.displayName, currentUser?.role);
     closeModal();
     logout();
     navigate('/login', { replace: true });
@@ -83,26 +91,66 @@ export function TopNav() {
 
       {/* Right section */}
       <div className="flex items-center gap-3 ml-auto flex-shrink-0">
-        <span className="text-xs font-medium text-slate-300">{currentUser?.name}</span>
-        <span
-          className={cn(
-            'px-2.5 py-0.5 rounded-full text-[10px] font-bold',
-            currentUser?.role === 'owner'
-              ? 'bg-indigo-500/20 text-indigo-300'
-              : 'bg-emerald-500/20 text-emerald-300'
-          )}
-        >
-          {currentUser?.role === 'owner' ? 'Owner' : 'Staff'}
-        </span>
         <ThemeToggle />
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-red-300 hover:bg-red-500/15 transition-all border border-slate-700/50"
-        >
-          <LogOut size={13} />
-          Logout
-        </button>
+
+        <DropdownMenu.Root open={menuOpen} onOpenChange={setMenuOpen}>
+          <DropdownMenu.Trigger asChild>
+            <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all border border-slate-700/50 max-w-[200px]">
+              <span className="flex items-center gap-1.5 min-w-0">
+                <UserIcon size={13} className="text-slate-400 flex-shrink-0" />
+                <span className="truncate">{currentUser?.displayName}</span>
+              </span>
+              <ChevronDown size={12} className={cn('text-slate-400 flex-shrink-0 transition-transform', menuOpen && 'rotate-180')} />
+            </button>
+          </DropdownMenu.Trigger>
+
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              align="end"
+              sideOffset={6}
+              className="z-[60] min-w-[210px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1.5 shadow-xl"
+            >
+              {/* Header: name + role badge */}
+              <div className="pointer-events-none px-2.5 py-2 border-b border-slate-100 dark:border-slate-700/60 mb-1">
+                <div className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
+                  {currentUser?.displayName}
+                </div>
+                <span
+                  className={cn(
+                    'inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold',
+                    currentUser?.role === 'owner'
+                      ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300'
+                      : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
+                  )}
+                >
+                  {currentUser?.role === 'owner' ? 'Owner' : 'Staff'}
+                </span>
+              </div>
+
+              <DropdownMenu.Item
+                onSelect={() => {
+                  setMenuOpen(false);
+                  setPwOpen(true);
+                }}
+                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 outline-none cursor-pointer transition-colors data-[highlighted]:bg-slate-100 dark:data-[highlighted]:bg-slate-700/60"
+              >
+                <Lock size={13} className="text-slate-400" />
+                Change Password
+              </DropdownMenu.Item>
+
+              <DropdownMenu.Item
+                onSelect={handleLogout}
+                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 outline-none cursor-pointer transition-colors data-[highlighted]:bg-red-50 dark:data-[highlighted]:bg-red-500/10"
+              >
+                <LogOut size={13} />
+                Logout
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
       </div>
+
+      <ChangePasswordDialog open={pwOpen} onOpenChange={setPwOpen} />
     </nav>
   );
 }

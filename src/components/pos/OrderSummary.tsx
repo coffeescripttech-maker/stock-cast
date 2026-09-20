@@ -12,6 +12,7 @@ import { usePOSStore } from '../../stores/posStore';
 import { useDataStore } from '../../stores/dataStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { fmtCurrency, getCustomerTier } from '../../lib/formatters';
+import { applyTax } from '../../lib/tax';
 import { cn } from '../../lib/cn';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
@@ -46,7 +47,10 @@ export function OrderSummary({
       ? Math.floor(redeemPoints / rewardsConfig.redeemEvery) *
         rewardsConfig.redeemValue
       : 0;
-  const grandTotal = Math.max(0, rawTotal - discount);
+  const preTaxTotal = Math.max(0, rawTotal - discount);
+  const taxSettings = useSettingsStore((s) => s.settings.tax);
+  const { taxAmount, total: grandTotal } = applyTax(preTaxTotal, taxSettings);
+  const earned = Math.floor(preTaxTotal / (rewardsConfig.earnRate || 1));
 
   const canRedeem =
     !!linkedCustomer && linkedCustomer.points >= rewardsConfig.redeemEvery;
@@ -102,6 +106,12 @@ export function OrderSummary({
               <span className="font-mono">−{fmtCurrency(discount)}</span>
             </div>
           )}
+          {taxAmount > 0 && (
+            <div className="flex justify-between text-xs text-white/80">
+              <span>{taxSettings.label} ({taxSettings.rate}%)</span>
+              <span className="font-mono">+{fmtCurrency(taxAmount)}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -113,7 +123,7 @@ export function OrderSummary({
               customer={linkedCustomer}
               redeemPoints={redeemPoints}
               canRedeem={canRedeem}
-              earned={Math.floor(grandTotal / (rewardsConfig.earnRate || 1))}
+              earned={earned}
               onToggleRedeem={handleToggleRedeem}
               onUnlink={unlinkCustomer}
             />

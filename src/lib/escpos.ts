@@ -222,14 +222,25 @@ export function buildSaleReceipt(tx: Transaction, s: SystemSettings, now = new D
     ...(wsItems.length > 0
       ? [line(padRight('Wholesale subtotal:', 22) + money(wsItems.reduce((sum, i) => sum + i.qty * i.price, 0), s))]
       : []),
-    // Tax — prefer the stored amount (computed at sale time, honors the
-    // inclusive-pricing toggle); fall back to the heuristic for old receipts
-    ...(s.tax.enabled && s.tax.rate > 0
-      ? [line(padRight(`${s.tax.label} (${s.tax.rate}%):`, 22) + money(tx.taxAmount > 0 ? tx.taxAmount : (tx.total * s.tax.rate) / 100, s))]
-      : []),
     // Discount (points redeemed)
     ...(tx.discount > 0
       ? [line(padRight(`${receipt.discountLabel} (${tx.pointsRedeemed ?? 0} pts):`, 22) + '-' + money(tx.discount, s))]
+      : []),
+    // Tax — prefer the stored amount (computed at sale time, honors the
+    // inclusive-pricing toggle); fall back to the heuristic for old receipts.
+    // Exclusive pricing adds VAT on top → a '+' prefix makes that clear before
+    // the GRAND TOTAL (which already includes the VAT for exclusive stores).
+    ...(s.tax.enabled && s.tax.rate > 0
+      ? (() => {
+          const tax = tx.taxAmount > 0
+            ? tx.taxAmount
+            : s.tax.inclusivePricing
+              ? (tx.total * s.tax.rate) / (100 + s.tax.rate)
+              : (tx.total * s.tax.rate) / 100;
+          const label = `${s.tax.label} (${s.tax.rate}%):`;
+          const value = (s.tax.inclusivePricing ? '' : '+') + money(tax, s);
+          return [line(padRight(label, 21) + value)];
+        })()
       : []),
     line(dash),
     line(padRight('Total items:', 22) + String(totalItems)),

@@ -48,6 +48,14 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
   const wsSubtotal = wsItems.reduce((s, i) => s + i.qty * i.price, 0);
   const totalItems = receipt.items.reduce((s, i) => s + i.qty, 0);
 
+  // Tax — the VAT this sale collected (stored at sale time). Receipts cached
+  // before the tax_amount column existed fall back to the rate heuristic.
+  const taxEnabled = taxSettings.enabled && taxSettings.rate > 0;
+  const fallbackTax = taxSettings.inclusivePricing
+    ? (receipt.total * taxSettings.rate) / (100 + taxSettings.rate)
+    : (receipt.total * taxSettings.rate) / 100;
+  const taxShown = receipt.taxAmount > 0 ? receipt.taxAmount : fallbackTax;
+
   const dash = '─'.repeat(48);
   const typeLabel = receipt.type === 'rt' ? 'RETAIL' : receipt.type === 'ws' ? 'WHOLESALE' : 'MIXED (Retail + Wholesale)';
 
@@ -140,22 +148,20 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
           <SubtotalRow label="Wholesale subtotal:" value={wsSubtotal} />
         )}
 
-        {/* Tax line — prefer the stored amount (computed at sale time); fall back
-            to the old heuristic so pre-upgrade receipts still display correctly */}
-        {taxSettings.enabled && taxSettings.rate > 0 && (
-          <>
-            <div className="flex justify-between text-[11px]">
-              <span>{taxSettings.label} ({taxSettings.rate}%):</span>
-              <span>{fmtCurrency(receipt.taxAmount > 0 ? receipt.taxAmount : receipt.total * taxSettings.rate / 100)}</span>
-            </div>
-            <div className="font-mono text-[10px] text-slate-300">{dash}</div>
-          </>
-        )}
-
         {receipt.discount > 0 && (
           <div className="flex justify-between text-[11px] text-emerald-600">
             <span>{receiptSettings.discountLabel} ({receipt.pointsRedeemed} pts):</span>
             <span>-{fmtCurrency(receipt.discount)}</span>
+          </div>
+        )}
+
+        {/* Tax — exclusive pricing adds VAT on top of the subtotal (shown with a
+            + so the cashier sees it going into the GRAND TOTAL); inclusive shows
+            the VAT already embedded in the prices, total unchanged. */}
+        {taxEnabled && (
+          <div className="flex justify-between text-[11px]">
+            <span>{taxSettings.label} ({taxSettings.rate}%):</span>
+            <span>{taxSettings.inclusivePricing ? '' : '+'}{fmtCurrency(taxShown)}</span>
           </div>
         )}
 

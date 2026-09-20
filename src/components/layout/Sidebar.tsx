@@ -63,9 +63,8 @@ export function Sidebar() {
     ...(isOwner ? [
       { path: '/inventory', icon: <Package size={20} />, label: 'Inventory' },
       { path: '/transactions', icon: <Receipt size={20} />, label: 'Transactions' },
+      { path: '/rewards', icon: <Star size={20} />, label: 'Rewards' },
     ] : []),
-    // Available to both owner and staff
-    { path: '/rewards', icon: <Star size={20} />, label: 'Rewards' },
     // Owner-only menus
     ...(isOwner ? [
       { path: '/reports', icon: <BarChart3 size={20} />, label: 'Reports' },
