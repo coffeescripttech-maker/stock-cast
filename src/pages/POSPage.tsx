@@ -4,6 +4,8 @@ import { useDataStore } from '../stores/dataStore';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import { useSettingsStore } from '../stores/settingsStore';
+import { useBarcodeWedge } from '../hooks/useBarcodeWedge';
+import { findProductByBarcode } from '../lib/barcode';
 import { ProductSearch } from '../components/pos/ProductSearch';
 import { Cart } from '../components/pos/Cart';
 import { OrderSummary } from '../components/pos/OrderSummary';
@@ -15,12 +17,14 @@ import { ReceiptModal } from '../components/pos/ReceiptModal';
 import { BluetoothPrinterButton } from '../components/pos/BluetoothPrinterButton';
 import { buildSaleReceipt } from '../lib/escpos';
 import { printReceipt } from '../lib/printReceipt';
+import { printCurrentView } from '../lib/electron';
 import { applyTax } from '../lib/tax';
 import { printerReady, usePrinterStore } from '../stores/printerStore';
 import type { Transaction } from '../types/transaction';
 
 export default function POSPage() {
   const cart = usePOSStore(s => s.cart);
+  const addToCart = usePOSStore(s => s.addToCart);
   const clearCart = usePOSStore(s => s.clearCart);
   const linkedCustomer = usePOSStore(s => s.linkedCustomer);
   const redeemPoints = usePOSStore(s => s.redeemPoints);
@@ -28,6 +32,7 @@ export default function POSPage() {
   const setReceiptShowing = usePOSStore(s => s.setReceiptShowing);
 
   const rewardsConfig = useDataStore(s => s.rewardsConfig);
+  const products = useDataStore(s => s.products);
   const completeSale = useDataStore(s => s.completeSale);
 
   const currentUser = useAuthStore(s => s.currentUser);
@@ -118,6 +123,32 @@ export default function POSPage() {
     setPaymentOpen(true);
   }, [cart.length, grandTotal, linkedCustomer]);
 
+  // ---- Barcode wedge: a scanned code auto-adds the product to the cart ----
+  const handleBarcodeScan = useCallback(
+    (code: string) => {
+      const match = findProductByBarcode(products, code);
+      if (!match) {
+        showToast(`Product not found: ${code}`, 'error');
+        return;
+      }
+      if (match.price <= 0) {
+        showToast(
+          `No ${match.type.toUpperCase()} price set for ${match.product.name}`,
+          'error'
+        );
+        return;
+      }
+      addToCart(match.product.id, match.product.name, match.type, match.price);
+      showToast(
+        `Added ${match.product.name} (${match.type.toUpperCase()})`,
+        'success'
+      );
+    },
+    [products, addToCart, showToast]
+  );
+
+  useBarcodeWedge(handleBarcodeScan);
+
   function handlePaymentComplete(payment: {
     amountTendered: number;
     change: number;
@@ -135,7 +166,7 @@ export default function POSPage() {
    */
   function printTransaction(tx: Transaction) {
     if (printReceipt(tx) === 'fallback') {
-      window.print();
+      printCurrentView();
     }
   }
 
@@ -205,10 +236,11 @@ export default function POSPage() {
           );
       }, 500);
     } else if (pSettings.autoPrintReceipt) {
-      // No Bluetooth printer but Auto-Print is on → system print dialog.
-      // The receipt modal stays open — closed only by the cashier.
+      // No Bluetooth printer but Auto-Print is on → silent print on Electron
+      // (or the system print dialog in a plain browser). The receipt modal
+      // stays open — closed only by the cashier.
       setTimeout(() => {
-        window.print();
+        printCurrentView();
       }, 500);
     }
   }

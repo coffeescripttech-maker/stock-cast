@@ -93,13 +93,15 @@ function LoyaltyCard({
   onEdit,
   onDelete,
   onAdjustPoints,
-  onPrint
+  onPrint,
+  canAdmin
 }: {
   customer: Customer;
   onEdit: () => void;
   onDelete: () => void;
   onAdjustPoints: () => void;
   onPrint: () => void;
+  canAdmin: boolean;
 }) {
   const tier = getCustomerTier(customer.points);
   const config =
@@ -200,24 +202,28 @@ function LoyaltyCard({
               </div>
               {/* Action buttons (hover only — admin tools) */}
               <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200 pt-0.5">
-                <button
-                  onClick={onAdjustPoints}
-                  className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/20 transition-all"
-                  title="Adjust Points">
-                  <Award size={9} />
-                </button>
+                {canAdmin && (
+                  <button
+                    onClick={onAdjustPoints}
+                    className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/20 transition-all"
+                    title="Adjust Points">
+                    <Award size={9} />
+                  </button>
+                )}
                 <button
                   onClick={onEdit}
                   className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/20 transition-all"
                   title="Edit">
                   <Edit3 size={9} />
                 </button>
-                <button
-                  onClick={onDelete}
-                  className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/50 hover:text-red-400 hover:bg-red-500/15 transition-all"
-                  title="Delete">
-                  <Trash2 size={9} />
-                </button>
+                {canAdmin && (
+                  <button
+                    onClick={onDelete}
+                    className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/50 hover:text-red-400 hover:bg-red-500/15 transition-all"
+                    title="Delete">
+                    <Trash2 size={9} />
+                  </button>
+                )}
                 <button
                   onClick={onPrint}
                   className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/20 transition-all"
@@ -510,6 +516,7 @@ export default function RewardsPage() {
   const updateRewardsConfig = useDataStore(s => s.updateRewardsConfig);
   const logAudit = useDataStore(s => s.logAudit);
   const currentUser = useAuthStore(s => s.currentUser);
+  const isOwner = currentUser?.role === 'owner';
   const showToast = useUIStore(s => s.showToast);
 
   const [search, setSearch] = useState('');
@@ -606,7 +613,7 @@ export default function RewardsPage() {
   }
 
   function handleAdjustPoints() {
-    if (!pointsTarget || !pointsDelta) return;
+    if (!isOwner || !pointsTarget || !pointsDelta) return;
     const delta = parseInt(pointsDelta);
     if (isNaN(delta) || delta === 0) return;
     adjustCustomerPoints(pointsTarget.id, delta);
@@ -623,6 +630,7 @@ export default function RewardsPage() {
   }
 
   function handleSaveConfig() {
+    if (!isOwner) return;
     updateRewardsConfig(configForm);
     logAudit(
       'REWARDS_CONFIG_UPDATED',
@@ -635,7 +643,7 @@ export default function RewardsPage() {
   }
 
   function handleDelete() {
-    if (!deleteTarget) return;
+    if (!isOwner || !deleteTarget) return;
     logAudit(
       'CUSTOMER_DELETED',
       `Deleted: "${deleteTarget.name}"`,
@@ -891,6 +899,7 @@ export default function RewardsPage() {
                     setPointsOpen(true);
                   }}
                   onPrint={() => printCard(c)}
+                  canAdmin={isOwner}
                 />
               ))}
             </div>
@@ -1078,16 +1087,18 @@ export default function RewardsPage() {
                       {/* Actions */}
                       <td className="px-4 py-3.5">
                         <div className="flex items-center justify-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => {
-                              setPointsTarget(c);
-                              setPointsDelta('');
-                              setPointsOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-all"
-                            title="Adjust Points">
-                            <Award size={13} />
-                          </button>
+                          {isOwner && (
+                            <button
+                              onClick={() => {
+                                setPointsTarget(c);
+                                setPointsDelta('');
+                                setPointsOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-all"
+                              title="Adjust Points">
+                              <Award size={13} />
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               setEditingCustomer(c);
@@ -1103,15 +1114,17 @@ export default function RewardsPage() {
                             title="Print">
                             <Printer size={13} />
                           </button>
-                          <button
-                            onClick={() => {
-                              setDeleteTarget(c);
-                              setDeleteOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
-                            title="Delete">
-                            <Trash2 size={13} />
-                          </button>
+                          {isOwner && (
+                            <button
+                              onClick={() => {
+                                setDeleteTarget(c);
+                                setDeleteOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                              title="Delete">
+                              <Trash2 size={13} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1192,6 +1205,7 @@ export default function RewardsPage() {
         customer={editingCustomer}
         customers={customers}
         onSave={handleSaveCustomer}
+        allowPointsEdit={isOwner}
       />
 
       {/* Adjust Points Modal */}
@@ -1407,13 +1421,15 @@ function CustomerFormModal({
   onOpenChange,
   customer,
   customers,
-  onSave
+  onSave,
+  allowPointsEdit = true
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   customer: Customer | null;
   customers: Customer[];
   onSave: (data: Omit<Customer, 'id'>) => void;
+  allowPointsEdit?: boolean;
 }) {
   const showToast = useUIStore(s => s.showToast);
   const isEdit = !!customer;
@@ -1619,7 +1635,7 @@ function CustomerFormModal({
             )}
           </div>
         </div>
-        {isEdit && (
+        {isEdit && allowPointsEdit && (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">

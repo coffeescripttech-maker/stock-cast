@@ -5,6 +5,7 @@ import { usePOSStore } from '../../stores/posStore';
 import { useUIStore } from '../../stores/uiStore';
 import { cn } from '../../lib/cn';
 import { fmtCurrency } from '../../lib/formatters';
+import { findProductByBarcode } from '../../lib/barcode';
 import { resolveApiUrl } from '../../lib/apiBase';
 import { CATEGORIES, CATEGORY_COLORS } from '../../lib/constants';
 import type { Product, SaleType, ProductCategory } from '../../types/product';
@@ -71,6 +72,36 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
     return { stock, isLow: stock < threshold, isOut: stock === 0 };
   }
 
+  // A keyboard-wedge scanner that types the code into this field ends with
+  // Enter. If the value is an EXACT barcode, add that product instead of
+  // filtering the list — this makes scanning "just work" even when focus
+  // happens to be on the search input.
+  function handleSearchKeyDown(e: React.KeyboardEvent, onEscape: () => void) {
+    if (e.key === 'Escape') {
+      onEscape();
+      return;
+    }
+    if (e.key === 'Enter') {
+      const match = findProductByBarcode(products, query);
+      if (!match) return;
+      e.preventDefault();
+      if (match.price <= 0) {
+        showToast(
+          `No ${match.type.toUpperCase()} price set for ${match.product.name}`,
+          'error'
+        );
+        return;
+      }
+      addToCart(match.product.id, match.product.name, match.type, match.price);
+      showToast(
+        `Added ${match.product.name} (${match.type.toUpperCase()})`,
+        'success'
+      );
+      setQuery('');
+      inputRef.current?.blur();
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Search bar + view type toggle */}
@@ -86,10 +117,10 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => {
-              if (e.key === 'Escape') {
+              handleSearchKeyDown(e, () => {
                 setQuery('');
                 inputRef.current?.blur();
-              }
+              });
             }}
             placeholder="Search name or scan barcode…"
             className="w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-white dark:bg-slate-800 outline-none transition-colors border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-brand dark:focus:border-brand placeholder:text-slate-400"

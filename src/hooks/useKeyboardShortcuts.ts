@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { usePOSStore } from '../stores/posStore';
 import { useUIStore } from '../stores/uiStore';
 import { printReceipt } from '../lib/printReceipt';
+import { printCurrentView } from '../lib/electron';
 
 export function useKeyboardShortcuts() {
   const { currentUser } = useAuthStore();
@@ -17,7 +18,7 @@ export function useKeyboardShortcuts() {
       if (e.key === 'Enter' && receiptIsShowing) {
         e.preventDefault();
         const printed = printReceipt(lastReceipt);
-        if (printed === 'fallback') window.print();
+        if (printed === 'fallback') printCurrentView();
         setReceiptShowing(false);
         closeModal();
         // Tell the POS page to close the visible receipt modal for the next customer.

@@ -231,6 +231,20 @@ function registerIpcHandlers() {
   ipcMain.on('window:close', (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close();
   });
+
+  // Silent print: render the current page to the default (or requested)
+  // printer WITHOUT the print-preview dialog. This is what makes receipts
+  // print automatically in the desktop app.
+  ipcMain.handle('print:silent', (event, options) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return false;
+    return new Promise((resolve) => {
+      win.webContents.print(
+        { silent: true, printBackground: true, ...(options || {}) },
+        (success) => resolve(Boolean(success)),
+      );
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -19,4 +19,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimize: () => ipcRenderer.send('window:minimize'),
   maximize: () => ipcRenderer.send('window:maximize'),
   close: () => ipcRenderer.send('window:close'),
+
+  /** Print the current window silently — no print-preview dialog. */
+  printSilent: (options) => ipcRenderer.invoke('print:silent', options),
 });

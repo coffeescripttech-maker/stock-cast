@@ -60,10 +60,10 @@ export function Sidebar() {
     }] : []),
     // Available to both owner and staff
     { path: '/pos', icon: <ShoppingCart size={20} />, label: 'POS' },
+    { path: '/rewards', icon: <Star size={20} />, label: 'Rewards' },
     ...(isOwner ? [
       { path: '/inventory', icon: <Package size={20} />, label: 'Inventory' },
       { path: '/transactions', icon: <Receipt size={20} />, label: 'Transactions' },
-      { path: '/rewards', icon: <Star size={20} />, label: 'Rewards' },
     ] : []),
     // Owner-only menus
     ...(isOwner ? [

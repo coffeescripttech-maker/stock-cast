@@ -7,6 +7,7 @@ import { Button } from '../ui/Button';
 import { useDataStore } from '../../stores/dataStore';
 import { usePOSStore } from '../../stores/posStore';
 import { useUIStore } from '../../stores/uiStore';
+import { findProductByBarcode } from '../../lib/barcode';
 
 interface ScannerModalProps {
   open: boolean;
@@ -80,23 +81,24 @@ export function ScannerModal({ open, onOpenChange }: ScannerModalProps) {
 
   // ---- Shared lookup: used by live scan, photo decode, and manual entry ----
   function handleBarcode(raw: string) {
-    const code = raw.trim();
-    if (!code) return;
-
-    const rt = products.find((p) => p.retailBarcode === code);
-    const ws = products.find((p) => p.wholesaleBarcode === code);
-
-    if (rt) {
-      addToCart(rt.id, rt.name, 'rt', rt.retailPrice);
-      showToast(`Added ${rt.name} (RT)`, 'success');
-      onOpenChange(false);
-    } else if (ws) {
-      addToCart(ws.id, ws.name, 'ws', ws.wholesalePrice);
-      showToast(`Added ${ws.name} (WS)`, 'success');
-      onOpenChange(false);
-    } else {
-      showToast(`Product not found: ${code}`, 'error');
+    const match = findProductByBarcode(products, raw);
+    if (!match) {
+      showToast(`Product not found: ${raw.trim()}`, 'error');
+      return;
     }
+    if (match.price <= 0) {
+      showToast(
+        `No ${match.type.toUpperCase()} price set for ${match.product.name}`,
+        'error'
+      );
+      return;
+    }
+    addToCart(match.product.id, match.product.name, match.type, match.price);
+    showToast(
+      `Added ${match.product.name} (${match.type.toUpperCase()})`,
+      'success'
+    );
+    onOpenChange(false);
   }
 
   // ---- Live scan via @yudiel/react-qr-scanner (ZXing WASM under the hood) ----

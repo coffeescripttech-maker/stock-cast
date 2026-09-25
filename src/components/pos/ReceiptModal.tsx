@@ -69,7 +69,10 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
       className={receiptSettings.paperSize === '80mm' ? 'w-[520px]' : 'w-[420px]'}
     >
       {/* Receipt content - also used for print */}
-      <div className="receipt-text space-y-1.5">
+      <div
+        className={`receipt-text ${
+          receiptSettings.paperSize === '80mm' ? 'paper-80' : 'paper-58'
+        } space-y-1.5`}>
         {/* Header */}
         <div className="text-center">
           {receiptSettings.showLogoOnReceipt && brandingSettings.storeLogo && (

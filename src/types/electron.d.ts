@@ -21,6 +21,10 @@ declare global {
       minimize: () => void;
       maximize: () => void;
       close: () => void;
+      printSilent: (options?: {
+        deviceName?: string;
+        landscape?: boolean;
+      }) => Promise<boolean>;
     };
   }
 }
