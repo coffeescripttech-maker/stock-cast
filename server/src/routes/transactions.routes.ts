@@ -96,9 +96,29 @@ router.get('/', async (req, res, next) => {
       [...params, limit, offset]
     );
 
+    const transactions = rows as TransactionRow[];
+
+    // Attach line items so the UI can show full purchase details
+    if (transactions.length > 0) {
+      const ids = transactions.map((r) => r.id);
+      const [itemRows] = await pool.query<MySqlRow[]>(
+        `SELECT * FROM transaction_items WHERE transaction_id IN (?)`,
+        [ids]
+      );
+      const itemsByTx = new Map<number, TransactionItemRow[]>();
+      for (const item of itemRows as unknown as TransactionItemRow[]) {
+        const arr = itemsByTx.get(item.transaction_id) || [];
+        arr.push(item);
+        itemsByTx.set(item.transaction_id, arr);
+      }
+      for (const tx of transactions) {
+        tx.items = itemsByTx.get(tx.id) || [];
+      }
+    }
+
     res.json({
       success: true,
-      data: rows as TransactionRow[],
+      data: transactions,
       meta: { total, page, limit, pages: Math.ceil(total / limit) },
     });
   } catch (err) {
