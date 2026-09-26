@@ -41,7 +41,7 @@ async function logAudit(action: string, details: string, user: string, role: str
 router.get('/', async (req, res, next) => {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(100, Number(req.query.limit) || 50);
+    const limit = Math.min(1000, Number(req.query.limit) || 50);
     const offset = (page - 1) * limit;
     const search = req.query.search as string | undefined;
     const type = req.query.type as string | undefined;
