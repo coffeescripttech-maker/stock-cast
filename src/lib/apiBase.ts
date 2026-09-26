@@ -1,24 +1,29 @@
 /**
  * Configurable API base URL.
  *
- * Web & Electron: the app and server share an origin (dev proxy / Electron
- * static serving), so the default `window.location.origin` is correct and this
- * module is a no-op.
- *
- * Android (Capacitor): the WebView loads from `https://localhost` while the
- * server lives on the PC, so the user must enter the server address
- * (`http://<PC-LAN-IP>:3001`) once — stored in localStorage, read here.
+ * Resolution order:
+ *   1. A runtime override saved by the user (Android LAN / DeviceTest) —
+ *      localStorage `ruizpos_api_base`.
+ *   2. A build-time URL from `VITE_API_URL` — for deployments where the API
+ *      lives on a different origin (e.g. Vercel frontend + Railway backend).
+ *      Set it in your hosting provider's build-time env vars (Vercel: Project
+ *      Settings → Environment Variables → VITE_API_URL = https://… → deploy).
+ *   3. `window.location.origin` — dev proxy / Electron static serving share
+ *      the origin, so this default is correct for local runs.
  */
 
 const STORAGE_KEY = 'ruizpos_api_base';
+
+const BUILD_API_URL: string | undefined = (import.meta as { env?: Record<string, string> }).env?.VITE_API_URL;
 
 export function getApiBase(): string {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)?.trim();
     if (saved) return saved.replace(/\/+$/, '');
   } catch {
-    // localStorage unavailable — fall back to same-origin
+    // localStorage unavailable — fall back to build URL / same-origin
   }
+  if (BUILD_API_URL?.trim()) return BUILD_API_URL.trim().replace(/\/+$/, '');
   return window.location.origin;
 }
 
