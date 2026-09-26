@@ -7,6 +7,7 @@ import type { SaleType } from '../../types/product';
 
 export function Cart() {
   const cart = usePOSStore((s) => s.cart);
+  const saleMode = usePOSStore((s) => s.saleMode);
   const updateCartItemQty = usePOSStore((s) => s.updateCartItemQty);
   const setCartItemQty = usePOSStore((s) => s.setCartItemQty);
   const toggleCartItemType = usePOSStore((s) => s.toggleCartItemType);
@@ -64,6 +65,7 @@ export function Cart() {
             key={`${item.productId}-${item.type}`}
             item={item}
             index={i}
+            locked={saleMode !== null}
             onUpdateQty={updateCartItemQty}
             onSetQty={setCartItemQty}
             onToggleType={handleToggleType}

@@ -56,6 +56,16 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
     : (receipt.total * taxSettings.rate) / 100;
   const taxShown = receipt.taxAmount > 0 ? receipt.taxAmount : fallbackTax;
 
+  console.log('[RECEIPT-TAX]', {
+    taxEnabled,
+    currentRate: taxSettings.rate,
+    inclusive: taxSettings.inclusivePricing,
+    storedTaxAmount: receipt.taxAmount,
+    fallbackTax,
+    taxShown,
+    receiptTotal: receipt.total,
+  });
+
   const dash = '─'.repeat(48);
   const typeLabel = receipt.type === 'rt' ? 'RETAIL' : receipt.type === 'ws' ? 'WHOLESALE' : 'MIXED (Retail + Wholesale)';
 

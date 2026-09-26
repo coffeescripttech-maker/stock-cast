@@ -69,6 +69,7 @@ const drawTracker: TrackFunction = (detectedCodes, ctx) => {
 export function ScannerModal({ open, onOpenChange }: ScannerModalProps) {
   const products = useDataStore((s) => s.products);
   const addToCart = usePOSStore((s) => s.addToCart);
+  const saleMode = usePOSStore((s) => s.saleMode);
   const showToast = useUIStore((s) => s.showToast);
 
   const [barcode, setBarcode] = useState('');
@@ -81,7 +82,7 @@ export function ScannerModal({ open, onOpenChange }: ScannerModalProps) {
 
   // ---- Shared lookup: used by live scan, photo decode, and manual entry ----
   function handleBarcode(raw: string) {
-    const match = findProductByBarcode(products, raw);
+    const match = findProductByBarcode(products, raw, saleMode);
     if (!match) {
       showToast(`Product not found: ${raw.trim()}`, 'error');
       return;

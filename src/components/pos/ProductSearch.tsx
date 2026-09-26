@@ -23,6 +23,7 @@ interface ProductSearchProps {
 export function ProductSearch({ onScan }: ProductSearchProps) {
   const products = useDataStore(s => s.products);
   const addToCart = usePOSStore(s => s.addToCart);
+  const saleMode = usePOSStore(s => s.saleMode);
   const showToast = useUIStore(s => s.showToast);
 
   const [query, setQuery] = useState('');
@@ -53,7 +54,7 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
   }
 
   function addToCartFromProduct(p: Product, typeOverride?: SaleType) {
-    const saleType = typeOverride ?? getDefaultSaleType(p);
+    const saleType = typeOverride ?? saleMode ?? getDefaultSaleType(p);
     const price = saleType === 'ws' ? p.wholesalePrice : p.retailPrice;
     if (price <= 0) {
       showToast(
@@ -82,7 +83,7 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
       return;
     }
     if (e.key === 'Enter') {
-      const match = findProductByBarcode(products, query);
+      const match = findProductByBarcode(products, query, saleMode);
       if (!match) return;
       e.preventDefault();
       if (match.price <= 0) {
@@ -191,15 +192,16 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {filtered.map(p => {
             const defaultType = getDefaultSaleType(p);
+            const effectiveType: SaleType = saleMode ?? defaultType;
             const primaryPrice =
-              defaultType === 'ws' ? p.wholesalePrice : p.retailPrice;
-            const { stock, isLow, isOut } = getStockInfo(p, defaultType);
+              effectiveType === 'ws' ? p.wholesalePrice : p.retailPrice;
+            const { stock, isLow, isOut } = getStockInfo(p, effectiveType);
             const catColor =
               CATEGORY_COLORS[p.category] ?? CATEGORY_COLORS['Others'];
             const firstChar = p.name.charAt(0).toUpperCase();
 
             // Determine the "other" type for dual-price display
-            const otherType: SaleType = defaultType === 'rt' ? 'ws' : 'rt';
+            const otherType: SaleType = effectiveType === 'rt' ? 'ws' : 'rt';
             const otherPrice =
               otherType === 'ws' ? p.wholesalePrice : p.retailPrice;
 
@@ -278,7 +280,7 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
                     <span className="text-xl font-black font-mono text-brand">
                       {fmtCurrency(primaryPrice)}
                     </span>
-                    {viewType === 'all' && otherPrice > 0 && (
+                    {viewType === 'all' && saleMode === null && otherPrice > 0 && (
                       <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
                         {fmtCurrency(otherPrice)}
                       </span>
@@ -287,6 +289,7 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
 
                   {/* Add button */}
                   {viewType === 'all' &&
+                  saleMode === null &&
                   p.retailPrice > 0 &&
                   p.wholesalePrice > 0 ? (
                     <div className="flex gap-1.5 mt-auto">

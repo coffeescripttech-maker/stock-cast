@@ -69,7 +69,14 @@
 
 /* Print styles — print ONLY the receipt strip (system/silent print path) */
 @media print {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
   body * { visibility: hidden; }
+  html.electron body > * { transform: none !important; }
   .receipt-text,
   .receipt-text * { visibility: visible; }
   .receipt-text {
@@ -79,9 +86,29 @@
     width: 80mm;
     background: #fff;
     color: #0f172a;
+    z-index: 9999;
+    opacity: 1 !important;
+    transform: none !important;
   }
   .receipt-text.paper-58 { width: 58mm; }
   .receipt-text.paper-80 { width: 80mm; }
+  /* Desktop app only: name the page so the thermal roll is sized correctly. */
+  html.electron .receipt-text.paper-58 { page: paper58; }
+  html.electron .receipt-text.paper-80 { page: paper80; }
+}
+
+/* Named pages — size the printed page to the receipt roll so continuous
+   thermal printers (58mm/80mm) receive a narrowly-sized job instead of a
+   Letter page whose receipt strip sits outside the printable area. (The
+   renderer also passes an exact page size at print time; these are the
+   fallback bounds.) */
+@page paper58 {
+  size: 58mm 200mm;
+  margin: 0;
+}
+@page paper80 {
+  size: 80mm 200mm;
+  margin: 0;
 }
 
 /* Receipt font */

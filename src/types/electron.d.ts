@@ -24,6 +24,13 @@ declare global {
       printSilent: (options?: {
         deviceName?: string;
         landscape?: boolean;
+        /** Page geometry in microns (matches Electron's pageSize option). */
+        pageSize?: { width: number; height: number };
+      }) => Promise<boolean>;
+      printRaw: (payload: {
+        printerName?: string;
+        /** Raw ESC/POS receipt bytes as a lowercase hex string. */
+        hex: string;
       }) => Promise<boolean>;
     };
   }

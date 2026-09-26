@@ -15,9 +15,10 @@ import { ScannerModal } from '../components/pos/ScannerModal';
 import { NFCLinkModal } from '../components/pos/NFCLinkModal';
 import { ReceiptModal } from '../components/pos/ReceiptModal';
 import { BluetoothPrinterButton } from '../components/pos/BluetoothPrinterButton';
+import { SaleModeToggle } from '../components/pos/SaleModeToggle';
 import { buildSaleReceipt } from '../lib/escpos';
 import { printReceipt } from '../lib/printReceipt';
-import { printCurrentView } from '../lib/electron';
+import { printFallback } from '../lib/electron';
 import { applyTax } from '../lib/tax';
 import { printerReady, usePrinterStore } from '../stores/printerStore';
 import type { Transaction } from '../types/transaction';
@@ -25,6 +26,7 @@ import type { Transaction } from '../types/transaction';
 export default function POSPage() {
   const cart = usePOSStore(s => s.cart);
   const addToCart = usePOSStore(s => s.addToCart);
+  const saleMode = usePOSStore(s => s.saleMode);
   const clearCart = usePOSStore(s => s.clearCart);
   const linkedCustomer = usePOSStore(s => s.linkedCustomer);
   const redeemPoints = usePOSStore(s => s.redeemPoints);
@@ -126,7 +128,7 @@ export default function POSPage() {
   // ---- Barcode wedge: a scanned code auto-adds the product to the cart ----
   const handleBarcodeScan = useCallback(
     (code: string) => {
-      const match = findProductByBarcode(products, code);
+      const match = findProductByBarcode(products, code, saleMode);
       if (!match) {
         showToast(`Product not found: ${code}`, 'error');
         return;
@@ -144,7 +146,7 @@ export default function POSPage() {
         'success'
       );
     },
-    [products, addToCart, showToast]
+    [products, saleMode, addToCart, showToast]
   );
 
   useBarcodeWedge(handleBarcodeScan);
@@ -166,7 +168,7 @@ export default function POSPage() {
    */
   function printTransaction(tx: Transaction) {
     if (printReceipt(tx) === 'fallback') {
-      printCurrentView();
+      printFallback(tx);
     }
   }
 
@@ -236,11 +238,11 @@ export default function POSPage() {
           );
       }, 500);
     } else if (pSettings.autoPrintReceipt) {
-      // No Bluetooth printer but Auto-Print is on → silent print on Electron
-      // (or the system print dialog in a plain browser). The receipt modal
-      // stays open — closed only by the cashier.
+      // No Bluetooth printer but Auto-Print is on → send the receipt as raw
+      // ESC/POS text to the thermal printer (pure text, no rendering); falls
+      // back to silent page print if the OS rejects it.
       setTimeout(() => {
-        printCurrentView();
+        printFallback(tx);
       }, 500);
     }
   }
@@ -262,10 +264,16 @@ export default function POSPage() {
     <div className="animate-[fadeUp_0.25s_ease]">
       {/* Header */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-400 dark:text-slate-500">
-          Search by name or scan a barcode — sale type is auto-detected per
-          product
-        </p>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <SaleModeToggle />
+          <p className="text-sm text-slate-400 dark:text-slate-500">
+            {saleMode === null
+              ? 'Scan or search — sale type follows each product'
+              : saleMode === 'ws'
+                ? 'Locked to WHOLESALE — bawat scan ay wholesale price'
+                : 'Locked to RETAIL — bawat scan ay retail price'}
+          </p>
+        </div>
         <BluetoothPrinterButton />
       </div>
 
@@ -273,6 +281,7 @@ export default function POSPage() {
       <div className="hidden lg:flex flex-wrap gap-1.5 mb-5">
         {[
           { kbd: 'F4', label: 'Print' },
+          { kbd: 'F5', label: 'Mode' },
           { kbd: 'F8', label: 'Checkout' },
           { kbd: 'F9', label: 'Clear' },
           { kbd: 'F11', label: 'NFC Link' },

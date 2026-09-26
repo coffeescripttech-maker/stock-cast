@@ -227,6 +227,14 @@ router.post('/', async (req, res, next) => {
       taxAmount > 0 && !taxCfg.inclusivePricing
         ? Math.round((preTaxTotal + taxAmount) * 100) / 100
         : preTaxTotal;
+    console.log('[SERVER-TAX]', {
+      rawTotal,
+      discount,
+      preTaxTotal,
+      taxConfig: taxCfg ?? null,
+      taxAmount,
+      total,
+    });
     const changeAmount = input.amount_tendered - total;
     const pointsEarned = config && preTaxTotal > 0 ? Math.floor(preTaxTotal / config.earn_rate) : 0;
 

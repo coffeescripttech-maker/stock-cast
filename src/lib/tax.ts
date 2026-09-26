@@ -30,5 +30,6 @@ export function applyTax(subtotal: number, tax: TaxSettings): TaxOnSale {
     tax.inclusivePricing ? (preTotal * rate) / (100 + rate) : (preTotal * rate) / 100
   );
   const total = tax.inclusivePricing ? preTotal : round2(preTotal + taxAmount);
+  console.log('[POS-TAX] applyTax', { subtotal: preTotal, enabled: tax.enabled, rate, inclusivePricing: tax.inclusivePricing, taxAmount, total });
   return { taxAmount, total };
 }

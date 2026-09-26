@@ -3,7 +3,7 @@ import {
   Search, Plus, Trash2, Edit3, Package, AlertTriangle, DollarSign, ScanLine,
   ArrowUpDown, Grid3X3, List, Download, BarChart3,
   TrendingUp, X, ChevronLeft, ChevronRight,
-  Activity, Clock, Truck, Camera,
+  Activity, Clock, Truck, Camera, Copy,
 } from 'lucide-react';
 import { Camera as CapCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { useDataStore } from '../stores/dataStore';
@@ -1164,8 +1164,6 @@ function ProductFormModal({
     if (!rt) errs.retailBarcode = 'Retail barcode is required.';
     else if (!BARCODE_RE.test(rt)) errs.retailBarcode = 'Only letters, numbers, dashes or spaces allowed.';
     else if (barcodeTaken(rt)) errs.retailBarcode = 'This barcode is already used by another product.';
-    else if (ws && rt.toLowerCase() === ws.toLowerCase())
-      errs.retailBarcode = 'Retail and wholesale barcodes must be different.';
 
     if (ws) {
       if (!BARCODE_RE.test(ws)) errs.wholesaleBarcode = 'Only letters, numbers, dashes or spaces allowed.';
@@ -1298,8 +1296,15 @@ function ProductFormModal({
             onScan={() => setScanField('retailBarcode')} onSimulate={() => simulateBarcode('retailBarcode')} />
           <BarcodeField label="Wholesale Barcode" color="amber" value={form.wholesaleBarcode}
             error={errors.wholesaleBarcode} onChange={(v) => update('wholesaleBarcode', v)}
-            onScan={() => setScanField('wholesaleBarcode')} onSimulate={() => simulateBarcode('wholesaleBarcode')} />
+            onScan={() => setScanField('wholesaleBarcode')} onSimulate={() => simulateBarcode('wholesaleBarcode')}
+            onSame={() => {
+              update('wholesaleBarcode', form.retailBarcode);
+              showToast('Wholesale barcode set to same as retail', 'info');
+            }} />
         </div>
+        <p className="text-[11px] text-slate-400">
+          Same barcode is allowed for both — the POS prices the scan by the selected sale mode (retail/wholesale).
+        </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -1433,8 +1438,8 @@ function ProductFormModal({
 
 /* ─── Barcode Input Field ─── */
 
-function BarcodeField({ label, color, value, onChange, onSimulate, onScan, error }: {
-  label: string; color: 'emerald' | 'amber'; value: string; onChange: (v: string) => void; onSimulate: () => void; onScan?: () => void; error?: string;
+function BarcodeField({ label, color, value, onChange, onSimulate, onScan, onSame, error }: {
+  label: string; color: 'emerald' | 'amber'; value: string; onChange: (v: string) => void; onSimulate: () => void; onScan?: () => void; onSame?: () => void; error?: string;
 }) {
   const cc = color === 'emerald'
     ? 'border-emerald-200 focus:border-emerald-500 text-emerald-600'
@@ -1481,25 +1486,33 @@ function BarcodeField({ label, color, value, onChange, onSimulate, onScan, error
 
   return (
     <div className="space-y-1.5">
-      <label className={cn('text-xs font-semibold', color === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
-        {color === 'emerald' ? '🛒' : '📦'} {label}
-      </label>
-      <div className="flex gap-1.5">
-        <input type="text" value={value} onChange={() => {}} onKeyDown={handleKeyDown} onPaste={handlePaste}
-          placeholder={color === 'emerald' ? 'e.g. 1234567890' : 'e.g. 2234567890'}
-          className={cn('flex-1 px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none dark:bg-slate-900 dark:text-slate-100',
-            error ? 'border-red-400 focus:border-red-500' : cc)} />
-        <button onClick={onSimulate} title="Generate a random barcode"
-          className={cn('px-2.5 py-2 rounded-lg border text-xs font-semibold transition-colors hover:bg-slate-50 dark:hover:bg-slate-800', cc)}>
-          <ScanLine size={13} />
-        </button>
-        {onScan && (
-          <button onClick={onScan} title="Scan with camera"
-            className={cn('px-2.5 py-2 rounded-lg border bg-brand text-[#1C1C1C] text-xs font-semibold transition-transform active:scale-95', cc)}>
-            <Camera size={13} />
+      <div className="flex items-center justify-between gap-2">
+        <label className={cn('text-xs font-semibold', color === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
+          {color === 'emerald' ? '🛒' : '📦'} {label}
+        </label>
+        <div className="flex items-center gap-1">
+          {onSame && (
+            <button onClick={onSame} title="Use the same barcode as retail"
+              className={cn('w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand transition-colors', cc)}>
+              <Copy size={13} />
+            </button>
+          )}
+          {onScan && (
+            <button onClick={onScan} title="Scan with camera"
+              className={cn('w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand transition-colors', cc)}>
+              <Camera size={13} />
+            </button>
+          )}
+          <button onClick={onSimulate} title="Generate a random barcode"
+            className={cn('w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand transition-colors', cc)}>
+            <ScanLine size={13} />
           </button>
-        )}
+        </div>
       </div>
+      <input type="text" value={value} onChange={() => {}} onKeyDown={handleKeyDown} onPaste={handlePaste}
+        placeholder={color === 'emerald' ? 'e.g. 1234567890' : 'e.g. 2234567890'}
+        className={cn('w-full px-3.5 py-2.5 text-sm rounded-xl border bg-slate-50 outline-none dark:bg-slate-900 dark:text-slate-100',
+          error ? 'border-red-400 focus:border-red-500' : cc)} />
       {error ? <p className="text-[11px] font-medium text-red-500">{error}</p> : <BarcodeVisual small code={value} />}
     </div>
   );

@@ -8,13 +8,15 @@ import type { SaleType } from '../../types/product';
 interface CartItemRowProps {
   item: CartItem;
   index: number;
+  /** When a global sale mode is locked, the per-line RT/WS toggle is hidden. */
+  locked?: boolean;
   onUpdateQty: (idx: number, delta: number) => void;
   onSetQty: (idx: number, qty: number) => void;
   onToggleType: (idx: number, type: SaleType) => void;
   onRemove: (idx: number) => void;
 }
 
-export function CartItemRow({ item, index, onUpdateQty, onSetQty, onToggleType, onRemove }: CartItemRowProps) {
+export function CartItemRow({ item, index, locked = false, onUpdateQty, onSetQty, onToggleType, onRemove }: CartItemRowProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(String(item.qty));
   const inputRef = useRef<HTMLInputElement>(null);
@@ -71,13 +73,21 @@ export function CartItemRow({ item, index, onUpdateQty, onSetQty, onToggleType, 
           <span className="text-[10px] font-mono text-slate-400">
             {fmtCurrency(item.price)}/{item.type === 'ws' ? 'case' : 'pc'}
           </span>
-          <button
-            onClick={() => onToggleType(index, item.type === 'rt' ? 'ws' : 'rt')}
-            className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold transition-colors hover:opacity-80', typeColor.badge)}
-            title="Click to toggle sale type"
-          >
-            {item.type.toUpperCase()}
-          </button>
+          {locked ? (
+            <span
+              className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold', typeColor.badge)}
+              title="Sale mode is locked">
+              {item.type.toUpperCase()}
+            </span>
+          ) : (
+            <button
+              onClick={() => onToggleType(index, item.type === 'rt' ? 'ws' : 'rt')}
+              className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold transition-colors hover:opacity-80', typeColor.badge)}
+              title="Click to toggle sale type"
+            >
+              {item.type.toUpperCase()}
+            </button>
+          )}
         </div>
 
         {/* Quantity controls — grouped pill */}

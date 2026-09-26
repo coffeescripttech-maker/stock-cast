@@ -3,11 +3,11 @@ import { useAuthStore } from '../stores/authStore';
 import { usePOSStore } from '../stores/posStore';
 import { useUIStore } from '../stores/uiStore';
 import { printReceipt } from '../lib/printReceipt';
-import { printCurrentView } from '../lib/electron';
+import { printFallback } from '../lib/electron';
 
 export function useKeyboardShortcuts() {
   const { currentUser } = useAuthStore();
-  const { cart, receiptIsShowing, clearCart, lastReceipt, setReceiptShowing } = usePOSStore();
+  const { cart, receiptIsShowing, clearCart, lastReceipt, setReceiptShowing, saleMode, setSaleMode } = usePOSStore();
   const { showToast, closeModal, setCommandPaletteOpen } = useUIStore();
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function useKeyboardShortcuts() {
       if (e.key === 'Enter' && receiptIsShowing) {
         e.preventDefault();
         const printed = printReceipt(lastReceipt);
-        if (printed === 'fallback') printCurrentView();
+        if (printed === 'fallback') printFallback(lastReceipt);
         setReceiptShowing(false);
         closeModal();
         // Tell the POS page to close the visible receipt modal for the next customer.
@@ -31,6 +31,20 @@ export function useKeyboardShortcuts() {
           e.preventDefault();
           if (!lastReceipt) {
             showToast('No receipt to print', 'info');
+          }
+          break;
+        // F5 — Cycle sale mode: Auto -> Retail -> Wholesale -> Auto
+        case 'F5':
+          e.preventDefault();
+          {
+            const next = saleMode === null ? 'rt' : saleMode === 'rt' ? 'ws' : null;
+            setSaleMode(next);
+            showToast(
+              next === null
+                ? 'Sale mode: Auto (per product)'
+                : `Sale mode locked: ${next.toUpperCase()}`,
+              'info'
+            );
           }
           break;
         // Ctrl+K / Cmd+K — Open command palette
@@ -68,5 +82,5 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [currentUser, receiptIsShowing, cart.length, lastReceipt]);
+  }, [currentUser, receiptIsShowing, cart.length, lastReceipt, saleMode]);
 }

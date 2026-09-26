@@ -6,6 +6,9 @@ import type { Transaction } from '../types/transaction';
 
 interface POSState {
   cart: CartItem[];
+  /** Sale mode lock for the whole session: 'rt' | 'ws' pushes every added item
+   * to that price type; null = Auto (per-product default). */
+  saleMode: SaleType | null;
   searchQuery: string;
   searchResults: SearchResult[];
   searchSelectedIndex: number;
@@ -14,6 +17,7 @@ interface POSState {
   lastReceipt: Transaction | null;
   receiptIsShowing: boolean;
 
+  setSaleMode: (mode: SaleType | null) => void;
   setSearchQuery: (q: string) => void;
   setSearchResults: (results: SearchResult[]) => void;
   setSearchSelectedIndex: (idx: number) => void;
@@ -32,6 +36,7 @@ interface POSState {
 
 export const usePOSStore = create<POSState>()((set, get) => ({
   cart: [],
+  saleMode: null,
   searchQuery: '',
   searchResults: [],
   searchSelectedIndex: -1,
@@ -39,6 +44,8 @@ export const usePOSStore = create<POSState>()((set, get) => ({
   redeemPoints: 0,
   lastReceipt: null,
   receiptIsShowing: false,
+
+  setSaleMode: (mode) => set({ saleMode: mode }),
 
   setSearchQuery: (q) => set({ searchQuery: q }),
 

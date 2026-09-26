@@ -116,9 +116,9 @@ INSERT INTO system_settings (id, settings) VALUES (1, '{
     "returnPolicyText": ""
   },
   "tax": {
-    "enabled": false,
+    "enabled": true,
     "label": "VAT",
-    "rate": 0,
+    "rate": 12,
     "inclusivePricing": false,
     "currencySymbol": "₱",
     "currencyPosition": "before",

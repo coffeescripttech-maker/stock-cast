@@ -22,6 +22,7 @@
 const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { execFile } = require('child_process');
 const { pathToFileURL } = require('url');
 
 // ---------------------------------------------------------------------------
@@ -204,6 +205,25 @@ function createWindow() {
 // IPC (used by the preload bridge)
 // ---------------------------------------------------------------------------
 
+/**
+ * Pick the best printer for receipts: the OS default if one is marked, else
+ * the first thermal (POS-58 / 58mm / thermal / receipt) printer, else the
+ * first available printer. Many POS setups have no printer marked default.
+ */
+async function resolvePrinterName(wc) {
+  try {
+    const printers = await wc.getPrintersAsync();
+    if (!printers.length) return null;
+    const def = printers.find((p) => p.isDefault);
+    const thermal = printers
+      .filter((p) => /pos-?58|58mm|thermal|receipt/i.test(p.name))
+      .sort((a, b) => Number(a.name.includes('(')) - Number(b.name.includes('(')))[0];
+    return (def || thermal || printers[0]).name;
+  } catch {
+    return null;
+  }
+}
+
 function registerIpcHandlers() {
   ipcMain.handle('app:get-info', () => ({
     appName: app.getName(),
@@ -235,15 +255,209 @@ function registerIpcHandlers() {
   // Silent print: render the current page to the default (or requested)
   // printer WITHOUT the print-preview dialog. This is what makes receipts
   // print automatically in the desktop app.
-  ipcMain.handle('print:silent', (event, options) => {
+  ipcMain.handle('print:silent', async (event, options) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (!win) return false;
+
+    // ── PRINT-DEBUG: snapshot + printer info (temporary diagnostics) ──
+    const debugLogPath = path.join(app.getPath('desktop'), 'print-debug-log.txt');
+    const appendLog = (line) => {
+      try {
+        fs.appendFileSync(debugLogPath, `${line}\n`);
+      } catch {}
+      console.log(line);
+    };
+    try {
+      const image = await win.webContents.capturePage();
+      const debugPath = path.join(app.getPath('desktop'), `print-debug-${Date.now()}.png`);
+      fs.writeFileSync(debugPath, image.toPNG());
+      appendLog(`[PRINT-DEBUG] snapshot saved → ${debugPath}`);
+    } catch (err) {
+      appendLog(`[PRINT-DEBUG] capturePage failed: ${err}`);
+    }
+    try {
+      const printers = await win.webContents.getPrintersAsync();
+      const rows = printers.map((p) => ({
+        name: p.name,
+        isDefault: p.isDefault,
+        displayName: p.displayName,
+      }));
+      appendLog(`[PRINT-DEBUG] request options: ${JSON.stringify(options || {})}`);
+      appendLog(`[PRINT-DEBUG] printers: ${JSON.stringify(rows, null, 2)}`);
+    } catch (err) {
+      appendLog(`[PRINT-DEBUG] getPrintersAsync failed: ${err}`);
+    }
+    // ── /PRINT-DEBUG ──
+
+    // Resolve the target printer: explicit deviceName wins; otherwise the OS
+    // default; otherwise the first thermal (POS-58 / 58mm) printer; else the
+    // first available printer. Many POS setups have no printer marked default.
+    let deviceName = options && options.deviceName;
+    if (!deviceName) {
+      deviceName = await resolvePrinterName(win.webContents);
+    }
+    appendLog(`[PRINT-DEBUG] resolved deviceName = ${deviceName || '(none)'}`);
+
+    const pageSize =
+      (options && options.pageSize) || { width: 58000, height: 297000 };
+    appendLog(
+      `[PRINT-DEBUG] pageSize = ${(pageSize.width / 1000).toFixed(0)}mm x ${(pageSize.height / 1000).toFixed(0)}mm (${JSON.stringify(pageSize)})`,
+    );
+
     return new Promise((resolve) => {
       win.webContents.print(
-        { silent: true, printBackground: true, ...(options || {}) },
-        (success) => resolve(Boolean(success)),
+        {
+          silent: true,
+          printBackground: true,
+          margins: { marginType: 'none' },
+          // Default to a 58mm roll page when the renderer didn't specify one.
+          pageSize,
+          ...(options || {}),
+          deviceName,
+        },
+        (success) => {
+          try {
+            fs.appendFileSync(
+              debugLogPath,
+              `[PRINT-DEBUG] print() callback success = ${success}\n`,
+            );
+          } catch {}
+          console.log('[PRINT-DEBUG] print() callback success =', success);
+          resolve(Boolean(success));
+        },
       );
     });
+  });
+
+  // Raw ESC/POS print: send pre-built receipt bytes straight to a thermal
+  // printer through the Windows raw spooler (winspool.drv WritePrinter with
+  // RAW data type) via a tiny PowerShell helper. No HTML rendering involved —
+  // this is the same pure-text path the Bluetooth printers use.
+  const RAW_PRINT_PS1 = `param(
+  [string]$PrinterName,
+  [string]$HexData
+)
+
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public class RawPrinterHelper {
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+  public class DOCINFOA {
+    [MarshalAs(UnmanagedType.LPStr)] public string pDocName;
+    [MarshalAs(UnmanagedType.LPStr)] public string pOutputFile;
+    [MarshalAs(UnmanagedType.LPStr)] public string pDataType;
+  }
+
+  [DllImport("winspool.drv", EntryPoint = "OpenPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true)]
+  public static extern bool OpenPrinter(string szPrinter, out IntPtr hPrinter, IntPtr pd);
+
+  [DllImport("winspool.drv", EntryPoint = "ClosePrinter", SetLastError = true)]
+  public static extern bool ClosePrinter(IntPtr hPrinter);
+
+  [DllImport("winspool.drv", EntryPoint = "StartDocPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true)]
+  public static extern bool StartDocPrinter(IntPtr hPrinter, int level, [In, MarshalAs(UnmanagedType.LPStruct)] DOCINFOA di);
+
+  [DllImport("winspool.drv", EntryPoint = "EndDocPrinter", SetLastError = true)]
+  public static extern bool EndDocPrinter(IntPtr hPrinter);
+
+  [DllImport("winspool.drv", EntryPoint = "StartPagePrinter", SetLastError = true)]
+  public static extern bool StartPagePrinter(IntPtr hPrinter);
+
+  [DllImport("winspool.drv", EntryPoint = "EndPagePrinter", SetLastError = true)]
+  public static extern bool EndPagePrinter(IntPtr hPrinter);
+
+  [DllImport("winspool.drv", EntryPoint = "WritePrinter", SetLastError = true)]
+  public static extern bool WritePrinter(IntPtr hPrinter, IntPtr pBytes, int dwCount, out int dwWritten);
+
+  public static bool Send(string printerName, byte[] data) {
+    IntPtr hPrinter = IntPtr.Zero;
+    if (!OpenPrinter(printerName, out hPrinter, IntPtr.Zero)) return false;
+    try {
+      DOCINFOA di = new DOCINFOA();
+      di.pDocName = "Ruiz Store POS Receipt";
+      di.pDataType = "RAW";
+      bool ok = StartDocPrinter(hPrinter, 1, di);
+      if (!ok) return false;
+      try {
+        if (!StartPagePrinter(hPrinter)) return false;
+        try {
+          IntPtr p = Marshal.AllocHGlobal(data.Length);
+          try {
+            Marshal.Copy(data, 0, p, data.Length);
+            int written = 0;
+            ok = WritePrinter(hPrinter, p, data.Length, out written);
+            return ok && written == data.Length;
+          } finally {
+            Marshal.FreeHGlobal(p);
+          }
+        } finally {
+          EndPagePrinter(hPrinter);
+        }
+      } finally {
+        EndDocPrinter(hPrinter);
+      }
+    } finally {
+      ClosePrinter(hPrinter);
+    }
+  }
+}
+"@
+
+$hex = $HexData.Trim()
+$count = $hex.Length / 2
+$bytes = New-Object byte[] $count
+for ($i = 0; $i -lt $count; $i++) {
+  $bytes[$i] = [Convert]::ToByte($hex.Substring($i * 2, 2), 16)
+}
+
+if ([RawPrinterHelper]::Send($PrinterName, $bytes)) {
+  Write-Output "OK"
+} else {
+  Write-Output "FAIL"
+  exit 1
+}
+`;
+
+  ipcMain.handle('print:raw', async (event, payload) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win || !payload || !payload.hex) return false;
+
+    const printerName = payload.printerName || (await resolvePrinterName(win.webContents));
+    if (!printerName) return false;
+
+    const debugLogPath = path.join(app.getPath('desktop'), 'print-debug-log.txt');
+    const appendLog = (line) => {
+      try {
+        fs.appendFileSync(debugLogPath, `${line}\n`);
+      } catch {}
+      console.log(line);
+    };
+    appendLog(
+      `[PRINT-DEBUG] raw print → printer=${printerName} bytes=${Math.floor(payload.hex.length / 2)}`,
+    );
+
+    try {
+      const ps1Path = path.join(app.getPath('temp'), 'ruiz-pos-raw-print.ps1');
+      fs.writeFileSync(ps1Path, RAW_PRINT_PS1, 'utf8');
+
+      return await new Promise((resolve) => {
+        execFile(
+          'powershell.exe',
+          ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1Path, printerName, payload.hex],
+          { timeout: 20000, windowsHide: true, maxBuffer: 1024 * 1024 },
+          (err, stdout) => {
+            const ok = !err && String(stdout || '').includes('OK');
+            appendLog(`[PRINT-DEBUG] raw print result = ${ok ? 'OK' : 'FAIL'} ${err ? err.message : ''}`);
+            resolve(ok);
+          },
+        );
+      });
+    } catch (err) {
+      appendLog(`[PRINT-DEBUG] raw print error: ${err}`);
+      return false;
+    }
   });
 }
 

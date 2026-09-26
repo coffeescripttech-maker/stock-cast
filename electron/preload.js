@@ -22,4 +22,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   /** Print the current window silently — no print-preview dialog. */
   printSilent: (options) => ipcRenderer.invoke('print:silent', options),
+
+  /** Send raw ESC/POS receipt bytes directly to a thermal printer. */
+  printRaw: (payload) => ipcRenderer.invoke('print:raw', payload),
 });
