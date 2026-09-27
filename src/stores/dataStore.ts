@@ -6,6 +6,7 @@ import type { Customer, RewardsConfig } from '../types/customer';
 import type { AuditEntry } from '../types/audit';
 import type { SaleType } from '../types/product';
 import { defaultRewardsConfig } from '../lib/constants';
+import { hasUnifiedStock } from '../lib/stock';
 import * as api from '../api/client';
 
 // ---- Normalizers: map API snake_case→camelCase fields to frontend field names ----
@@ -225,7 +226,9 @@ export const useDataStore = create<DataState>()(
         set(s => ({
           products: s.products.map(p => {
             if (p.id !== productId) return p;
-            if (type === 'ws')
+            // Same-barcode products share ONE unified stock pool (retailStock),
+            // so wholesale sales also draw from it.
+            if (type === 'ws' && !hasUnifiedStock(p))
               return {
                 ...p,
                 wholesaleStock: Math.max(0, p.wholesaleStock - qty)

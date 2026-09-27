@@ -3,15 +3,14 @@ import { Search, Package, ScanLine } from 'lucide-react';
 import { useDataStore } from '../../stores/dataStore';
 import { usePOSStore } from '../../stores/posStore';
 import { useUIStore } from '../../stores/uiStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { cn } from '../../lib/cn';
 import { fmtCurrency } from '../../lib/formatters';
 import { findProductByBarcode } from '../../lib/barcode';
 import { resolveApiUrl } from '../../lib/apiBase';
 import { CATEGORIES, CATEGORY_COLORS } from '../../lib/constants';
+import { effectiveStock } from '../../lib/stock';
 import type { Product, SaleType, ProductCategory } from '../../types/product';
-
-const LOW_STOCK_RT = 10;
-const LOW_STOCK_WS = 3;
 
 type ViewType = 'all' | SaleType;
 
@@ -28,6 +27,10 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
   const addToCart = usePOSStore(s => s.addToCart);
   const saleMode = usePOSStore(s => s.saleMode);
   const showToast = useUIStore(s => s.showToast);
+  const inv = useSettingsStore(s => s.settings.inventory);
+  // Low-stock thresholds come from Settings → Inventory, not hardcoded.
+  const LOW_STOCK_RT = inv.lowStockThresholdRt;
+  const LOW_STOCK_WS = inv.lowStockThresholdWs;
 
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ProductCategory | 'All'>('All');
@@ -71,7 +74,7 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
   }
 
   function getStockInfo(p: Product, type: SaleType) {
-    const stock = type === 'ws' ? p.wholesaleStock : p.retailStock;
+    const stock = effectiveStock(p, type);
     const threshold = type === 'ws' ? LOW_STOCK_WS : LOW_STOCK_RT;
     return { stock, isLow: stock < threshold, isOut: stock === 0 };
   }

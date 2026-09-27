@@ -52,10 +52,20 @@ const CATEGORY_META = Object.fromEntries(
 function computeStats(products: Product[], rtThreshold: number, wsThreshold: number) {
   const total = products.length;
   const totalValue = products.reduce(
-    (s, p) => s + p.retailStock * p.retailPrice + p.wholesaleStock * p.wholesalePrice, 0
+    (s, p) =>
+      s +
+      effectiveStock(p, 'rt') * p.retailPrice +
+      effectiveStock(p, 'ws') * p.wholesalePrice,
+    0
   );
-  const lowStock = products.filter((p) => p.retailStock <= rtThreshold || p.wholesaleStock <= wsThreshold).length;
-  const outOfStock = products.filter((p) => p.retailStock === 0 && p.wholesaleStock === 0).length;
+  const lowStock = products.filter(
+    (p) =>
+      effectiveStock(p, 'rt') <= rtThreshold ||
+      effectiveStock(p, 'ws') <= wsThreshold
+  ).length;
+  const outOfStock = products.filter(
+    (p) => effectiveStock(p, 'rt') === 0 && effectiveStock(p, 'ws') === 0
+  ).length;
   return { total, totalValue, lowStock, outOfStock };
 }
 

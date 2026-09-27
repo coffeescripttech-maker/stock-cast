@@ -18,15 +18,21 @@ import {
 } from 'recharts';
 import { useDataStore } from '../stores/dataStore';
 import { useUIStore } from '../stores/uiStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import { TypeBadge } from '../components/ui/Badge';
 import { cn } from '../lib/cn';
 import { fmtCurrency, fmtDate } from '../lib/formatters';
+import { effectiveStock } from '../lib/stock';
 
 export default function DashboardPage() {
   const products = useDataStore(s => s.products);
   const transactions = useDataStore(s => s.transactions);
   const theme = useUIStore(s => s.theme);
   const navigate = useNavigate();
+  // Low-stock thresholds come from Settings → Inventory (not hardcoded).
+  const inv = useSettingsStore(s => s.settings.inventory);
+  const LOW_RT = inv.lowStockThresholdRt;
+  const LOW_WS = inv.lowStockThresholdWs;
 
   const [now, setNow] = useState(new Date());
 
@@ -46,8 +52,8 @@ export default function DashboardPage() {
     [transactions, todayStr]
   );
   const todaySales = todayTx.reduce((s, t) => s + t.total, 0);
-  const rtLow = products.filter(p => p.retailStock <= 10);
-  const wsLow = products.filter(p => p.wholesaleStock <= 30);
+  const rtLow = products.filter(p => effectiveStock(p, 'rt') <= LOW_RT);
+  const wsLow = products.filter(p => effectiveStock(p, 'ws') <= LOW_WS);
   const recentTx = useMemo(
     () =>
       [...transactions]
@@ -113,7 +119,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{rtLow.length}</div>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">≤ 10 units remaining</div>
+            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">≤ {LOW_RT} units remaining</div>
           </div>
         </div>
 
@@ -128,7 +134,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">{wsLow.length}</div>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">≤ 30 units remaining</div>
+            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-white/60">≤ {LOW_WS} units remaining</div>
           </div>
         </div>
 
@@ -220,7 +226,7 @@ export default function DashboardPage() {
           icon="🛒"
           items={rtLow}
           type="rt"
-          threshold={10}
+          threshold={LOW_RT}
           onManage={() => navigate('/inventory')}
         />
         <AlertCard
@@ -228,7 +234,7 @@ export default function DashboardPage() {
           icon="📦"
           items={wsLow}
           type="ws"
-          threshold={30}
+          threshold={LOW_WS}
           onManage={() => navigate('/inventory')}
         />
       </div>
@@ -317,8 +323,8 @@ function AlertCard({
       <p className="text-xs text-slate-400 dark:text-slate-500 mb-4 flex items-center gap-1">
         <RefreshCw size={11} />
         {isWS
-          ? 'AI bulk order guidance · ≤30 units'
-          : 'AI-powered reorder recommendations · ≤10 units'}
+          ? `AI bulk order guidance · ≤${threshold} units`
+          : `AI-powered reorder recommendations · ≤${threshold} units`}
       </p>
 
       <div className="space-y-3">

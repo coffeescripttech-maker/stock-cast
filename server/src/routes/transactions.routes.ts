@@ -274,9 +274,9 @@ router.post('/', async (req, res, next) => {
 
     // 5. Insert line items & deduct stock
     for (const item of input.items) {
-      // Get product name for denormalization
+      // Get product name + barcodes for denormalization / stock deduction
       const [[prod]] = await conn.query<MySqlRow[]>(
-        'SELECT name FROM products WHERE id = ?',
+        'SELECT name, retail_barcode, wholesale_barcode FROM products WHERE id = ?',
         [item.product_id]
       );
       const productName = prod ? prod.name : 'Unknown';
@@ -289,8 +289,12 @@ router.post('/', async (req, res, next) => {
          item.type, item.price, item.qty, item.qty * item.price]
       );
 
-      // Deduct stock
-      const stockCol = item.type === 'ws' ? 'wholesale_stock' : 'retail_stock';
+      // Deduct stock — same-barcode products draw from ONE unified pool
+      // (retail_stock) regardless of retail/wholesale sale type.
+      const sameBarcode =
+        !!prod?.retail_barcode && prod.retail_barcode === prod.wholesale_barcode;
+      const stockCol =
+        item.type === 'ws' && !sameBarcode ? 'wholesale_stock' : 'retail_stock';
       await conn.query<MySqlOk>(
         `UPDATE products SET ${stockCol} = GREATEST(${stockCol} - ?, 0) WHERE id = ?`,
         [item.qty, item.product_id]
@@ -431,8 +435,23 @@ router.put('/:txNumber/void', requireRole('owner'), async (req, res, next) => {
       [rows[0].id]
     );
 
+    // Map product → barcodes so same-barcode products restore to the ONE
+    // unified pool (retail_stock) just like they were deducted.
+    const [stockRows] = await pool.query<MySqlRow[]>(
+      'SELECT id, retail_barcode, wholesale_barcode FROM products'
+    );
+    const barcodeMap = new Map<number, { retail: string; wholesale: string }>(
+      stockRows.map((r) => [
+        r.id,
+        { retail: r.retail_barcode ?? '', wholesale: r.wholesale_barcode ?? '' }
+      ])
+    );
+
     for (const item of items as TransactionItemRow[]) {
-      const stockCol = item.type === 'ws' ? 'wholesale_stock' : 'retail_stock';
+      const bc = barcodeMap.get(item.product_id);
+      const sameBarcode = !!bc?.retail && bc.retail === bc.wholesale;
+      const stockCol =
+        item.type === 'ws' && !sameBarcode ? 'wholesale_stock' : 'retail_stock';
       await pool.query<MySqlOk>(
         `UPDATE products SET ${stockCol} = ${stockCol} + ? WHERE id = ?`,
         [item.qty, item.product_id]
