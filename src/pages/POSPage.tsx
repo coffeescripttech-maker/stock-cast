@@ -16,6 +16,8 @@ import { NFCLinkModal } from '../components/pos/NFCLinkModal';
 import { ReceiptModal } from '../components/pos/ReceiptModal';
 import { BluetoothPrinterButton } from '../components/pos/BluetoothPrinterButton';
 import { SaleModeToggle } from '../components/pos/SaleModeToggle';
+import { cn } from '../lib/cn';
+import { ArrowLeftRight } from 'lucide-react';
 import { buildSaleReceipt } from '../lib/escpos';
 import { printReceipt } from '../lib/printReceipt';
 import { printFallback } from '../lib/electron';
@@ -51,6 +53,32 @@ export default function POSPage() {
   const [pendingTotal, setPendingTotal] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
+  // POS layout mode: default = big product grid on the left; cart-first =
+  // big cart + order total on the left with a compact product panel (scanning).
+  const [cartFirst, setCartFirst] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('ruizpos_pos_cart_first') === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  function toggleLayout() {
+    const next = !cartFirst;
+    setCartFirst(next);
+    try {
+      localStorage.setItem('ruizpos_pos_cart_first', next ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
+    showToast(
+      next
+        ? 'Layout: Cart view (cart on the left, compact products)'
+        : 'Layout: Product view (browse grid on the left)',
+      'info'
+    );
+  }
+
   // Compute totals — exclusive-priced sales add VAT on top, so the grand
   // total the cashier collects matches what the server charges.
   const rawTotal = cart.reduce((s, c) => s + c.qty * c.price, 0);
@@ -84,6 +112,10 @@ export default function POSPage() {
       setScannerOpen(true);
     }
 
+    function onLayoutToggle() {
+      toggleLayout();
+    }
+
     // Enter-to-print in useKeyboardShortcuts dispatches this once printing is
     // done, closing the receipt modal for the next customer.
     function onCloseReceipt() {
@@ -94,12 +126,14 @@ export default function POSPage() {
     document.addEventListener('pos:checkout', onCheckout);
     document.addEventListener('pos:nfc-link', onNfcLink);
     document.addEventListener('pos:scanner', onScanner);
+    document.addEventListener('pos:layout-toggle', onLayoutToggle);
     document.addEventListener('pos:close-receipt', onCloseReceipt);
 
     return () => {
       document.removeEventListener('pos:checkout', onCheckout);
       document.removeEventListener('pos:nfc-link', onNfcLink);
       document.removeEventListener('pos:scanner', onScanner);
+      document.removeEventListener('pos:layout-toggle', onLayoutToggle);
       document.removeEventListener('pos:close-receipt', onCloseReceipt);
     };
   }, [
@@ -109,7 +143,8 @@ export default function POSPage() {
     grandTotal,
     linkedCustomer,
     redeemPoints,
-    currentUser
+    currentUser,
+    cartFirst
   ]);
 
   // ---- Handlers ----
@@ -260,6 +295,91 @@ export default function POSPage() {
     }
   }
 
+  // ── Layout panels ──────────────────────────────────────────────────
+  // Order Summary (Order Total + Link Customer + Complete Sale) is ALWAYS
+  // pinned to the bottom of the RIGHT column so it stays visible without
+  // scrolling. The columns are fixed-height; only the inner lists scroll.
+  const cardShell =
+    'bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-5 flex flex-col min-h-0';
+
+  const productsCard = (
+    <div
+      className={cn(
+        cardShell,
+        'max-h-[45vh] lg:max-h-none lg:h-full lg:flex-1 overflow-hidden'
+      )}>
+      <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2 flex-shrink-0">
+        <svg
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        Product Search / Barcode
+      </h2>
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1">
+        <ProductSearch onScan={() => setScannerOpen(true)} compact={cartFirst} />
+      </div>
+    </div>
+  );
+
+  const cartCard = (
+    <div className={cn(cardShell, 'lg:h-full lg:flex-1')}>
+      <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2 flex-shrink-0">
+        <svg
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24">
+          <circle cx="9" cy="21" r="1" />
+          <circle cx="20" cy="21" r="1" />
+          <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57l1.65-8.43H6" />
+        </svg>
+        Cart
+      </h2>
+      <div className="flex-1 min-h-0 flex flex-col">
+        <Cart />
+      </div>
+    </div>
+  );
+
+  const orderSummaryBlock = (
+    <div className="flex-shrink-0">
+      <OrderSummary
+        onCheckout={processCheckout}
+        onClear={() => {
+          clearCart();
+          showToast('Cart cleared', 'info');
+        }}
+        onOpenNFC={() => setNfcOpen(true)}
+        submitting={submitting}
+      />
+    </div>
+  );
+
+  // Left column = main panel (products grid by default, big cart in cart-first)
+  const leftPanel = (
+    <div className="lg:h-[calc(100vh-64px)] lg:sticky lg:top-[52px] lg:min-h-0">
+      {cartFirst ? cartCard : productsCard}
+    </div>
+  );
+
+  // Right column = secondary panel (scrolls) + Order Summary pinned at bottom
+  const rightColumn = (
+    <div className="lg:h-[calc(100vh-64px)] lg:sticky lg:top-[52px] lg:flex lg:flex-col lg:gap-6 lg:min-h-0">
+      <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
+        {cartFirst ? productsCard : cartCard}
+      </div>
+      {orderSummaryBlock}
+    </div>
+  );
+
   return (
     <div className="animate-[fadeUp_0.25s_ease]">
       {/* Header */}
@@ -274,7 +394,26 @@ export default function POSPage() {
                 : 'Locked to RETAIL — bawat scan ay retail price'}
           </p>
         </div>
-        <BluetoothPrinterButton />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleLayout}
+            title="Switch layout (F7)"
+            className={cn(
+              'flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95',
+              cartFirst
+                ? 'bg-brand text-white border-brand shadow-sm shadow-brand/20'
+                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-brand hover:text-brand'
+            )}>
+            <ArrowLeftRight size={14} />
+            <span className="hidden sm:inline">
+              {cartFirst ? 'Product View' : 'Cart View'}
+            </span>
+            <kbd className="hidden lg:inline font-mono text-[9px] px-1.5 py-0.5 rounded bg-white/20">
+              F7
+            </kbd>
+          </button>
+          <BluetoothPrinterButton />
+        </div>
       </div>
 
       {/* Shortcuts bar — desktop only; F-keys don't exist on phones */}
@@ -282,6 +421,7 @@ export default function POSPage() {
         {[
           { kbd: 'F4', label: 'Print' },
           { kbd: 'F5', label: 'Mode' },
+          { kbd: 'F7', label: 'Layout' },
           { kbd: 'F8', label: 'Checkout' },
           { kbd: 'F9', label: 'Clear' },
           { kbd: 'F11', label: 'NFC Link' },
@@ -300,55 +440,12 @@ export default function POSPage() {
         ))}
       </div>
 
-      {/* Main grid — 2-column: Product Search | Cart + Order Total */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 items-start">
-        {/* Left: Product Search / Barcode */}
-        <div className="bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-5">
-          <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-            <svg
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            Product Search / Barcode
-          </h2>
-          <ProductSearch onScan={() => setScannerOpen(true)} />
-        </div>
-
-        {/* Right: Cart + Order Summary stacked */}
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-5">
-            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24">
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57l1.65-8.43H6" />
-              </svg>
-              Cart
-            </h2>
-            <Cart />
-          </div>
-          <OrderSummary
-            onCheckout={processCheckout}
-            onClear={() => {
-              clearCart();
-              showToast('Cart cleared', 'info');
-            }}
-            onOpenNFC={() => setNfcOpen(true)}
-            submitting={submitting}
-          />
-        </div>
+      {/* Main grid — 2 columns. Left = main panel (grid or big cart), right =
+          secondary panel + Order Summary pinned at the bottom so it is
+          ALWAYS visible without scrolling. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,420px)] gap-6 items-start">
+        {leftPanel}
+        {rightColumn}
       </div>
 
       {/* Sticky mobile checkout pill (hidden on desktop) */}

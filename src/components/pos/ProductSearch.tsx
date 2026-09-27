@@ -18,9 +18,12 @@ type ViewType = 'all' | SaleType;
 interface ProductSearchProps {
   /** Opens the camera barcode scanner (mobile only — desktop uses USB wedge / F12) */
   onScan?: () => void;
+  /** Compact list rendering (for cart-first layout) — minimal details,
+   * optimised for scanning instead of browsing. */
+  compact?: boolean;
 }
 
-export function ProductSearch({ onScan }: ProductSearchProps) {
+export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
   const products = useDataStore(s => s.products);
   const addToCart = usePOSStore(s => s.addToCart);
   const saleMode = usePOSStore(s => s.saleMode);
@@ -105,6 +108,8 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
 
   return (
     <div className="space-y-4">
+      {/* Sticky search toolbar — stays pinned while the product grid scrolls */}
+      <div className="space-y-3 lg:sticky lg:top-0 lg:z-10 lg:bg-white lg:dark:bg-[#1C1C1C] lg:-mx-5 lg:px-5 lg:rounded-t-[20px] lg:border-b lg:border-slate-100 lg:dark:border-slate-800 lg:!mb-0">
       {/* Search bar + view type toggle */}
       <div className="flex items-center gap-2.5">
         <div className="relative flex-1">
@@ -176,6 +181,7 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
           );
         })}
       </div>
+      </div>
 
       {/* Product Grid or Empty State */}
       {filtered.length === 0 ? (
@@ -187,6 +193,111 @@ export function ProductSearch({ onScan }: ProductSearchProps) {
               ? 'Try a different search term or barcode'
               : 'Add products to inventory first'}
           </p>
+        </div>
+      ) : compact ? (
+        /* Compact list — minimal details, built for scanning workflows */
+        <div className="space-y-1.5">
+          {filtered.map(p => {
+            const defaultType = getDefaultSaleType(p);
+            const effectiveType: SaleType = saleMode ?? defaultType;
+            const primaryPrice =
+              effectiveType === 'ws' ? p.wholesalePrice : p.retailPrice;
+            const otherType: SaleType = effectiveType === 'rt' ? 'ws' : 'rt';
+            const otherPrice =
+              otherType === 'ws' ? p.wholesalePrice : p.retailPrice;
+            const { stock, isOut } = getStockInfo(p, effectiveType);
+            const catColor =
+              CATEGORY_COLORS[p.category] ?? CATEGORY_COLORS['Others'];
+            const dual =
+              viewType === 'all' &&
+              saleMode === null &&
+              p.retailPrice > 0 &&
+              p.wholesalePrice > 0;
+
+            return (
+              <div
+                key={p.id}
+                onClick={() => addToCartFromProduct(p)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-700/50 bg-white dark:bg-slate-800 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer active:scale-[0.99]">
+                {/* Initial chip */}
+                <div
+                  className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center shadow-sm"
+                  style={{
+                    background: `${catColor.color}22`,
+                    color: catColor.color
+                  }}>
+                  <span className="text-sm font-black">
+                    {p.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Name + price + stock */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate leading-tight">
+                    {p.name}
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-black font-mono text-brand">
+                      {fmtCurrency(primaryPrice)}
+                    </span>
+                    <span
+                      className={cn(
+                        'text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0',
+                        isOut
+                          ? 'bg-red-50 text-red-500 dark:bg-red-950 dark:text-red-400'
+                          : stock < (effectiveType === 'ws' ? LOW_STOCK_WS : LOW_STOCK_RT)
+                            ? 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400'
+                            : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400'
+                      )}>
+                      {isOut ? 'OUT' : stock}
+                    </span>
+                    {!dual && otherPrice > 0 && (
+                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                        {fmtCurrency(otherPrice)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Add controls */}
+                {dual ? (
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        addToCartFromProduct(p, 'rt');
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-brand text-white hover:bg-brand-dark transition-colors">
+                      RT
+                    </button>
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        addToCartFromProduct(p, 'ws');
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold border border-brand text-brand hover:bg-brand/5 dark:border-indigo-400 dark:text-indigo-400 transition-colors">
+                      WS
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      addToCartFromProduct(p);
+                    }}
+                    disabled={isOut}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-[10px] font-bold flex-shrink-0 transition-all',
+                      isOut
+                        ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed'
+                        : 'bg-brand text-white hover:bg-brand-dark active:scale-95'
+                    )}>
+                    {isOut ? 'OUT' : 'ADD'}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">

@@ -47,6 +47,11 @@ export function useKeyboardShortcuts() {
             );
           }
           break;
+        // F7 — Toggle POS layout (product view vs cart-first view)
+        case 'F7':
+          e.preventDefault();
+          document.dispatchEvent(new CustomEvent('pos:layout-toggle'));
+          break;
         // Ctrl+K / Cmd+K — Open command palette
         case 'k':
           if (e.ctrlKey || e.metaKey) {
