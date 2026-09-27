@@ -19,6 +19,7 @@ import { cn } from '../lib/cn';
 import { resolveApiUrl } from '../lib/apiBase';
 import { CATEGORIES, CATEGORY_COLORS } from '../lib/constants';
 import { fmtCurrency } from '../lib/formatters';
+import { effectiveStock } from '../lib/stock';
 import type { Product, ProductCategory } from '../types/product';
 
 /* ─── Running inside the Capacitor Android app (WebView)? ─── */
@@ -252,10 +253,10 @@ export default function InventoryPage() {
 
   /* ── Stock helpers ── */
   function getStockStatus(p: Product) {
-    const rtLow = p.retailStock <= LOW_STOCK_RT;
-    const wsLow = p.wholesaleStock <= LOW_STOCK_WS;
-    const rtOut = p.retailStock === 0;
-    const wsOut = p.wholesaleStock === 0;
+    const rtLow = effectiveStock(p, 'rt') <= LOW_STOCK_RT;
+    const wsLow = effectiveStock(p, 'ws') <= LOW_STOCK_WS;
+    const rtOut = effectiveStock(p, 'rt') === 0;
+    const wsOut = effectiveStock(p, 'ws') === 0;
     if (rtOut && wsOut) return { label: 'Out of Stock', class: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' };
     if (rtLow && wsLow) return { label: 'Low Stock', class: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300' };
     if (rtLow || wsLow) return { label: 'Low Stock', class: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' };
@@ -486,8 +487,8 @@ export default function InventoryPage() {
           ) : (
             <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
               {products
-                .filter((p) => p.retailStock <= LOW_STOCK_RT || p.wholesaleStock <= LOW_STOCK_WS)
-                .sort((a, b) => Math.min(a.retailStock, a.wholesaleStock) - Math.min(b.retailStock, b.wholesaleStock))
+                .filter((p) => effectiveStock(p, 'rt') <= LOW_STOCK_RT || effectiveStock(p, 'ws') <= LOW_STOCK_WS)
+                .sort((a, b) => Math.min(effectiveStock(a, 'rt'), effectiveStock(a, 'ws')) - Math.min(effectiveStock(b, 'rt'), effectiveStock(b, 'ws')))
                 .slice(0, 8)
                 .map((p) => {
                   const catColor = CATEGORY_COLORS[p.category] || CATEGORY_COLORS.Others;
@@ -499,9 +500,9 @@ export default function InventoryPage() {
                       <div className="flex-1 min-w-0">
                         <div className="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate">{p.name}</div>
                         <div className="flex items-center gap-2 text-[9px] text-slate-400">
-                          <span className={cn(p.retailStock <= LOW_STOCK_RT ? 'font-bold text-red-500' : '')}>RT: {p.retailStock}</span>
+                          <span className={cn(effectiveStock(p, 'rt') <= LOW_STOCK_RT ? 'font-bold text-red-500' : '')}>RT: {effectiveStock(p, 'rt')}</span>
                           <span>·</span>
-                          <span className={cn(p.wholesaleStock <= LOW_STOCK_WS ? 'font-bold text-orange-500' : '')}>WS: {p.wholesaleStock}</span>
+                          <span className={cn(effectiveStock(p, 'ws') <= LOW_STOCK_WS ? 'font-bold text-orange-500' : '')}>WS: {effectiveStock(p, 'ws')}</span>
                         </div>
                       </div>
                       <button
@@ -689,8 +690,8 @@ export default function InventoryPage() {
               </thead>
               <tbody>
                 {paginated.map((p) => {
-                  const rtLow = p.retailStock <= LOW_STOCK_RT;
-                  const wsLow = p.wholesaleStock <= LOW_STOCK_WS;
+                  const rtLow = effectiveStock(p, 'rt') <= LOW_STOCK_RT;
+                  const wsLow = effectiveStock(p, 'ws') <= LOW_STOCK_WS;
                   const catColor = CATEGORY_COLORS[p.category] || CATEGORY_COLORS.Others;
                   const isSelected = selectedIds.has(p.id);
 
@@ -795,10 +796,10 @@ export default function InventoryPage() {
           <div className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
               {paginated.map((p) => {
-                const rtLow = p.retailStock <= LOW_STOCK_RT;
-                const wsLow = p.wholesaleStock <= LOW_STOCK_WS;
-                const rtOut = p.retailStock === 0;
-                const wsOut = p.wholesaleStock === 0;
+                const rtLow = effectiveStock(p, 'rt') <= LOW_STOCK_RT;
+                const wsLow = effectiveStock(p, 'ws') <= LOW_STOCK_WS;
+                const rtOut = effectiveStock(p, 'rt') === 0;
+                const wsOut = effectiveStock(p, 'ws') === 0;
                 const catColor = CATEGORY_COLORS[p.category] || CATEGORY_COLORS.Others;
                 const isSelected = selectedIds.has(p.id);
 

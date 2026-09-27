@@ -14,6 +14,7 @@ import { StatCard } from '../components/ui/StatCard';
 import { PaymentBadge } from '../components/ui/PaymentBadge';
 import { cn } from '../lib/cn';
 import { fmtCurrency, fmtDate } from '../lib/formatters';
+import { effectiveStock } from '../lib/stock';
 import type { PaymentMethod } from '../types/transaction';
 
 export default function ReportsPage() {
@@ -128,10 +129,10 @@ export default function ReportsPage() {
     { name: 'Mixed', value: mixedSales, color: '#8b5cf6' },
   ].filter((d) => d.value > 0);
 
-  // Inventory report data
-  const invTotalValue = products.reduce((s, p) => s + p.retailStock * p.retailPrice + p.wholesaleStock * p.wholesalePrice, 0);
-  const invRTValue = products.reduce((s, p) => s + p.retailStock * p.retailPrice, 0);
-  const invWSValue = products.reduce((s, p) => s + p.wholesaleStock * p.wholesalePrice, 0);
+  // Inventory report data (effective stock honours same-barcode unified pools)
+  const invTotalValue = products.reduce((s, p) => s + effectiveStock(p, 'rt') * p.retailPrice + effectiveStock(p, 'ws') * p.wholesalePrice, 0);
+  const invRTValue = products.reduce((s, p) => s + effectiveStock(p, 'rt') * p.retailPrice, 0);
+  const invWSValue = products.reduce((s, p) => s + effectiveStock(p, 'ws') * p.wholesalePrice, 0);
 
   /* ── Transaction table computed ── */
   const txFiltered = useMemo(() => {
@@ -673,7 +674,7 @@ export default function ReportsPage() {
                     contentStyle={{ backgroundColor: isDark ? '#1e293b' : '#fff', border: `1px solid ${gridColor}`, borderRadius: '12px', fontSize: '13px' }}
                     formatter={(value: number) => [`₱${fmtCurrency(value)}`, 'Stock Value']}
                   />
-                  <Bar dataKey={(p: any) => p.retailStock * p.retailPrice + p.wholesaleStock * p.wholesalePrice} fill="#4f46e5" radius={[0, 6, 6, 0]} maxBarSize={24} />
+                  <Bar dataKey={(p: any) => effectiveStock(p, 'rt') * p.retailPrice + effectiveStock(p, 'ws') * p.wholesalePrice} fill="#4f46e5" radius={[0, 6, 6, 0]} maxBarSize={24} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -763,11 +764,11 @@ export default function ReportsPage() {
                       {invPaginated.map((p) => (
                         <tr key={p.id} className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                           <td className="px-3 py-2.5 font-semibold text-slate-800 dark:text-slate-200">{p.name}</td>
-                          <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-400">{p.retailStock}</td>
-                          <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-400">{p.wholesaleStock}</td>
-                          <td className="px-3 py-2.5 text-right text-emerald-600 dark:text-emerald-400 font-medium">{fmtCurrency(p.retailStock * p.retailPrice)}</td>
-                          <td className="px-3 py-2.5 text-right text-amber-600 dark:text-amber-400 font-medium">{fmtCurrency(p.wholesaleStock * p.wholesalePrice)}</td>
-                          <td className="px-3 py-2.5 text-right font-bold text-slate-800 dark:text-slate-200">{fmtCurrency(p.retailStock * p.retailPrice + p.wholesaleStock * p.wholesalePrice)}</td>
+                          <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-400">{effectiveStock(p, 'rt')}</td>
+                          <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-400">{effectiveStock(p, 'ws')}</td>
+                          <td className="px-3 py-2.5 text-right text-emerald-600 dark:text-emerald-400 font-medium">{fmtCurrency(effectiveStock(p, 'rt') * p.retailPrice)}</td>
+                          <td className="px-3 py-2.5 text-right text-amber-600 dark:text-amber-400 font-medium">{fmtCurrency(effectiveStock(p, 'ws') * p.wholesalePrice)}</td>
+                          <td className="px-3 py-2.5 text-right font-bold text-slate-800 dark:text-slate-200">{fmtCurrency(effectiveStock(p, 'rt') * p.retailPrice + effectiveStock(p, 'ws') * p.wholesalePrice)}</td>
                         </tr>
                       ))}
                     </tbody>
