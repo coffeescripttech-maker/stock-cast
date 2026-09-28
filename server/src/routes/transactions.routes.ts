@@ -448,6 +448,7 @@ router.put('/:txNumber/void', requireRole('owner'), async (req, res, next) => {
     );
 
     for (const item of items as TransactionItemRow[]) {
+      if (item.product_id == null) continue;
       const bc = barcodeMap.get(item.product_id);
       const sameBarcode = !!bc?.retail && bc.retail === bc.wholesale;
       const stockCol =

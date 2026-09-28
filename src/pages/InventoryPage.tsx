@@ -1352,6 +1352,11 @@ function ProductFormModal({
             {errors.wholesaleStock ? <p className="text-[11px] font-medium text-red-500">{errors.wholesaleStock}</p> : <p className="text-[10px] text-slate-400">Alert at ≤{invSettings.lowStockThresholdWs}</p>}
           </div>
         </div>
+        {form.retailBarcode.trim() && form.retailBarcode.trim() === form.wholesaleBarcode.trim() ? (
+          <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+            Unified stock — parehong barcode ang retail at wholesale, kaya IISANG shared stock pool (Retail Stock) ang gamit ng parehong benta.
+          </p>
+        ) : null}
 
         {/* ─── Product Image ─── */}
         <div className="pt-2 border-t border-slate-100 dark:border-slate-800">

@@ -153,6 +153,7 @@ interface DataState {
 
   // Hydration
   hydrate: () => Promise<void>;
+  refreshProducts: () => Promise<void>;
 }
 
 export const useDataStore = create<DataState>()(
@@ -286,6 +287,8 @@ export const useDataStore = create<DataState>()(
           set(s => ({
             transactions: s.transactions.filter(t => t.id !== id)
           }));
+          // Stock was restored server-side — refresh so the UI reflects it.
+          void get().refreshProducts();
         } catch (err: any) {
           const { useUIStore } = await import('./uiStore');
           useUIStore
@@ -302,6 +305,11 @@ export const useDataStore = create<DataState>()(
           );
           const tx = normalizeTx(res.data);
           set(s => ({ transactions: [tx, ...s.transactions] }));
+
+          // The API deducted stock server-side — refresh the local product
+          // list so the POS/Dashboard/Inventory show the new stock (without
+          // this, the UI keeps stale quantities until a reload).
+          void get().refreshProducts();
 
           // Re-fetch customers if a customer was linked (points changed server-side)
           if (input.customerId) {
@@ -440,6 +448,15 @@ export const useDataStore = create<DataState>()(
       },
 
       // ============ HYDRATION ============
+
+      refreshProducts: async () => {
+        try {
+          const res = await api.get<{ data: any[] }>('/products?limit=1000');
+          set({ products: res.data.map(normalizeProduct) });
+        } catch {
+          /* non-fatal — the persisted/current list stays as-is */
+        }
+      },
 
       hydrate: async () => {
         set({ _hydrating: true });
