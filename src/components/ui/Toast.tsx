@@ -32,13 +32,14 @@ export function Toast({ message, type }: ToastProps) {
   return (
     <div
       className={cn(
-        'px-4 py-3 rounded-xl text-sm font-medium text-white shadow-lg flex items-center gap-2 max-w-[calc(100vw-2rem)] sm:max-w-xs',
+        'px-4 py-3 rounded-xl text-sm font-medium text-white shadow-lg flex items-center gap-2 min-w-0 max-w-[calc(100vw-2rem)] sm:max-w-xs break-words [overflow-wrap:anywhere]',
         styles[type],
         'animate-[toastIn_0.3s_ease]',
         visible ? 'opacity-100' : 'opacity-0 transition-opacity duration-300'
       )}
     >
-      {icons[type]} {message}
+      <span className="flex-shrink-0">{icons[type]}</span>
+      <span className="min-w-0 break-words [overflow-wrap:anywhere]">{message}</span>
     </div>
   );
 }

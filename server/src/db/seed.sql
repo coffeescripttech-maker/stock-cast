@@ -45,9 +45,9 @@ INSERT INTO products (retail_barcode, wholesale_barcode, name, retail_price, who
 -- Customers (sample loyalty customers)
 -- -----------------------------------------------------------
 INSERT INTO customers (name, phone, nfc_tag, points, total_spent) VALUES
-  ('Maria Santos',  '09171234567', 'NFC-001234',  580,  5800),
-  ('Juan dela Cruz', '09281234567', 'NFC-002345', 2100, 21000),
-  ('Ana Reyes',     '09391234567', 'NFC-003456',  250,  2500);
+('Maria Santos',  '09171234567', 'RFID-001234',  580,  5800),
+('Juan dela Cruz', '09281234567', 'RFID-002345', 2100, 21000),
+('Ana Reyes',     '09391234567', 'RFID-003456',  250,  2500);
 
 -- -----------------------------------------------------------
 -- Rewards Config (single default row)

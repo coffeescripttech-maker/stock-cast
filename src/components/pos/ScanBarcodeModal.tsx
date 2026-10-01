@@ -68,7 +68,7 @@ export function ScanBarcodeModal({ open, onClose, onScan, title = 'Scan Barcode'
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }} title={title} subtitle="Align a barcode in the frame to read it" className="w-[420px]">
       <div className="space-y-4">
-        <div className="relative h-56 rounded-xl overflow-hidden bg-slate-900">
+        <div className="relative h-56 sm:h-64 rounded-xl overflow-hidden bg-slate-900">
           <Scanner
             onScan={handleScan}
             onError={(err) => setError(scanErrorText(err))}

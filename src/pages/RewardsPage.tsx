@@ -200,28 +200,28 @@ function LoyaltyCard({
                   Member
                 </div>
               </div>
-              {/* Action buttons (hover only — admin tools) */}
-              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200 pt-0.5">
+              {/* Action buttons — visible on mobile, hover-only on desktop */}
+              <div className="flex gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 pt-0.5">
                 {canAdmin && (
                   <button
                     onClick={onAdjustPoints}
-                    className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/20 transition-all"
+                    className="p-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/70 hover:text-white hover:bg-white/20 transition-all"
                     title="Adjust Points">
-                    <Award size={9} />
+                    <Award size={12} />
                   </button>
                 )}
                 <button
                   onClick={onEdit}
-                  className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/20 transition-all"
+                  className="p-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/70 hover:text-white hover:bg-white/20 transition-all"
                   title="Edit">
-                  <Edit3 size={9} />
+                  <Edit3 size={12} />
                 </button>
                 {canAdmin && (
                   <button
                     onClick={onDelete}
-                    className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/50 hover:text-red-400 hover:bg-red-500/15 transition-all"
+                    className="p-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/[0.06] text-white/70 hover:text-red-400 hover:bg-red-500/15 transition-all"
                     title="Delete">
-                    <Trash2 size={9} />
+                    <Trash2 size={12} />
                   </button>
                 )}
                 <button
@@ -803,7 +803,7 @@ export default function RewardsPage() {
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name, phone, or NFC tag…"
+                placeholder="Search by name, phone, or RFID tag…"
                 className="w-full pl-9 pr-3 py-3 text-sm rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-slate-100 dark:focus:bg-slate-800 transition-all"
               />
             </div>
@@ -933,7 +933,7 @@ export default function RewardsPage() {
                     Phone
                   </th>
                   <th className="text-left px-4 py-4 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                    NFC Tag
+                    RFID Tag
                   </th>
                   <th className="text-right px-4 py-4 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                     <button
@@ -1043,7 +1043,7 @@ export default function RewardsPage() {
                           <span className="text-sm">{c.phone}</span>
                         </div>
                       </td>
-                      {/* NFC Tag */}
+                      {/* RFID Tag */}
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                           <Tag size={11} className="flex-shrink-0" />
@@ -1086,7 +1086,7 @@ export default function RewardsPage() {
                       </td>
                       {/* Actions */}
                       <td className="px-4 py-3.5">
-                        <div className="flex items-center justify-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           {isOwner && (
                             <button
                               onClick={() => {
@@ -1094,37 +1094,37 @@ export default function RewardsPage() {
                                 setPointsDelta('');
                                 setPointsOpen(true);
                               }}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-all"
+                              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-all"
                               title="Adjust Points">
-                              <Award size={13} />
+                              <Award size={15} />
                             </button>
                           )}
-                          <button
-                            onClick={() => {
-                              setEditingCustomer(c);
-                              setCustomerFormOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all"
-                            title="Edit">
-                            <Edit3 size={13} />
-                          </button>
-                          <button
-                            onClick={() => printCard(c)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-brand hover:bg-brand/5 dark:hover:bg-brand/10 transition-all"
-                            title="Print">
-                            <Printer size={13} />
-                          </button>
-                          {isOwner && (
-                            <button
+<button
                               onClick={() => {
-                                setDeleteTarget(c);
-                                setDeleteOpen(true);
+                                setEditingCustomer(c);
+                                setCustomerFormOpen(true);
                               }}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
-                              title="Delete">
-                              <Trash2 size={13} />
+                              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all"
+                              title="Edit">
+                              <Edit3 size={15} />
                             </button>
-                          )}
+                            <button
+                              onClick={() => printCard(c)}
+                              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-brand hover:bg-brand/5 dark:hover:bg-brand/10 transition-all"
+                              title="Print">
+                              <Printer size={15} />
+                            </button>
+                            {isOwner && (
+                              <button
+                                onClick={() => {
+                                  setDeleteTarget(c);
+                                  setDeleteOpen(true);
+                                }}
+                                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                                title="Delete">
+                                <Trash2 size={15} />
+                              </button>
+                            )}
                         </div>
                       </td>
                     </tr>
@@ -1507,7 +1507,7 @@ function CustomerFormModal({
               Math.floor(Math.random() * 36)
             )
           ).join('');
-          setNfcTag(prev => (prev ? prev : `NFC-${rand}`));
+          setNfcTag(prev => (prev ? prev : `RFID-${rand}`));
         })
         .finally(() => setGenerating(false));
     } else if (open && customer) {
@@ -1528,7 +1528,7 @@ function CustomerFormModal({
     // Reject a card that's already assigned to another customer.
     if (duplicateOwner) {
       showToast(
-        `NFC tag is already assigned to ${duplicateOwner.name}`,
+        `RFID tag is already assigned to ${duplicateOwner.name}`,
         'error'
       );
       return;
@@ -1538,7 +1538,7 @@ function CustomerFormModal({
       phone: phone.trim(),
       nfcTag:
         (nfcTag || '').trim() ||
-        `NFC-${String(Math.floor(100000 + Math.random() * 900000))}`,
+        `RFID-${String(Math.floor(100000 + Math.random() * 900000))}`,
       points: isEdit ? points : 0,
       totalSpent: isEdit ? totalSpent : 0,
       joinDate:
@@ -1584,7 +1584,7 @@ function CustomerFormModal({
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              NFC Tag ID
+              RFID Tag ID
             </label>
             <div className="relative">
               <input

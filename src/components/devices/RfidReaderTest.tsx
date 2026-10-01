@@ -54,7 +54,7 @@ export function RfidReaderTest({ onStatusChange, onCapture }: RfidReaderTestProp
       icon={<Radio size={20} />}
       iconClass="bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400"
       title="RFID Reader"
-      subtitle="RFID / NFC tag reader (HID keyboard mode)"
+      subtitle="RFID tag reader (HID keyboard mode)"
       status={status}
       statusLabel={statusLabel}
       footer={
@@ -73,7 +73,7 @@ export function RfidReaderTest({ onStatusChange, onCapture }: RfidReaderTestProp
         onScan={handleScan}
         records={records}
         onFocusChange={setFocused}
-        hint="Hold an RFID/NFC tag next to the reader — the UID appears below. If nothing happens, the reader may be in serial mode; switch it to HID (keyboard) mode in its config tool."
+        hint="Hold an RFID tag next to the reader — the UID appears below. If nothing happens, the reader may be in serial mode; switch it to HID (keyboard) mode in its config tool."
         placeholder="Tap a tag to capture its UID…"
       />
     </DeviceCard>

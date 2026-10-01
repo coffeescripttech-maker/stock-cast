@@ -35,9 +35,9 @@ export const defaultTransactions: Transaction[] = [
 ];
 
 export const defaultCustomers: Customer[] = [
-  { id: 1, name: 'Maria Santos', phone: '09171234567', nfcTag: 'NFC-001234', points: 580, totalSpent: 5800, joinDate: new Date(Date.now() - 30 * 86400000).toISOString() },
-  { id: 2, name: 'Juan dela Cruz', phone: '09281234567', nfcTag: 'NFC-002345', points: 2100, totalSpent: 21000, joinDate: new Date(Date.now() - 60 * 86400000).toISOString() },
-  { id: 3, name: 'Ana Reyes', phone: '09391234567', nfcTag: 'NFC-003456', points: 250, totalSpent: 2500, joinDate: new Date(Date.now() - 15 * 86400000).toISOString() },
+  { id: 1, name: 'Maria Santos', phone: '09171234567', nfcTag: 'RFID-001234', points: 580, totalSpent: 5800, joinDate: new Date(Date.now() - 30 * 86400000).toISOString() },
+  { id: 2, name: 'Juan dela Cruz', phone: '09281234567', nfcTag: 'RFID-002345', points: 2100, totalSpent: 21000, joinDate: new Date(Date.now() - 60 * 86400000).toISOString() },
+  { id: 3, name: 'Ana Reyes', phone: '09391234567', nfcTag: 'RFID-003456', points: 250, totalSpent: 2500, joinDate: new Date(Date.now() - 15 * 86400000).toISOString() },
 ];
 
 export const defaultRewardsConfig: RewardsConfig = {

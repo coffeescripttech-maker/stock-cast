@@ -35,7 +35,7 @@ export function StatCard({ label, value, sub, icon, iconBg, className, accent = 
     <div
       className={cn(
         'relative overflow-hidden rounded-[20px] bg-white dark:bg-[#1C1C1C]',
-        'border border-[#ECECEC] dark:border-[#2a2a2a] p-6',
+        'border border-[#ECECEC] dark:border-[#2a2a2a] p-4 sm:p-6',
         'shadow-[0_4px_16px_rgba(0,0,0,0.05)]',
         'hover:-translate-y-1 hover:shadow-lg transition-all duration-250',
         className
@@ -49,8 +49,8 @@ export function StatCard({ label, value, sub, icon, iconBg, className, accent = 
         )}
       />
 
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF] dark:text-slate-400">
+      <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#9CA3AF] dark:text-slate-400 truncate min-w-0">
           {label}
         </span>
         {icon && (
@@ -65,11 +65,11 @@ export function StatCard({ label, value, sub, icon, iconBg, className, accent = 
           </div>
         )}
       </div>
-      <div className="text-3xl font-black font-mono tracking-tight text-[#181818] dark:text-white leading-none mb-1">
+      <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-[#181818] dark:text-white leading-none mb-1 break-words min-w-0">
         {value}
       </div>
       {sub && (
-        <div className="text-xs text-[#6B7280] dark:text-slate-400 mt-2">
+        <div className="text-xs text-[#6B7280] dark:text-slate-400 mt-1.5 sm:mt-2">
           {sub}
         </div>
       )}

@@ -8,12 +8,14 @@ export default defineConfig({
     host: true, // serve on 0.0.0.0 so the phone can reach the dev server over the LAN
     proxy: {
       '/api': {
-        target: 'https://stock-cast-production.up.railway.app',
-        // target: 'http://localhost:3001',
+        // target: 'https://stock-cast-production.up.railway.app',
+        target: 'http://localhost:3001',
         changeOrigin: true
       },
       '/uploads': {
-        target: 'https://stock-cast-production.up.railway.app',
+        // target: 'https://stock-cast-production.up.railway.app',
+
+        target: 'http://localhost:3001',
         changeOrigin: true
       }
     }

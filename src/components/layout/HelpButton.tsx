@@ -17,7 +17,7 @@ export function HelpModalContent() {
     { key: 'F4', desc: 'Print last receipt' },
     { key: 'F8', desc: 'Complete checkout' },
     { key: 'F9', desc: 'Clear cart' },
-    { key: 'F11', desc: 'Link NFC customer' },
+    { key: 'F11', desc: 'Link RFID customer' },
     { key: 'F12', desc: 'Open barcode scanner' },
     { key: 'Enter', desc: 'Confirm payment / Print receipt' },
     { key: '↑↓', desc: 'Navigate search results' },

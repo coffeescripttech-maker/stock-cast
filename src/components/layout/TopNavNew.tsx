@@ -83,7 +83,7 @@ export function TopNavNew() {
         </button>
 
         {/* Theme Toggle */}
-        <ThemeToggle className="hidden lg:flex !w-9 !h-9 !rounded-full !border-[#ECECEC] !shadow-sm !text-slate-400 hover:!text-slate-600 hover:!shadow-md hover:-translate-y-0.5 !transition-all !duration-200" />
+        <ThemeToggle className="flex !w-10 !h-10 !rounded-full !border-[#ECECEC] !shadow-sm !text-slate-400 hover:!text-slate-600 hover:!shadow-md hover:-translate-y-0.5 !transition-all !duration-200" />
 
         {/* New Transaction */}
         <button

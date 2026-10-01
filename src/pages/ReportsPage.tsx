@@ -246,7 +246,7 @@ export default function ReportsPage() {
       </div>
 
       {/* ═══ TAB SWITCHER ═══ */}
-      <div className="flex gap-1.5">
+      <div className="flex flex-wrap gap-1.5">
         {[
           { key: 'transactions' as const, label: 'Transaction Report', icon: BarChart3 },
           { key: 'inventory' as const, label: 'Inventory Report', icon: Package },
@@ -669,7 +669,7 @@ export default function ReportsPage() {
                 >
                   <CartesianGrid strokeDasharray="4 4" stroke={gridColor} horizontal={false} />
                   <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: tickColor, fontSize: 11 }} />
-                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: tickColor, fontSize: 11 }} width={140} />
+                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: tickColor, fontSize: 11 }} width={128} tickFormatter={(v: string) => (v && v.length > 17 ? v.slice(0, 16) + '…' : v)} />
                   <Tooltip
                     contentStyle={{ backgroundColor: isDark ? '#1e293b' : '#fff', border: `1px solid ${gridColor}`, borderRadius: '12px', fontSize: '13px' }}
                     formatter={(value: number) => [`₱${fmtCurrency(value)}`, 'Stock Value']}

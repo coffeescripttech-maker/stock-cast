@@ -306,7 +306,7 @@ export default function POSPage() {
     <div
       className={cn(
         cardShell,
-        'max-h-[45vh] lg:max-h-none lg:h-full lg:flex-1 overflow-hidden'
+        'max-h-[50dvh] lg:max-h-none lg:h-full lg:flex-1 overflow-hidden'
       )}>
       <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2 flex-shrink-0">
         <svg
@@ -424,7 +424,7 @@ export default function POSPage() {
           { kbd: 'F7', label: 'Layout' },
           { kbd: 'F8', label: 'Checkout' },
           { kbd: 'F9', label: 'Clear' },
-          { kbd: 'F11', label: 'NFC Link' },
+          { kbd: 'F11', label: 'RFID Link' },
           { kbd: 'F12', label: 'Scanner' },
           { kbd: '↑↓', label: 'Navigate' },
           { kbd: 'Enter', label: 'Select' }

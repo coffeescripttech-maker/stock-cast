@@ -79,16 +79,16 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
           <div className="flex items-center bg-slate-100 dark:bg-slate-700/60 rounded-lg p-0.5 flex-shrink-0">
             <button
               onClick={() => onUpdateQty(index, -10)}
-              className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              className="w-8 h-8 rounded flex items-center justify-center text-[9px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
               title="-10"
             >
               -10
             </button>
             <button
               onClick={() => onUpdateQty(index, -1)}
-              className="w-5 h-5 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              className="w-8 h-8 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
-              <Minus size={10} />
+              <Minus size={13} />
             </button>
             {editing ? (
               <input
@@ -115,13 +115,13 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
             )}
             <button
               onClick={() => onUpdateQty(index, 1)}
-              className="w-5 h-5 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              className="w-8 h-8 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
-              <Plus size={10} />
+              <Plus size={13} />
             </button>
             <button
               onClick={() => onUpdateQty(index, 10)}
-              className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              className="w-8 h-8 rounded flex items-center justify-center text-[9px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
               title="+10"
             >
               +10
@@ -130,9 +130,9 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
 
           <button
             onClick={() => onRemove(index)}
-            className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 w-6 h-6 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all flex-shrink-0"
+            className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all flex-shrink-0"
           >
-            <X size={12} />
+            <X size={14} />
           </button>
         </div>
       </div>
@@ -162,9 +162,9 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
         </div>
         <button
           onClick={() => onRemove(index)}
-          className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 w-7 h-7 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all flex-shrink-0"
+          className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 w-8 h-8 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-all flex-shrink-0"
         >
-          <X size={12} />
+          <X size={13} />
         </button>
       </div>
 
@@ -183,7 +183,7 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
           ) : (
             <button
               onClick={() => onToggleType(index, item.type === 'rt' ? 'ws' : 'rt')}
-              className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold transition-colors hover:opacity-80', typeColor.badge)}
+              className={cn('px-2 py-1 sm:px-1.5 sm:py-0.5 rounded text-[10px] sm:text-[9px] font-bold transition-colors hover:opacity-80', typeColor.badge)}
               title="Click to toggle sale type"
             >
               {item.type.toUpperCase()}
@@ -196,7 +196,7 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
           {/* -10 */}
           <button
             onClick={() => onUpdateQty(index, -10)}
-            className="w-6 h-6 sm:w-5 sm:h-5 rounded flex items-center justify-center text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="w-8 h-8 sm:w-5 sm:h-5 rounded flex items-center justify-center text-[9px] sm:text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             title="-10"
           >
             -10
@@ -205,9 +205,9 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
           {/* -1 */}
           <button
             onClick={() => onUpdateQty(index, -1)}
-            className="w-7 h-7 sm:w-6 sm:h-6 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="w-8 h-8 sm:w-6 sm:h-6 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
-            <Minus size={10} />
+            <Minus size={12} />
           </button>
 
           {/* Qty number — clickable to edit */}
@@ -238,15 +238,15 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
           {/* +1 */}
           <button
             onClick={() => onUpdateQty(index, 1)}
-            className="w-7 h-7 sm:w-6 sm:h-6 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="w-8 h-8 sm:w-6 sm:h-6 rounded flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
-            <Plus size={10} />
+            <Plus size={12} />
           </button>
 
           {/* +10 */}
           <button
             onClick={() => onUpdateQty(index, 10)}
-            className="w-6 h-6 sm:w-5 sm:h-5 rounded flex items-center justify-center text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="w-8 h-8 sm:w-5 sm:h-5 rounded flex items-center justify-center text-[9px] sm:text-[8px] font-bold text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             title="+10"
           >
             +10

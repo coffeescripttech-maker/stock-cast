@@ -189,8 +189,8 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-50 dark:from-indigo-950 dark:via-slate-950 dark:to-slate-900">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-[400px] mx-4 p-8 sm:p-11 shadow-2xl border border-brand/5 animate-[fadeUp_0.4s_ease]">
+    <div className="min-h-dvh flex items-start sm:items-center justify-center bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-50 dark:from-indigo-950 dark:via-slate-950 dark:to-slate-900 overflow-y-auto overscroll-contain py-6 sm:py-0">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-[400px] mx-4 p-5 sm:p-8 lg:p-11 shadow-2xl border border-brand/5 animate-[fadeUp_0.4s_ease]">
         {/* Logo */}
         <div className="w-13 h-13 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-5">
           {storeLogo ? (
@@ -204,7 +204,7 @@ export function LoginPage() {
           )}
         </div>
 
-        <h1 className="text-xl font-bold text-center mb-1.5 text-slate-900 dark:text-slate-100">
+        <h1 className="text-xl font-bold text-center mb-1.5 text-slate-900 dark:text-slate-100 break-words line-clamp-2">
           {storeName || 'Ruiz Store'} POS
         </h1>
         <p className="text-xs text-slate-400 text-center mb-8 dark:text-slate-500">
@@ -241,7 +241,7 @@ export function LoginPage() {
           {error && (
             <div className="flex items-start gap-2 bg-red-bg text-red-500 rounded-lg px-3.5 py-2.5 text-xs font-semibold leading-relaxed">
               <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-              <span>{error}</span>
+              <span className="min-w-0 break-words [overflow-wrap:anywhere]">{error}</span>
             </div>
           )}
 
@@ -257,7 +257,7 @@ export function LoginPage() {
           <div className="text-center">
             <button
               onClick={() => setForgotOpen(true)}
-              className="text-xs font-semibold text-slate-400 hover:text-brand transition-colors">
+              className="text-xs font-semibold text-slate-400 hover:text-brand transition-colors inline-flex items-center justify-center min-h-[44px] px-4 -mx-4">
               Forgot password?
             </button>
           </div>
@@ -269,8 +269,8 @@ export function LoginPage() {
         {isNative && (
           <button
             onClick={openServerDialog}
-            className="mt-4 w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-brand transition-colors">
-            <Server size={13} />
+            className="mt-4 w-full flex items-center justify-center gap-1.5 min-h-[44px] text-xs font-semibold text-slate-400 hover:text-brand transition-colors">
+            <Server size={13} className="flex-shrink-0" />
             Configure Server Address
           </button>
         )}
@@ -310,7 +310,7 @@ export function LoginPage() {
             {forgotError && (
               <div className="flex items-start gap-2 bg-red-bg text-red-500 rounded-lg px-3.5 py-2.5 text-xs font-semibold leading-relaxed">
                 <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-                <span>{forgotError}</span>
+                <span className="min-w-0 break-words [overflow-wrap:anywhere]">{forgotError}</span>
               </div>
             )}
 
@@ -320,12 +320,13 @@ export function LoginPage() {
               password.
             </p>
 
-            <div className="flex justify-end gap-2 pt-1">
-              <Button variant="secondary" onClick={closeForgotDialog}>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button variant="secondary" onClick={closeForgotDialog} className="flex-1 sm:flex-none">
                 Cancel
               </Button>
               <Button
                 variant="brand"
+                className="flex-1 sm:flex-none"
                 onClick={handleForgotRequest}
                 disabled={forgotLoading}>
                 {forgotLoading && (
@@ -345,7 +346,7 @@ export function LoginPage() {
               <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1.5">
                 Reset Code
               </p>
-              <p className="text-3xl font-black font-mono tracking-[0.3em] text-amber-800 dark:text-amber-200">
+              <p className="text-2xl sm:text-3xl font-black font-mono tracking-[0.2em] text-amber-800 dark:text-amber-200 break-all">
                 {resetCode}
               </p>
               <p className="text-[10px] text-amber-500 dark:text-amber-400 mt-1.5">
@@ -356,6 +357,8 @@ export function LoginPage() {
             <Input
               label="Reset Code"
               type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
               placeholder="Enter the 6-digit code above"
               value={resetCode}
               onChange={e => {
@@ -393,19 +396,21 @@ export function LoginPage() {
             {forgotError && (
               <div className="flex items-start gap-2 bg-red-bg text-red-500 rounded-lg px-3.5 py-2.5 text-xs font-semibold leading-relaxed">
                 <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-                <span>{forgotError}</span>
+                <span className="min-w-0 break-words [overflow-wrap:anywhere]">{forgotError}</span>
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="flex flex-wrap gap-2 pt-1">
               <Button
                 variant="secondary"
+                className="flex-1 sm:flex-none"
                 onClick={() => setForgotStep(0)}
                 disabled={forgotLoading}>
                 Back
               </Button>
               <Button
                 variant="brand"
+                className="flex-1 sm:flex-none"
                 onClick={handleResetPassword}
                 disabled={forgotLoading}>
                 {forgotLoading && (
@@ -459,10 +464,14 @@ export function LoginPage() {
             </label>
             <input
               type="text"
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={serverUrl}
               onChange={e => setServerUrl(e.target.value)}
               placeholder="http://192.168.1.50:3001"
-              className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 font-mono tracking-wider"
+              className="w-full px-3.5 py-3 text-base sm:text-sm min-h-[44px] rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 font-mono tracking-wider"
             />
             <p className="text-[11px] text-slate-400 mt-1.5">
               Usually{' '}
@@ -470,11 +479,11 @@ export function LoginPage() {
               Leave empty to use the app's own origin (desktop).
             </p>
           </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => setServerOpen(false)}>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="secondary" onClick={() => setServerOpen(false)} className="flex-1 sm:flex-none">
               Cancel
             </Button>
-            <Button variant="brand" onClick={saveServerUrl}>
+            <Button variant="brand" className="flex-1 sm:flex-none" onClick={saveServerUrl}>
               Save &amp; Reload
             </Button>
           </div>

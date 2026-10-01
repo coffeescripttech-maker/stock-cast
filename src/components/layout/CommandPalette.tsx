@@ -83,7 +83,7 @@ export function CommandPalette() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] sm:pt-[15vh] bg-black/40 backdrop-blur-sm overflow-y-auto overscroll-contain"
           onClick={() => setOpen(false)}
         >
           <motion.div
@@ -104,15 +104,15 @@ export function CommandPalette() {
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Search pages and actions…"
-                className="flex-1 bg-transparent text-sm text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400"
+                className="flex-1 min-w-0 bg-transparent text-base sm:text-sm text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400"
               />
-              <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 flex-shrink-0">
+              <kbd className="hidden sm:flex text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 flex-shrink-0">
                 Esc
               </kbd>
             </div>
 
             {/* Results */}
-            <div className="max-h-[280px] overflow-y-auto p-2">
+            <div className="max-h-[min(280px,40dvh)] overflow-y-auto overscroll-contain p-2">
               {filtered.length === 0 ? (
                 <div className="text-center py-8 text-sm text-slate-400">
                   No results found

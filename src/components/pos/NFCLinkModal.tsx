@@ -16,7 +16,7 @@ interface NFCLinkModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const NFC_SUBTITLE = 'Tap NFC tag or enter phone / NFC tag ID';
+const NFC_SUBTITLE = 'Tap RFID tag or enter phone / RFID tag ID';
 
 function highlight(text: string, query: string) {
   if (!query.trim()) return text;
@@ -107,7 +107,7 @@ export function NFCLinkModal({ open, onOpenChange }: NFCLinkModalProps) {
         if (found) {
           selectCustomer(found);
         } else {
-          showToast('Customer not found. Check NFC tag or phone number.', 'error');
+          showToast('Customer not found. Check RFID tag or phone number.', 'error');
         }
       }
     } else if (e.key === 'Escape') {
@@ -116,9 +116,9 @@ export function NFCLinkModal({ open, onOpenChange }: NFCLinkModalProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} title="Link Customer via NFC" subtitle={NFC_SUBTITLE}>
+    <Dialog open={open} onOpenChange={onOpenChange} title="Link Customer via RFID" subtitle={NFC_SUBTITLE}>
       <div className="flex flex-col items-center py-6">
-        {/* NFC animation */}
+        {/* RFID animation */}
         <div className="relative w-32 h-32 flex items-center justify-center mb-5">
           <div className="absolute inset-0 rounded-full border-2 border-brand/20 animate-[nfcPulse_2s_ease-out_infinite]" />
           <div className="absolute inset-2 rounded-full border-2 border-brand/20 animate-[nfcPulse_2s_ease-out_infinite_0.4s]" />
@@ -127,10 +127,10 @@ export function NFCLinkModal({ open, onOpenChange }: NFCLinkModalProps) {
             <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
           </svg>
         </div>
-        <p className="text-xs text-slate-400 dark:text-slate-500 -mt-3 mb-4">Waiting for NFC tap…</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500 -mt-3 mb-4">Waiting for RFID tap…</p>
 
         <div className="w-full space-y-1.5 relative">
-          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Or enter Phone / NFC Tag ID</label>
+          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Or enter Phone / RFID Tag ID</label>
           <input
             ref={inputRef}
             type="text"
@@ -139,7 +139,7 @@ export function NFCLinkModal({ open, onOpenChange }: NFCLinkModalProps) {
             onKeyDown={handleKeyDown}
             onFocus={() => { if (input.trim()) setShowDropdown(true); }}
             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-            placeholder="e.g. 09171234567 or NFC-001234"
+            placeholder="e.g. 09171234567 or RFID-001234"
             className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-200 bg-slate-50 outline-none focus:border-brand focus:bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
           />
 
@@ -213,7 +213,7 @@ export function NFCLinkModal({ open, onOpenChange }: NFCLinkModalProps) {
           if (found) {
             selectCustomer(found);
           } else {
-            showToast('Customer not found. Check NFC tag or phone number.', 'error');
+            showToast('Customer not found. Check RFID tag or phone number.', 'error');
           }
         }}>Link Customer</Button>
       </div>

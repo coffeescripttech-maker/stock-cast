@@ -59,7 +59,7 @@ export function NotificationDropdown({ open, onClose }: Props) {
   return (
     <div
       ref={ref}
-      className="fixed lg:absolute right-3 lg:right-0 top-[60px] lg:top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-black/10 z-50 overflow-hidden"
+      className="fixed lg:absolute right-3 lg:right-0 top-[52px] lg:top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-black/10 z-50 overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
@@ -71,13 +71,13 @@ export function NotificationDropdown({ open, onClose }: Props) {
             </span>
           )}
         </span>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-0.5">
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-2 -m-2 min-w-[44px] min-h-[44px] flex items-center justify-center">
           <X size={16} />
         </button>
       </div>
 
       {/* List */}
-      <div className="max-h-[300px] overflow-y-auto">
+      <div className="max-h-[min(300px,45dvh)] overflow-y-auto overscroll-contain">
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center py-8 text-slate-400">
             <Bell size={28} className="mb-2 opacity-40" />
@@ -85,10 +85,13 @@ export function NotificationDropdown({ open, onClose }: Props) {
           </div>
         ) : (
           notifications.map((n) => (
-            <button
+            <div
               key={n.id}
+              role="button"
+              tabIndex={0}
               onClick={() => handleNotificationClick(n)}
-              className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-50 dark:border-slate-800/30 last:border-0 group"
+              onKeyDown={(e) => e.key === 'Enter' && handleNotificationClick(n)}
+              className="w-full flex items-start gap-2 px-4 py-3.5 sm:py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-50 dark:border-slate-800/30 last:border-0 group cursor-pointer min-h-[48px]"
             >
               <span className="mt-0.5 flex-shrink-0">{iconMap[n.type]}</span>
               <div className="flex-1 min-w-0">
@@ -99,12 +102,12 @@ export function NotificationDropdown({ open, onClose }: Props) {
               </div>
               <button
                 onClick={(e) => handleDismiss(e, n.id)}
-                className="shrink-0 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 transition-opacity p-0.5 -mr-0.5"
+                className="shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 transition-opacity p-2 -mr-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 title="Dismiss"
               >
-                <X size={14} />
+                <X size={16} />
               </button>
-            </button>
+            </div>
           ))
         )}
       </div>

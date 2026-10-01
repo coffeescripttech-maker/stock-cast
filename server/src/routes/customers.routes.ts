@@ -63,7 +63,7 @@ router.get('/', async (req, res, next) => {
 });
 
 // GET /api/customers/stats — aggregate stats
-// GET /api/customers/generate-nfc — generate a unique NFC tag
+// GET /api/customers/generate-nfc — generate a unique RFID tag
 router.get('/generate-nfc', async (_req, res, next) => {
   try {
     let nfcTag = '';
@@ -74,7 +74,7 @@ router.get('/generate-nfc', async (_req, res, next) => {
       const rand = Array.from({ length: 8 }, () =>
         'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.charAt(Math.floor(Math.random() * 36))
       ).join('');
-      nfcTag = `NFC-${rand}`;
+      nfcTag = `RFID-${rand}`;
 
       const [rows] = await pool.query<MySqlRow[]>(
         'SELECT id FROM customers WHERE nfc_tag = ?',
@@ -85,7 +85,7 @@ router.get('/generate-nfc', async (_req, res, next) => {
     }
 
     if (attempts >= maxAttempts) {
-      res.status(500).json({ success: false, error: 'Failed to generate unique NFC tag' });
+      res.status(500).json({ success: false, error: 'Failed to generate unique RFID tag' });
       return;
     }
 

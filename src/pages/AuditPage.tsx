@@ -174,24 +174,20 @@ export default function AuditPage() {
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {paginated.map((entry) => (
-              <div key={entry.id} className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                {/* Timestamp */}
-                <div className="flex-shrink-0 w-[76px] text-right pt-0.5">
+              <div key={entry.id} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 px-4 sm:px-6 py-3.5 sm:py-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                {/* Timestamp + action — stacked top line on mobile, side column on desktop */}
+                <div className="flex items-center justify-between sm:flex-col sm:items-end flex-shrink-0 gap-2 sm:gap-0 sm:w-[76px] sm:pt-0.5">
                   <div className="text-[10px] text-slate-400 font-mono leading-tight">
                     {fmtDate(entry.timestamp)}
                   </div>
-                </div>
-
-                {/* Action badge */}
-                <div className="flex-shrink-0 pt-0.5">
                   <span className={cn('text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap', getActionColor(entry.action))}>
                     {entry.action.replace(/_/g, ' ')}
                   </span>
                 </div>
 
                 {/* Details */}
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug">{entry.details}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug break-words">{entry.details}</p>
                   <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
                     <span className="font-medium text-slate-500 dark:text-slate-400">{entry.user}</span>
                     <span className="text-slate-300 dark:text-slate-600">·</span>

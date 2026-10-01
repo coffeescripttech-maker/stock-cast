@@ -41,19 +41,21 @@ export function Dialog({
           }}
           className={cn(
             'fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-            'w-[500px] max-w-[94vw] max-h-[90vh] overflow-y-auto',
+            'w-[500px] max-w-[94vw] max-h-[90dvh]',
             'rounded-2xl bg-white dark:bg-slate-800 p-5 sm:p-8 shadow-2xl',
             'data-[state=open]:animate-[scaleIn_0.2s_ease]',
             className
           )}
         >
           {showClose && (
-            <DialogPrimitive.Close className="absolute top-5 right-5 w-7 h-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:bg-red-50 hover:border-red-500 hover:text-red-500 transition-colors dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-red-950">
-              <X size={14} />
-            </DialogPrimitive.Close>
+            <div className="flex justify-end -mr-5 sm:-mr-8 -mt-2 sm:-mt-3 mb-1">
+              <DialogPrimitive.Close className="w-11 h-11 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:bg-red-50 hover:border-red-500 hover:text-red-500 transition-colors dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-red-950">
+                <X size={18} />
+              </DialogPrimitive.Close>
+            </div>
           )}
           {title && (
-            <DialogPrimitive.Title className="text-lg font-bold mb-1 text-slate-900 dark:text-slate-100">
+            <DialogPrimitive.Title className="text-lg font-bold mb-1 text-slate-900 dark:text-slate-100 pr-10">
               {title}
             </DialogPrimitive.Title>
           )}
@@ -62,7 +64,9 @@ export function Dialog({
               {subtitle}
             </DialogPrimitive.Description>
           )}
-          {children}
+          <div className="overflow-y-auto overscroll-contain max-h-[calc(90dvh-5rem)] -mx-5 sm:-mx-8 -mb-5 sm:-mb-8 px-5 sm:px-8 pb-5 sm:pb-8">
+            {children}
+          </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

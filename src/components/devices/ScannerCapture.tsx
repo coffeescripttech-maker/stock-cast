@@ -3,6 +3,10 @@ import { ScanLine } from 'lucide-react';
 import { useScannerCapture } from './useScannerCapture';
 import { cn } from '../../lib/cn';
 
+// Auto-focus only where a hardware keyboard exists. On Android/Capacitor the
+// focus would pop the soft keyboard over the test UI on every mount/refocus.
+const isTouch = typeof window !== 'undefined' && 'ontouchstart' in window;
+
 /**
  * Keyboard-wedge capture widget shared by the barcode scanner and RFID reader
  * tests. Renders an always-focused input that buffers keystrokes and commits a
@@ -36,6 +40,7 @@ export function ScannerCapture({
   const [focused, setFocused] = useState(false);
 
   useEffect(() => {
+    if (isTouch) return;
     inputRef.current?.focus();
   }, []);
 

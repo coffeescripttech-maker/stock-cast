@@ -1509,19 +1509,19 @@ function BarcodeField({ label, color, value, onChange, onSimulate, onScan, onSam
         <div className="flex items-center gap-1">
           {onSame && (
             <button onClick={onSame} title="Use the same barcode as retail"
-              className={cn('w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand transition-colors', cc)}>
-              <Copy size={13} />
+              className={cn('w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand transition-colors', cc)}>
+              <Copy size={15} />
             </button>
           )}
           {onScan && (
             <button onClick={onScan} title="Scan with camera"
-              className={cn('w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand transition-colors', cc)}>
-              <Camera size={13} />
+              className={cn('w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand transition-colors', cc)}>
+              <Camera size={15} />
             </button>
           )}
           <button onClick={onSimulate} title="Generate a random barcode"
-            className={cn('w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand transition-colors', cc)}>
-            <ScanLine size={13} />
+            className={cn('w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand transition-colors', cc)}>
+            <ScanLine size={15} />
           </button>
         </div>
       </div>

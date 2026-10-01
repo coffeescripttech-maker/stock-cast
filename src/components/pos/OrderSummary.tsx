@@ -140,7 +140,7 @@ export function OrderSummary({
                     Link Customer
                   </div>
                   <div className="text-[11px] text-slate-400">
-                    Tap NFC card to earn loyalty points
+                    Tap RFID card to earn loyalty points
                   </div>
                 </div>
               </div>

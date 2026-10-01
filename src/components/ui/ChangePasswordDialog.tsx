@@ -110,14 +110,14 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
           </p>
         )}
         {requireStrong && (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
             {rules.map((r) => (
-              <div key={r.label} className="flex items-center gap-1.5 text-xs">
+              <div key={r.label} className="flex items-center gap-1.5 text-xs min-w-0">
                 <span
                   className={
                     r.ok
-                      ? 'text-emerald-500'
-                      : 'text-slate-300 dark:text-slate-600'
+                      ? 'text-emerald-500 flex-shrink-0'
+                      : 'text-slate-300 dark:text-slate-600 flex-shrink-0'
                   }
                 >
                   {r.ok ? '✓' : '○'}
@@ -125,8 +125,8 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
                 <span
                   className={
                     r.ok
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-slate-400'
+                      ? 'text-emerald-600 dark:text-emerald-400 min-w-0 truncate'
+                      : 'text-slate-400 min-w-0 truncate'
                   }
                 >
                   {r.label}
@@ -157,12 +157,13 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
           <p className="text-xs font-semibold text-red-500">{error}</p>
         )}
 
-        <div className="flex justify-end gap-2 pt-1">
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>
+        <div className="flex flex-wrap justify-end gap-2 pt-1">
+          <Button variant="secondary" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">
             Cancel
           </Button>
           <Button
             variant="brand"
+            className="flex-1 sm:flex-none"
             onClick={handleSubmit}
             disabled={!valid || saving}
           >

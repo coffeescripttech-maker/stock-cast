@@ -4,6 +4,7 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import { cn } from '../../lib/cn';
+import { resolveApiUrl } from '../../lib/apiBase';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -150,7 +151,7 @@ export function Sidebar() {
         <div className="flex items-center justify-center h-16 flex-shrink-0 mt-2">
           {storeLogo ? (
             <img
-              src={storeLogo}
+              src={resolveApiUrl(storeLogo)}
               alt={storeName}
               className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0"
             />
