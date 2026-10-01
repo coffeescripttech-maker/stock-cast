@@ -1,9 +1,9 @@
 @echo off
-title Ruiz Store POS - Client & Server
+title Ruiz Store POS - Client ^& Server
 cd /d "%~dp0"
 
 echo ================================================
-echo  Ruiz Store POS - Starting Client & Server
+echo  Ruiz Store POS - Starting Client ^& Server
 echo ================================================
 echo.
 

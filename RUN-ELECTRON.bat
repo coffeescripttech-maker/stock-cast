@@ -13,7 +13,7 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr :5173 ^| findstr LISTENING') 
 echo Done cleaning ports.
 echo.
 
-echo [2/2] Starting Server, Client & Electron...
+echo [2/2] Starting Server, Client ^& Electron...
 call npm run electron:dev
 
 echo.

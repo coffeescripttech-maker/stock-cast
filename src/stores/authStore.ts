@@ -43,7 +43,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 0) {
-          return `Cannot reach the server at ${getApiBase()}. Make sure the PC server is running and the phone is on the same Wi-Fi.`;
+          return `Cannot reach the server at ${getApiBase()}. Make sure the POS server is running and reachable (phone must be on the same Wi-Fi/LAN).`;
         }
         if (err.status === 401) return 'Invalid username or password';
         return err.message;

@@ -265,15 +265,14 @@ export function LoginPage() {
 
         <hr className="border-t border-slate-200 dark:border-slate-700 my-6" />
 
-        {/* Android app only — point this app at the PC running the POS server */}
-        {isNative && (
-          <button
-            onClick={openServerDialog}
-            className="mt-4 w-full flex items-center justify-center gap-1.5 min-h-[44px] text-xs font-semibold text-slate-400 hover:text-brand transition-colors">
-            <Server size={13} className="flex-shrink-0" />
-            Configure Server Address
-          </button>
-        )}
+        {/* Point this app at the POS server. Shown on every platform so a
+            wrong/remote address can always be cleared from the login screen. */}
+        <button
+          onClick={openServerDialog}
+          className="mt-4 w-full flex items-center justify-center gap-1.5 min-h-[44px] text-xs font-semibold text-slate-400 hover:text-brand transition-colors">
+          <Server size={13} className="flex-shrink-0" />
+          Configure Server Address
+        </button>
       </div>
 
       {/* Forgot-password flow — self-service, code displayed on-screen */}
@@ -456,7 +455,9 @@ export function LoginPage() {
         open={serverOpen}
         onOpenChange={setServerOpen}
         title="Server Address"
-        subtitle="Where should this app connect? Enter the PC's address that runs the POS server.">
+        subtitle={isNative
+          ? "Where should this app connect? Enter the PC's address that runs the POS server (same Wi-Fi)."
+          : "Point this app at a remote POS server, or leave the field empty to use this device's own server."}>
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
