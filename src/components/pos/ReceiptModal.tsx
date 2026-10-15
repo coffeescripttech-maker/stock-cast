@@ -221,7 +221,7 @@ export function ReceiptModal({ open, onOpenChange, receipt, printMode, onPrint }
           </>
         )}
 
-        {receipt.pointsEarned && receipt.pointsEarned > 0 && (
+        {receipt.customerName && receipt.pointsEarned && receipt.pointsEarned > 0 && (
           <div className="text-center text-[10px] text-brand font-mono mt-1">
             ★ +{receipt.pointsEarned} points earned{receipt.customerName ? ` for ${receipt.customerName}` : ''}
           </div>

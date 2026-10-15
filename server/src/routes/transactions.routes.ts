@@ -256,7 +256,13 @@ router.post('/', async (req, res, next) => {
       total,
     });
     const changeAmount = input.amount_tendered - total;
-    const pointsEarned = config && preTaxTotal > 0 ? Math.floor(preTaxTotal / config.earn_rate) : 0;
+    // Points are only earned when a customer/RFID card is linked to the sale.
+    // Without a customer there is no loyalty account to credit, so the receipt
+    // must not advertise earned points.
+    const pointsEarned =
+      config && input.customer_id && preTaxTotal > 0
+        ? Math.floor(preTaxTotal / config.earn_rate)
+        : 0;
 
     // 4. Insert transaction header
     const [headerResult] = await conn.query<MySqlOk>(

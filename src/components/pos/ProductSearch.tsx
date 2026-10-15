@@ -9,7 +9,7 @@ import { fmtCurrency } from '../../lib/formatters';
 import { findProductByBarcode } from '../../lib/barcode';
 import { resolveApiUrl } from '../../lib/apiBase';
 import { CATEGORIES, CATEGORY_COLORS } from '../../lib/constants';
-import { effectiveStock } from '../../lib/stock';
+import { effectiveStock, addableQty } from '../../lib/stock';
 import type { Product, SaleType, ProductCategory } from '../../types/product';
 
 type ViewType = 'all' | SaleType;
@@ -26,6 +26,7 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
   const products = useDataStore(s => s.products);
   const addToCart = usePOSStore(s => s.addToCart);
   const saleMode = usePOSStore(s => s.saleMode);
+  const cart = usePOSStore(s => s.cart);
   const showToast = useUIStore(s => s.showToast);
   const inv = useSettingsStore(s => s.settings.inventory);
   // Low-stock thresholds come from Settings → Inventory, not hardcoded.
@@ -62,6 +63,20 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
   function addToCartFromProduct(p: Product, typeOverride?: SaleType) {
     const saleType = typeOverride ?? saleMode ?? getDefaultSaleType(p);
     const price = saleType === 'ws' ? p.wholesalePrice : p.retailPrice;
+    const stock = effectiveStock(p, saleType);
+    if (stock <= 0) {
+      showToast(`${p.name} is out of stock`, 'error');
+      return;
+    }
+    if (addableQty(p, saleType, cart, p.id) <= 0) {
+      showToast(
+        stock === 1
+          ? `${p.name}: only 1 in stock and already in cart`
+          : `${p.name}: only ${stock} in stock`,
+        'error'
+      );
+      return;
+    }
     if (price <= 0) {
       showToast(
         `No ${saleType.toUpperCase()} price set for ${p.name}`,
@@ -95,6 +110,18 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
       if (match.price <= 0) {
         showToast(
           `No ${match.type.toUpperCase()} price set for ${match.product.name}`,
+          'error'
+        );
+        return;
+      }
+      const matchStock = effectiveStock(match.product, match.type);
+      if (matchStock <= 0) {
+        showToast(`${match.product.name} is out of stock`, 'error');
+        return;
+      }
+      if (addableQty(match.product, match.type, cart, match.product.id) <= 0) {
+        showToast(
+          `${match.product.name}: only ${matchStock} in stock`,
           'error'
         );
         return;

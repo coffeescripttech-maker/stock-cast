@@ -8,6 +8,7 @@ import { useDataStore } from '../../stores/dataStore';
 import { usePOSStore } from '../../stores/posStore';
 import { useUIStore } from '../../stores/uiStore';
 import { findProductByBarcode } from '../../lib/barcode';
+import { effectiveStock, addableQty } from '../../lib/stock';
 
 interface ScannerModalProps {
   open: boolean;
@@ -70,6 +71,7 @@ export function ScannerModal({ open, onOpenChange }: ScannerModalProps) {
   const products = useDataStore((s) => s.products);
   const addToCart = usePOSStore((s) => s.addToCart);
   const saleMode = usePOSStore((s) => s.saleMode);
+  const cart = usePOSStore((s) => s.cart);
   const showToast = useUIStore((s) => s.showToast);
 
   const [barcode, setBarcode] = useState('');
@@ -92,6 +94,15 @@ export function ScannerModal({ open, onOpenChange }: ScannerModalProps) {
         `No ${match.type.toUpperCase()} price set for ${match.product.name}`,
         'error'
       );
+      return;
+    }
+    const stock = effectiveStock(match.product, match.type);
+    if (stock <= 0) {
+      showToast(`${match.product.name} is out of stock`, 'error');
+      return;
+    }
+    if (addableQty(match.product, match.type, cart, match.product.id) <= 0) {
+      showToast(`${match.product.name}: only ${stock} in stock`, 'error');
       return;
     }
     addToCart(match.product.id, match.product.name, match.type, match.price);

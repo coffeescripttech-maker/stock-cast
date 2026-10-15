@@ -11,6 +11,11 @@ const config: CapacitorConfig = {
   // user's own PC on a private LAN, so this is safe for this use case.
   android: {
     allowMixedContent: true,
+    // Android 15+ forces edge-to-edge, so the WebView would draw under the
+    // status bar and notch. 'auto' insets the WebView by the system-bar
+    // margins so nothing overlaps the status bar. Older Androids are
+    // unaffected (they are not edge-to-edge by default).
+    adjustMarginsForEdgeToEdge: 'auto',
   },
   server: {
     cleartext: true,

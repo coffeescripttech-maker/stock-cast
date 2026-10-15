@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotificationStore } from '../../stores/notificationStore';
-import { Bell, Package, DollarSign, UserPlus, X, CheckCheck } from 'lucide-react';
+import { Bell, Package, PhilippinePeso, UserPlus, X, CheckCheck } from 'lucide-react';
 import type { AppNotification } from '../../types/notification';
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 
 const iconMap: Record<AppNotification['type'], React.ReactNode> = {
   low_stock: <Package size={14} className="text-amber-400" />,
-  large_txn: <DollarSign size={14} className="text-blue-400" />,
+  large_txn: <PhilippinePeso size={14} className="text-blue-400" />,
   new_customer: <UserPlus size={14} className="text-emerald-400" />,
 };
 

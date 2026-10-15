@@ -26,3 +26,33 @@ export function effectiveStock(p: StockFields, type: SaleType): number {
 export function isOutOfStock(p: StockFields, type: SaleType): boolean {
   return effectiveStock(p, type) <= 0;
 }
+
+export interface CartLine {
+  productId: number;
+  type: SaleType;
+  qty: number;
+}
+
+/** Units of a product already sitting in the cart for a given sale type. */
+export function cartQtyFor(
+  cart: CartLine[],
+  productId: number,
+  type: SaleType
+): number {
+  const line = cart.find(c => c.productId === productId && c.type === type);
+  return line ? line.qty : 0;
+}
+
+/**
+ * Units that can still be added for a product/sale type, accounting for what is
+ * already in the cart. Guards against adding (or bumping the quantity) beyond the
+ * on-hand stock — which is what let out-of-stock items slip through before.
+ */
+export function addableQty(
+  p: StockFields,
+  type: SaleType,
+  cart: CartLine[],
+  productId: number
+): number {
+  return Math.max(0, effectiveStock(p, type) - cartQtyFor(cart, productId, type));
+}

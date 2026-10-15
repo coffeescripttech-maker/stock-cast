@@ -261,8 +261,8 @@ export function buildSaleReceipt(tx: Transaction, s: SystemSettings, now = new D
           line(padRight(`Payment (${tx.paymentMethod.toUpperCase()}):`, 22) + money(tx.amountTendered, s)),
           ...(tx.paymentRef ? [line(padRight('Ref:', 16) + String(tx.paymentRef).slice(0, 16))] : []),
         ]),
-    // Points
-    ...(tx.pointsEarned && tx.pointsEarned > 0
+    // Points — only when a customer/RFID card was linked to the sale
+    ...(tx.customerName && tx.pointsEarned && tx.pointsEarned > 0
       ? [line(''), center(`+${tx.pointsEarned} points earned`, COL)]
       : []),
     line(dash),

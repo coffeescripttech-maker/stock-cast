@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import {
-  Search, Plus, Trash2, Edit3, Package, AlertTriangle, DollarSign, ScanLine,
+  Search, Plus, Trash2, Edit3, Package, AlertTriangle, PhilippinePeso, ScanLine,
   ArrowUpDown, Grid3X3, List, Download, BarChart3,
   TrendingUp, X, ChevronLeft, ChevronRight,
   Activity, Clock, Truck, Camera, Copy,
@@ -318,7 +318,7 @@ export default function InventoryPage() {
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Stock Value</span>
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
-                <DollarSign size={18} className="text-white" />
+                <PhilippinePeso size={18} className="text-white" />
               </div>
             </div>
             <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">₱{Math.round(stats.totalValue).toLocaleString()}</div>

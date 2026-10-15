@@ -27,6 +27,23 @@
 ::-webkit-scrollbar-thumb { background: var(--color-slate-200); border-radius: 99px; }
 .dark ::-webkit-scrollbar-thumb { background: var(--color-slate-600); }
 
+/* Dark mode form controls — render fields as white with dark typed text so
+   entries stay legible. Transparent inputs (inside styled wrappers) and
+   non-text controls are left untouched. */
+.dark { color-scheme: dark; }
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([class*="bg-transparent"]),
+.dark select:not([class*="bg-transparent"]),
+.dark textarea:not([class*="bg-transparent"]) {
+  background-color: #ffffff;
+  color: #0f172a;
+  color-scheme: light;
+}
+.dark input:not([class*="bg-transparent"])::placeholder,
+.dark textarea:not([class*="bg-transparent"])::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
 /* Fade up animation */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(8px); }

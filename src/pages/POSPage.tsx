@@ -6,6 +6,7 @@ import { useUIStore } from '../stores/uiStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useBarcodeWedge } from '../hooks/useBarcodeWedge';
 import { findProductByBarcode } from '../lib/barcode';
+import { effectiveStock, addableQty } from '../lib/stock';
 import { ProductSearch } from '../components/pos/ProductSearch';
 import { Cart } from '../components/pos/Cart';
 import { OrderSummary } from '../components/pos/OrderSummary';
@@ -147,10 +148,48 @@ export default function POSPage() {
     cartFirst
   ]);
 
+  // Keep stock fresh across terminals — re-pull products on mount, whenever the
+  // window regains focus/visibility, and on a slow interval. Without this the
+  // grid can keep showing stale quantities after another register sells.
+  useEffect(() => {
+    const refresh = () => {
+      void useDataStore.getState().refreshProducts();
+    };
+    refresh();
+    const onVisible = () => {
+      if (!document.hidden) refresh();
+    };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisible);
+    const interval = window.setInterval(onVisible, 60000);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(interval);
+    };
+  }, []);
+
   // ---- Handlers ----
 
   const processCheckout = useCallback(() => {
     if (cart.length === 0) return;
+    // Guard against overselling: block checkout if any line exceeds the stock
+    // currently on hand (catches stale quantities from another terminal).
+    const short = cart.find(c => {
+      const p = products.find(pl => pl.id === c.productId);
+      return p ? c.qty > effectiveStock(p, c.type) : false;
+    });
+    if (short) {
+      const p = products.find(pl => pl.id === short.productId)!;
+      const left = effectiveStock(p, short.type);
+      showToast(
+        left <= 0
+          ? `${short.name} is out of stock`
+          : `Only ${left} of ${short.name} in stock`,
+        'error'
+      );
+      return;
+    }
     const settings = useSettingsStore.getState().settings.pos;
     if (settings.customerRequired && !linkedCustomer) {
       showToast('Please link a customer before checkout', 'error');
@@ -158,7 +197,7 @@ export default function POSPage() {
     }
     setPendingTotal(grandTotal);
     setPaymentOpen(true);
-  }, [cart.length, grandTotal, linkedCustomer]);
+  }, [cart, products, grandTotal, linkedCustomer, showToast]);
 
   // ---- Barcode wedge: a scanned code auto-adds the product to the cart ----
   const handleBarcodeScan = useCallback(
@@ -175,13 +214,25 @@ export default function POSPage() {
         );
         return;
       }
+      const matchStock = effectiveStock(match.product, match.type);
+      if (matchStock <= 0) {
+        showToast(`${match.product.name} is out of stock`, 'error');
+        return;
+      }
+      if (addableQty(match.product, match.type, cart, match.product.id) <= 0) {
+        showToast(
+          `${match.product.name}: only ${matchStock} in stock`,
+          'error'
+        );
+        return;
+      }
       addToCart(match.product.id, match.product.name, match.type, match.price);
       showToast(
         `Added ${match.product.name} (${match.type.toUpperCase()})`,
         'success'
       );
     },
-    [products, saleMode, addToCart, showToast]
+    [products, saleMode, cart, addToCart, showToast]
   );
 
   useBarcodeWedge(handleBarcodeScan);

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
-  BarChart3, Package, Download, ShoppingCart, DollarSign, Layers,
+  BarChart3, Package, Download, ShoppingCart, PhilippinePeso, Layers,
   Search, ArrowUpDown, ChevronLeft, ChevronRight, Wallet, CalendarDays, ReceiptText,
 } from 'lucide-react';
 import {
@@ -332,7 +332,7 @@ export default function ReportsPage() {
               label="Total Sales"
               value={fmtCurrency(totalSales)}
               sub={filterLabel}
-              icon={<DollarSign size={16} />}
+              icon={<PhilippinePeso size={16} />}
               accent="brand"
             />
             <StatCard
@@ -386,11 +386,11 @@ export default function ReportsPage() {
           </div>
 
           {/* Charts row */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {/* Bar chart */}
-            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6">
-              <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Daily Sales</h3>
-              <div className="h-64">
+            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-3 sm:p-6">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 sm:mb-4">Daily Sales</h3>
+              <div className="h-40 sm:h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={dailyData} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="4 4" stroke={gridColor} vertical={false} />
@@ -412,22 +412,24 @@ export default function ReportsPage() {
             </div>
 
             {/* Pie chart */}
-            <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6">
-              <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Sales by Type</h3>
-              <div className="h-64 flex flex-col items-center justify-center">
+            <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-3 sm:p-6">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 sm:mb-4">Sales by Type</h3>
+              <div className="h-40 sm:h-64 flex flex-col items-center justify-center">
                 {pieData.length > 0 ? (
                   <>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <PieChart>
-                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={4} dataKey="value">
-                          {pieData.map((entry, i) => (
-                            <Cell key={i} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value: number) => [`₱${fmtCurrency(value)}`, '']} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="flex gap-4 mt-2 text-xs">
+                    <div className="flex-1 w-full min-h-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={pieData} cx="50%" cy="50%" innerRadius={34} outerRadius={58} paddingAngle={4} dataKey="value">
+                            {pieData.map((entry, i) => (
+                              <Cell key={i} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => [`₱${fmtCurrency(value)}`, '']} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-1 text-[10px] sm:text-xs">
                       {pieData.map((d) => (
                         <div key={d.name} className="flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} />
@@ -633,7 +635,7 @@ export default function ReportsPage() {
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Stock Value</span>
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
-                    <DollarSign size={18} className="text-white" />
+                    <PhilippinePeso size={18} className="text-white" />
                   </div>
                 </div>
                 <div className="text-xl sm:text-3xl font-black font-mono tracking-tight">{fmtCurrency(invTotalValue)}</div>
@@ -658,9 +660,9 @@ export default function ReportsPage() {
           </div>
 
           {/* Stock value chart */}
-          <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6">
-            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">Top 10 Products by Stock Value</h3>
-            <div className="h-72">
+          <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-3 sm:p-6">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 sm:mb-4">Top 10 Products by Stock Value</h3>
+            <div className="h-56 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={[...products].sort((a, b) => (b.retailStock * b.retailPrice + b.wholesaleStock * b.wholesalePrice) - (a.retailStock * a.retailPrice + a.wholesaleStock * a.wholesalePrice)).slice(0, 10)}

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
-  Search, Receipt, XCircle, TrendingUp, DollarSign, ShoppingBag, Activity,
+  Search, Receipt, XCircle, TrendingUp, PhilippinePeso, ShoppingBag, Activity,
   ChevronLeft, ChevronRight, User, CalendarDays, Ban, Wallet,
 } from 'lucide-react';
 import { useDataStore } from '../stores/dataStore';
@@ -115,7 +115,7 @@ export default function TransactionsPage() {
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">Total Revenue</span>
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
-                <DollarSign size={18} className="text-white" />
+                <PhilippinePeso size={18} className="text-white" />
               </div>
             </div>
             <div className="text-2xl sm:text-4xl font-black font-mono tracking-tight">₱{Math.round(stats.totalRevenue).toLocaleString()}</div>
@@ -467,13 +467,6 @@ export default function TransactionsPage() {
                   </div>
                 ))}
             </div>
-
-            {/* Points earned indicator */}
-            {detailTx.pointsEarned && detailTx.pointsEarned > 0 && !detailTx.customerName && (
-              <div className="text-[11px] text-brand font-mono text-center pt-2">
-                ★ +{detailTx.pointsEarned} points earned
-              </div>
-            )}
 
             {/* Actions */}
             {detailTx.status === 'completed' && (

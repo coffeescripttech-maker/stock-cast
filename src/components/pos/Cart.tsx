@@ -2,9 +2,11 @@ import { ShoppingCart, Search, X, ArrowDownUp, Rows3 } from 'lucide-react';
 import { useState } from 'react';
 import { usePOSStore } from '../../stores/posStore';
 import { useDataStore } from '../../stores/dataStore';
+import { useUIStore } from '../../stores/uiStore';
 import { CartItemRow } from './CartItemRow';
 import { cn } from '../../lib/cn';
 import { fmtCurrency } from '../../lib/formatters';
+import { effectiveStock } from '../../lib/stock';
 import type { SaleType } from '../../types/product';
 
 export function Cart() {
@@ -15,6 +17,7 @@ export function Cart() {
   const toggleCartItemType = usePOSStore((s) => s.toggleCartItemType);
   const removeFromCart = usePOSStore((s) => s.removeFromCart);
   const products = useDataStore((s) => s.products);
+  const showToast = useUIStore((s) => s.showToast);
   const [query, setQuery] = useState('');
   const [newestFirst, setNewestFirst] = useState(true);
   const [compactRows, setCompactRows] = useState(true);
@@ -39,12 +42,64 @@ export function Cart() {
     : cartIndexed
   ).sort((a, b) => (newestFirst ? b.i - a.i : a.i - b.i));
 
+  /** Max units of a cart line that the stock pool allows. */
+  function stockCap(item: { productId: number; type: SaleType }): number {
+    const product = products.find((p) => p.id === item.productId);
+    return product ? effectiveStock(product, item.type) : Number.POSITIVE_INFINITY;
+  }
+
+  function handleUpdateQty(idx: number, delta: number) {
+    const item = cart[idx];
+    if (!item) return;
+    const cap = stockCap(item);
+    const next = Math.max(1, item.qty + delta);
+    if (delta > 0 && next > cap) {
+      if (item.qty >= cap) {
+        showToast(
+          cap <= 0
+            ? `${item.name} is out of stock`
+            : `Only ${cap} of ${item.name} in stock`,
+          'error'
+        );
+        return;
+      }
+      updateCartItemQty(idx, cap - item.qty);
+      showToast(`Only ${cap} of ${item.name} in stock`, 'error');
+      return;
+    }
+    updateCartItemQty(idx, delta);
+  }
+
+  function handleSetQty(idx: number, qty: number) {
+    const item = cart[idx];
+    if (!item) return;
+    const cap = stockCap(item);
+    if (qty > cap) {
+      showToast(`Only ${cap} of ${item.name} in stock`, 'error');
+      setCartItemQty(idx, Math.max(1, cap));
+      return;
+    }
+    setCartItemQty(idx, qty);
+  }
+
   function handleToggleType(idx: number, type: SaleType) {
     const item = cart[idx];
     const product = products.find((p) => p.id === item.productId);
     if (!product) return;
+    const cap = effectiveStock(product, type);
+    if (cap <= 0) {
+      showToast(
+        `No ${type.toUpperCase()} stock for ${product.name}`,
+        'error'
+      );
+      return;
+    }
     const newPrice = type === 'ws' ? product.wholesalePrice : product.retailPrice;
     toggleCartItemType(idx, type, newPrice);
+    if (item.qty > cap) {
+      setCartItemQty(idx, cap);
+      showToast(`Only ${cap} of ${product.name} at ${type.toUpperCase()}`, 'error');
+    }
   }
 
   if (cart.length === 0) {
@@ -148,8 +203,8 @@ export function Cart() {
               index={i}
               locked={saleMode !== null}
               compact={compactRows}
-              onUpdateQty={updateCartItemQty}
-              onSetQty={setCartItemQty}
+              onUpdateQty={handleUpdateQty}
+              onSetQty={handleSetQty}
               onToggleType={handleToggleType}
               onRemove={removeFromCart}
             />
