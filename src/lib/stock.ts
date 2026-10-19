@@ -10,7 +10,7 @@ export interface StockFields {
 /**
  * True when the retail and wholesale barcodes are the SAME — the merchant
  * treats this as one physical product, so a single unified stock pool
- * (retailStock) is the source for both retail and wholesale sales.
+ * (wholesaleStock) is the source for both retail and wholesale sales.
  */
 export function hasUnifiedStock(p: StockFields): boolean {
   return !!p.retailBarcode && p.retailBarcode === p.wholesaleBarcode;
@@ -18,7 +18,7 @@ export function hasUnifiedStock(p: StockFields): boolean {
 
 /** Effective on-hand stock for a given sale type (honours unified stock). */
 export function effectiveStock(p: StockFields, type: SaleType): number {
-  if (hasUnifiedStock(p)) return p.retailStock;
+  if (hasUnifiedStock(p)) return p.wholesaleStock;
   return type === 'ws' ? p.wholesaleStock : p.retailStock;
 }
 

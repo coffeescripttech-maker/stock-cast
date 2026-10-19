@@ -1,5 +1,5 @@
 import { ShoppingCart, Search, X, ArrowDownUp, Rows3 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePOSStore } from '../../stores/posStore';
 import { useDataStore } from '../../stores/dataStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -21,6 +21,32 @@ export function Cart() {
   const [query, setQuery] = useState('');
   const [newestFirst, setNewestFirst] = useState(true);
   const [compactRows, setCompactRows] = useState(true);
+  // F2 shortcut: index of the cart line whose qty editor is open (-1 = none).
+  const [editIdx, setEditIdx] = useState(-1);
+  const [editNonce, setEditNonce] = useState(0);
+
+  // F2 cycles the qty editor through cart lines so a cashier can fix quantities
+  // without touching the mouse.
+  useEffect(() => {
+    if (cart.length === 0) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'F2') return;
+      if (document.querySelector('[role="dialog"][data-state="open"]')) return;
+      e.preventDefault();
+      setEditIdx((prev) => (prev < 0 || prev >= cart.length - 1 ? 0 : prev + 1));
+      setEditNonce((n) => n + 1);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [cart.length]);
+
+  // Keep the row being edited in view.
+  useEffect(() => {
+    if (editIdx < 0) return;
+    document
+      .querySelector(`[data-cart-row="${editIdx}"]`)
+      ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [editIdx, editNonce]);
 
   const totalUnits = cart.reduce((s, c) => s + c.qty, 0);
   const subtotal = cart.reduce((s, c) => s + c.qty * c.price, 0);
@@ -207,6 +233,8 @@ export function Cart() {
               onSetQty={handleSetQty}
               onToggleType={handleToggleType}
               onRemove={removeFromCart}
+              forceEdit={editIdx === i ? editNonce : 0}
+              onEditComplete={() => setEditIdx(-1)}
             />
           ))
         )}

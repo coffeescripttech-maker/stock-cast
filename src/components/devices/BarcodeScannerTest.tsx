@@ -40,9 +40,11 @@ export function BarcodeScannerTest({ onStatusChange, onCapture }: BarcodeScanner
   const clear = useCallback(() => setRecords([]), []);
 
   // Report to the page so the KPI card can count this device as "online".
+  // Once a code has been captured, the device stays counted even if the
+  // capture field loses focus (otherwise a completed test showed 0/3).
   useEffect(() => {
-    onStatusChange?.(focused);
-  }, [focused, onStatusChange]);
+    onStatusChange?.(focused || records.length > 0);
+  }, [focused, records.length, onStatusChange]);
 
   const status: DeviceStatus = focused ? 'listening' : 'idle';
   const statusLabel = focused ? 'Listening' : 'Idle';

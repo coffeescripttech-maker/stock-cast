@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import {
   Search, Plus, Trash2, Edit3, Package, AlertTriangle, PhilippinePeso, ScanLine,
-  ArrowUpDown, Grid3X3, List, Download, BarChart3,
+  ArrowUpDown, Grid3X3, List, BarChart3,
   TrendingUp, X, ChevronLeft, ChevronRight,
-  Activity, Clock, Truck, Camera, Copy,
+  Activity, Camera, Copy,
 } from 'lucide-react';
 import { Camera as CapCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { useDataStore } from '../stores/dataStore';
@@ -19,7 +19,7 @@ import { cn } from '../lib/cn';
 import { resolveApiUrl } from '../lib/apiBase';
 import { CATEGORIES, CATEGORY_COLORS } from '../lib/constants';
 import { fmtCurrency } from '../lib/formatters';
-import { effectiveStock } from '../lib/stock';
+import { effectiveStock, hasUnifiedStock } from '../lib/stock';
 import type { Product, ProductCategory } from '../types/product';
 
 /* ─── Running inside the Capacitor Android app (WebView)? ─── */
@@ -278,12 +278,6 @@ export default function InventoryPage() {
             : 'No stock data'}
         </p>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => window.print()}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:shadow-sm transition-all flex items-center gap-2"
-          >
-            <Download size={13} /> Export
-          </button>
           <Button variant="primary" size="md" onClick={openAddForm}>
             <Plus size={14} /> Add Product
           </Button>
@@ -517,28 +511,6 @@ export default function InventoryPage() {
             </div>
           )}
         </div>
-
-        {/* ─── Recent Deliveries (Small) ─── */}
-        <div className="lg:col-span-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[20px] border border-slate-100 dark:border-slate-800 p-6 shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/50 flex items-center justify-center">
-                <Truck size={15} className="text-sky-500" />
-              </div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Recent Deliveries</h3>
-            </div>
-            <span className="text-[10px] text-slate-400 flex items-center gap-1">
-              <Clock size={10} /> Coming soon
-            </span>
-          </div>
-          <div className="text-center py-6">
-            <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
-              <Truck size={22} className="text-slate-300 dark:text-slate-600" />
-            </div>
-            <p className="text-xs font-semibold text-slate-400 dark:text-slate-500">Delivery tracking not yet available</p>
-            <p className="text-[10px] text-slate-400 dark:text-slate-600 mt-0.5">This feature will track incoming stock deliveries</p>
-          </div>
-        </div>
       </div>
 
       {/* ═══ BOTTOM SECTION: Controls + Table/Grid ═══ */}
@@ -757,11 +729,18 @@ export default function InventoryPage() {
                       <td className="px-4 py-3.5 text-right">
                         <span className="font-mono font-bold text-amber-600 dark:text-amber-400 text-sm">{fmtCurrency(p.wholesalePrice)}</span>
                       </td>
-                      {/* RT Stock */}
+                      {/* RT Stock — grayed out when the barcode is shared with
+                          wholesale (unified pool lives in WS Stock) */}
                       <td className="px-4 py-3.5 text-right">
-                        <span className={cn('font-mono font-semibold text-sm', rtLow ? 'text-red-500' : 'text-slate-600 dark:text-slate-400')}>
-                          {p.retailStock}
-                        </span>
+                        {hasUnifiedStock(p) ? (
+                          <span className="font-mono font-semibold text-sm text-slate-300 dark:text-slate-600 line-through" title="Unified with wholesale stock — not used separately">
+                            {p.retailStock}
+                          </span>
+                        ) : (
+                          <span className={cn('font-mono font-semibold text-sm', rtLow ? 'text-red-500' : 'text-slate-600 dark:text-slate-400')}>
+                            {p.retailStock}
+                          </span>
+                        )}
                       </td>
                       {/* WS Stock */}
                       <td className="px-4 py-3.5 text-right">
@@ -881,8 +860,10 @@ export default function InventoryPage() {
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-1 ring-emerald-200" />
                             <span className="text-slate-400 font-semibold">RT</span>
                           </div>
-                          <span className={cn('font-mono font-bold', rtOut ? 'text-red-400' : rtLow ? 'text-amber-500' : 'text-slate-700 dark:text-slate-300')}>
-                            {fmtCurrency(p.retailPrice)} · {p.retailStock}
+                          <span
+                            className={cn('font-mono font-bold', hasUnifiedStock(p) ? 'text-slate-300 dark:text-slate-600' : rtOut ? 'text-red-400' : rtLow ? 'text-amber-500' : 'text-slate-700 dark:text-slate-300')}
+                            title={hasUnifiedStock(p) ? 'Unified with wholesale stock — not used separately' : undefined}>
+                            {fmtCurrency(p.retailPrice)} · <span className={cn(hasUnifiedStock(p) && 'line-through')}>{p.retailStock}</span>
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -1338,11 +1319,15 @@ function ProductFormModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Retail Stock</label>
-            <input type="number" value={form.retailStock} onChange={(e) => update('retailStock', parseInt(e.target.value) || 0)} min="0"
-              className={cn('w-full px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none dark:bg-slate-900 dark:text-slate-100',
+            <label className={cn('text-xs font-semibold', (form.retailBarcode.trim() && form.retailBarcode.trim() === form.wholesaleBarcode.trim()) ? 'text-slate-300 dark:text-slate-600' : 'text-slate-700 dark:text-slate-300')}>Retail Stock</label>
+            <input type="number" value={form.retailStock}
+              onChange={(e) => update('retailStock', parseInt(e.target.value) || 0)} min="0"
+              disabled={!!form.retailBarcode.trim() && form.retailBarcode.trim() === form.wholesaleBarcode.trim()}
+              className={cn('w-full px-3.5 py-2.5 text-sm rounded-lg border bg-slate-50 outline-none dark:bg-slate-900 dark:text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:line-through',
                 errors.retailStock ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-brand dark:border-slate-600')} />
-            {errors.retailStock ? <p className="text-[11px] font-medium text-red-500">{errors.retailStock}</p> : <p className="text-[10px] text-slate-400">Alert at ≤{invSettings.lowStockThresholdRt}</p>}
+            {form.retailBarcode.trim() && form.retailBarcode.trim() === form.wholesaleBarcode.trim()
+              ? <p className="text-[10px] font-medium text-slate-400">Hindi ginagamit — shared na sa Wholesale Stock.</p>
+              : errors.retailStock ? <p className="text-[11px] font-medium text-red-500">{errors.retailStock}</p> : <p className="text-[10px] text-slate-400">Alert at ≤{invSettings.lowStockThresholdRt}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Wholesale Stock</label>
@@ -1354,7 +1339,7 @@ function ProductFormModal({
         </div>
         {form.retailBarcode.trim() && form.retailBarcode.trim() === form.wholesaleBarcode.trim() ? (
           <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-            Unified stock — parehong barcode ang retail at wholesale, kaya IISANG shared stock pool (Retail Stock) ang gamit ng parehong benta.
+            Unified stock — parehong barcode ang retail at wholesale, kaya IISANG shared stock pool (Wholesale Stock) ang gamit ng parehong benta. Naka-gray out ang Retail Stock.
           </p>
         ) : null}
 

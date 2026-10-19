@@ -154,6 +154,7 @@ interface DataState {
   // Hydration
   hydrate: () => Promise<void>;
   refreshProducts: () => Promise<void>;
+  refreshAll: () => Promise<void>;
 }
 
 export const useDataStore = create<DataState>()(
@@ -227,9 +228,9 @@ export const useDataStore = create<DataState>()(
         set(s => ({
           products: s.products.map(p => {
             if (p.id !== productId) return p;
-            // Same-barcode products share ONE unified stock pool (retailStock),
-            // so wholesale sales also draw from it.
-            if (type === 'ws' && !hasUnifiedStock(p))
+            // Same-barcode products share ONE unified stock pool
+            // (wholesaleStock), so retail sales also draw from it.
+            if (type === 'ws' || hasUnifiedStock(p))
               return {
                 ...p,
                 wholesaleStock: Math.max(0, p.wholesaleStock - qty)
@@ -424,8 +425,8 @@ export const useDataStore = create<DataState>()(
           action,
           details
         });
-        if (state.auditLog.length > 500) {
-          state.auditLog.splice(500);
+        if (state.auditLog.length > 1000) {
+          state.auditLog.splice(1000);
         }
         set({ auditLog: [...state.auditLog] });
       },
@@ -458,6 +459,37 @@ export const useDataStore = create<DataState>()(
         }
       },
 
+      /**
+       * Re-pull every data slice and merge in whatever succeeded. Unlike
+       * hydrate(), a failed request leaves the current slice untouched (so a
+       * brief network blip on the phone can never blank the POS/inventory).
+       * Used for cross-device near-real-time sync on focus/interval.
+       */
+      refreshAll: async () => {
+        const [products, transactions, customers, auditLog, rewards] =
+          await Promise.allSettled([
+            api.get<{ data: any[] }>('/products?limit=1000'),
+            api.get<{ data: any[] }>('/transactions?limit=500'),
+            api.get<{ data: any[] }>('/customers?limit=500'),
+            api.get<{ data: any[] }>('/audit-log?limit=1000'),
+            api.get<{ data: any }>('/rewards/config')
+          ]);
+
+        const patch: Partial<DataState> = {};
+        if (products.status === 'fulfilled' && Array.isArray(products.value.data))
+          patch.products = products.value.data.map(normalizeProduct);
+        if (transactions.status === 'fulfilled' && Array.isArray(transactions.value.data))
+          patch.transactions = transactions.value.data.map(normalizeTx);
+        if (customers.status === 'fulfilled' && Array.isArray(customers.value.data))
+          patch.customers = customers.value.data.map(normalizeCustomer);
+        if (auditLog.status === 'fulfilled' && Array.isArray(auditLog.value.data))
+          patch.auditLog = auditLog.value.data.map(normalizeAudit);
+        if (rewards.status === 'fulfilled' && rewards.value.data)
+          patch.rewardsConfig = normalizeRewardsConfig(rewards.value.data);
+
+        if (Object.keys(patch).length > 0) set(patch);
+      },
+
       hydrate: async () => {
         set({ _hydrating: true });
         try {
@@ -478,7 +510,7 @@ export const useDataStore = create<DataState>()(
               .get<{ data: any[] }>('/customers?limit=500')
               .catch(() => ({ data: [] })),
             api
-              .get<{ data: any[] }>('/audit-log?limit=500')
+              .get<{ data: any[] }>('/audit-log?limit=1000')
               .catch(() => ({ data: [] })),
             api
               .get<{ data: any }>('/rewards/config')

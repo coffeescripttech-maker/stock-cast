@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.ruizstore.pos',
-  appName: 'Ruiz Store POS',
+  appName: 'StockCast',
   webDir: 'dist',
   // The WebView is served from https://localhost, but the POS server runs as
   // plain HTTP on the PC's LAN address. allowMixedContent lets the HTTPS page

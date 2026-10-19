@@ -148,27 +148,6 @@ export default function POSPage() {
     cartFirst
   ]);
 
-  // Keep stock fresh across terminals — re-pull products on mount, whenever the
-  // window regains focus/visibility, and on a slow interval. Without this the
-  // grid can keep showing stale quantities after another register sells.
-  useEffect(() => {
-    const refresh = () => {
-      void useDataStore.getState().refreshProducts();
-    };
-    refresh();
-    const onVisible = () => {
-      if (!document.hidden) refresh();
-    };
-    window.addEventListener('focus', refresh);
-    document.addEventListener('visibilitychange', onVisible);
-    const interval = window.setInterval(onVisible, 60000);
-    return () => {
-      window.removeEventListener('focus', refresh);
-      document.removeEventListener('visibilitychange', onVisible);
-      window.clearInterval(interval);
-    };
-  }, []);
-
   // ---- Handlers ----
 
   const processCheckout = useCallback(() => {
@@ -347,9 +326,12 @@ export default function POSPage() {
   }
 
   // ── Layout panels ──────────────────────────────────────────────────
-  // Order Summary (Order Total + Link Customer + Complete Sale) is ALWAYS
-  // pinned to the bottom of the RIGHT column so it stays visible without
-  // scrolling. The columns are fixed-height; only the inner lists scroll.
+  // On desktop the whole page is sized to the viewport (100dvh minus the
+  // 52px top nav and the 32px main bottom padding) and laid out as a flex
+  // column: header + shortcuts stay fixed, the two columns share the rest, and
+  // Order Summary (Order Total + Link Customer + Complete Sale) is pinned to
+  // the bottom of the RIGHT column. Nothing overflows, so the Complete Sale
+  // button is always visible without scrolling. Only the inner lists scroll.
   const cardShell =
     'bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-5 flex flex-col min-h-0';
 
@@ -357,7 +339,7 @@ export default function POSPage() {
     <div
       className={cn(
         cardShell,
-        'max-h-[50dvh] lg:max-h-none lg:h-full lg:flex-1 overflow-hidden'
+        'max-h-[42dvh] lg:max-h-none lg:h-full lg:flex-1 overflow-hidden'
       )}>
       <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2 flex-shrink-0">
         <svg
@@ -416,14 +398,14 @@ export default function POSPage() {
 
   // Left column = main panel (products grid by default, big cart in cart-first)
   const leftPanel = (
-    <div className="lg:h-[calc(100vh-64px)] lg:sticky lg:top-[52px] lg:min-h-0">
+    <div className="lg:flex-1 lg:min-w-0 lg:min-h-0 lg:flex lg:flex-col">
       {cartFirst ? cartCard : productsCard}
     </div>
   );
 
-  // Right column = secondary panel (scrolls) + Order Summary pinned at bottom
+  // Right column = secondary panel + Order Summary pinned at bottom
   const rightColumn = (
-    <div className="lg:h-[calc(100vh-64px)] lg:sticky lg:top-[52px] lg:flex lg:flex-col lg:gap-6 lg:min-h-0">
+    <div className="flex flex-col gap-4 lg:gap-6 lg:w-[420px] lg:flex-shrink-0 lg:min-h-0">
       <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
         {cartFirst ? productsCard : cartCard}
       </div>
@@ -432,9 +414,9 @@ export default function POSPage() {
   );
 
   return (
-    <div className="animate-[fadeUp_0.25s_ease]">
+    <div className="animate-[fadeUp_0.25s_ease] lg:h-[calc(100dvh-84px)] lg:flex lg:flex-col lg:overflow-hidden">
       {/* Header */}
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-3 lg:mb-5 flex flex-wrap items-center justify-between gap-3 lg:flex-shrink-0">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <SaleModeToggle />
           <p className="text-sm text-slate-400 dark:text-slate-500">
@@ -468,8 +450,9 @@ export default function POSPage() {
       </div>
 
       {/* Shortcuts bar — desktop only; F-keys don't exist on phones */}
-      <div className="hidden lg:flex flex-wrap gap-1.5 mb-5">
+      <div className="hidden lg:flex lg:flex-shrink-0 flex-wrap gap-1.5 mb-5">
         {[
+          { kbd: 'F2', label: 'Edit Qty' },
           { kbd: 'F4', label: 'Print' },
           { kbd: 'F5', label: 'Mode' },
           { kbd: 'F7', label: 'Layout' },
@@ -491,10 +474,11 @@ export default function POSPage() {
         ))}
       </div>
 
-      {/* Main grid — 2 columns. Left = main panel (grid or big cart), right =
-          secondary panel + Order Summary pinned at the bottom so it is
-          ALWAYS visible without scrolling. */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,420px)] gap-6 items-start">
+      {/* Main columns — on desktop a flex row that fills the viewport; on
+          mobile they stack. Left = main panel (grid or big cart), right =
+          secondary panel + Order Summary pinned at the bottom so the Complete
+          Sale button is ALWAYS visible without scrolling. */}
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 lg:flex-1 lg:min-h-0">
         {leftPanel}
         {rightColumn}
       </div>

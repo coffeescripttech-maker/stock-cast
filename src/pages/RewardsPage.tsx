@@ -300,36 +300,13 @@ function LoyaltyCard({
   );
 }
 
-/* ─── Print a single card in a new window ─── */
-async function printCard(customer: Customer) {
-  const mid = memberId(customer.id);
-
-  // Generate QR data URL BEFORE opening the print window (avoids CDN & timing issues)
-  let qrDataUrl = '';
-  try {
-    qrDataUrl = await QRCode.toDataURL(customer.nfcTag, {
-      width: 140,
-      margin: 1,
-      color: { dark: '#17171c', light: '#ffffff' }
-    });
-  } catch {
-    // QR generation failed — will fall back to placeholder
-  }
-
-  const win = window.open('', '_blank');
-  if (!win) return;
-
-  const html = `<!DOCTYPE html>
-<html>
-<head><title>Loyalty Card - ${customer.name}</title>
-<style>
+/* ─── Card styles + markup (shared by single print and Print All) ─── */
+const CARD_CSS = `
   @page { margin: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   * { margin: 0; padding: 0; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  body {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 100vh; background: #fff;
-    font-family: -apple-system, 'Inter', 'SF Pro Display', 'Segoe UI', sans-serif;
-  }
+  body { font-family: -apple-system, 'Inter', 'SF Pro Display', 'Segoe UI', sans-serif; background: #fff; }
+  .page { width: 85.6mm; height: 53.98mm; page-break-after: always; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
   .card {
     width: 85.6mm; height: 53.98mm;
     background: linear-gradient(135deg, #08080c 0%, #0d0d14 50%, #111118 100%);
@@ -353,18 +330,13 @@ async function printCard(customer: Customer) {
     background: radial-gradient(circle, rgba(251,191,36,0.05), transparent);
     border-radius: 50%; filter: blur(6mm);
   }
-  /* Gold inner border ring */
   .card-border {
     position: absolute; inset: 0.5mm; border-radius: 3mm;
     border: 0.3mm solid rgba(251,191,36,0.12);
     pointer-events: none;
   }
-  .top-row {
-    display: flex; align-items: flex-start; justify-content: space-between;
-  }
-  .brand {
-    display: flex; align-items: center; gap: 1.5mm;
-  }
+  .top-row { display: flex; align-items: flex-start; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 1.5mm; }
   .brand-icon {
     width: 7mm; height: 7mm;
     background: rgba(255,255,255,0.08);
@@ -404,13 +376,8 @@ async function printCard(customer: Customer) {
     font-weight: 600; letter-spacing: 0.05em;
     color: rgba(255,255,255,0.35); margin-top: 0.8mm;
   }
-  .bottom-row {
-    display: flex; align-items: flex-end; gap: 3mm;
-  }
-  .qr-section {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 0.5mm; flex-shrink: 0;
-  }
+  .bottom-row { display: flex; align-items: flex-end; gap: 3mm; }
+  .qr-section { display: flex; flex-direction: column; align-items: center; gap: 0.5mm; flex-shrink: 0; }
   .qr-box {
     width: 11mm; height: 11mm; flex-shrink: 0;
     background: #fff;
@@ -426,28 +393,29 @@ async function printCard(customer: Customer) {
     text-transform: uppercase; letter-spacing: 0.15em;
     color: rgba(255,255,255,0.25);
   }
-  .tagline {
-    flex: 1; padding-bottom: 0.5mm;
+  .tagline { flex: 1; padding-bottom: 0.5mm; }
+  .tagline .main { font-size: 1.8mm; font-weight: 600; color: rgba(255,255,255,0.5); line-height: 1.5; }
+  .tagline .mid { font-size: 1.6mm; font-family: monospace; color: rgba(255,255,255,0.3); margin-top: 0.8mm; letter-spacing: 0.03em; }
+  .tagline .phone { font-size: 1.2mm; color: rgba(255,255,255,0.17); margin-top: 0.3mm; }
+`;
+
+/* Build the inner `.card` markup for one customer (QR generated first). */
+async function buildCardMarkup(customer: Customer): Promise<string> {
+  const mid = memberId(customer.id);
+
+  // Generate QR data URL before we open the print window (avoids CDN & timing issues)
+  let qrDataUrl = '';
+  try {
+    qrDataUrl = await QRCode.toDataURL(customer.nfcTag, {
+      width: 140,
+      margin: 1,
+      color: { dark: '#17171c', light: '#ffffff' }
+    });
+  } catch {
+    // QR generation failed — will fall back to placeholder
   }
-  .tagline .main {
-    font-size: 1.8mm; font-weight: 600;
-    color: rgba(255,255,255,0.5);
-    line-height: 1.5;
-  }
-  .tagline .mid {
-    font-size: 1.6mm; font-family: monospace;
-    color: rgba(255,255,255,0.3);
-    margin-top: 0.8mm;
-    letter-spacing: 0.03em;
-  }
-  .tagline .phone {
-    font-size: 1.2mm;
-    color: rgba(255,255,255,0.17);
-    margin-top: 0.3mm;
-  }
-</style>
-</head>
-<body>
+
+  return `
   <div class="card">
     <div class="card-border"></div>
 
@@ -491,15 +459,41 @@ async function printCard(customer: Customer) {
         <div class="phone">${customer.phone}</div>
       </div>
     </div>
-  </div>
-  <script>
-    setTimeout(function() { window.print(); window.close(); }, 300);
-  <\/script>
+  </div>`;
+}
+
+/* Print one or MANY cards in a SINGLE window / single print dialog. */
+async function printCards(customers: Customer[]) {
+  if (customers.length === 0) return;
+
+  // Open the window synchronously (still inside the click gesture) so popup
+  // blockers don't stop it, then fill it after the QR codes are ready.
+  const win = window.open('', '_blank');
+  if (!win) return;
+
+  const cards = await Promise.all(customers.map(buildCardMarkup));
+  const pages = cards.map((c) => `<div class="page">${c}</div>`).join('\n');
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><title>Loyalty Cards</title>
+<style>${CARD_CSS}</style>
+</head>
+<body>
+${pages}
+<script>
+  setTimeout(function() { window.print(); window.close(); }, 400);
+<\/script>
 </body>
 </html>`;
 
   win.document.write(html);
   win.document.close();
+}
+
+/* Print a single card (kept for the per-card buttons). */
+async function printCard(customer: Customer) {
+  return printCards([customer]);
 }
 
 /* ═══════════════════════════════════════════════ */
@@ -656,11 +650,9 @@ export default function RewardsPage() {
     setDeleteTarget(null);
   }
 
-  // Print all visible cards (sequential to avoid multiple print dialogs at once)
+  // Print all visible cards in ONE window / one print dialog.
   async function printAllVisible() {
-    for (const c of paginated) {
-      await printCard(c);
-    }
+    await printCards(paginated);
   }
 
   return (

@@ -25,4 +25,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   /** Send raw ESC/POS receipt bytes directly to a thermal printer. */
   printRaw: (payload) => ipcRenderer.invoke('print:raw', payload),
+
+  /**
+   * Subscribe to the Web Bluetooth device list discovered during a
+   * `requestDevice()` call. Returns a disposer that removes the listener.
+   */
+  onBluetoothDevices: (cb) => {
+    const listener = (_event, devices) => cb(devices);
+    ipcRenderer.on('bluetooth:devices', listener);
+    return () => ipcRenderer.removeListener('bluetooth:devices', listener);
+  },
+
+  /** Reply to a pending Bluetooth device selection ('' cancels). */
+  selectBluetoothDevice: (deviceId) => ipcRenderer.send('bluetooth:select', deviceId),
 });

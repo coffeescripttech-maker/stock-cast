@@ -176,18 +176,18 @@ export default function AuditPage() {
             {paginated.map((entry) => (
               <div key={entry.id} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 px-4 sm:px-6 py-3.5 sm:py-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                 {/* Timestamp + action — stacked top line on mobile, side column on desktop */}
-                <div className="flex items-center justify-between sm:flex-col sm:items-end flex-shrink-0 gap-2 sm:gap-0 sm:w-[76px] sm:pt-0.5">
+                <div className="flex items-center justify-between sm:flex-col sm:items-end flex-shrink-0 gap-2 sm:gap-0 sm:w-[120px] sm:pt-0.5">
                   <div className="text-[10px] text-slate-400 font-mono leading-tight">
                     {fmtDate(entry.timestamp)}
                   </div>
-                  <span className={cn('text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap', getActionColor(entry.action))}>
+                  <span className={cn('text-[11px] font-bold px-3 py-1 rounded-full text-center leading-tight max-w-full break-words', getActionColor(entry.action))}>
                     {entry.action.replace(/_/g, ' ')}
                   </span>
                 </div>
 
                 {/* Details */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug break-words">{entry.details}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug break-words whitespace-pre-wrap">{entry.details}</p>
                   <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
                     <span className="font-medium text-slate-500 dark:text-slate-400">{entry.user}</span>
                     <span className="text-slate-300 dark:text-slate-600">·</span>
@@ -214,7 +214,7 @@ export default function AuditPage() {
                   onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
                   className="text-[11px] font-semibold px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 outline-none focus:border-brand cursor-pointer"
                 >
-                  {[25, 50, 100].map((s) => (
+                  {[25, 50, 100, 250, 500].map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>

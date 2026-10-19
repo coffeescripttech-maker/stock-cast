@@ -19,8 +19,9 @@ import type { DeviceStatus } from './DeviceLog';
  * here is the same one the POS checkout prints receipts to.
  *
  * Works in Chrome/Edge and the packaged Electron app — http://127.0.0.1 is a
- * secure context, and modern Electron shows the OS Bluetooth chooser for
- * requestDevice() with no extra main-process handler.
+ * secure context. In Chrome/Edge the OS chooser appears; in Electron the main
+ * process forwards the discovered devices and BluetoothDeviceChooser shows an
+ * in-app picker (Electron never surfaces the OS chooser itself).
  *
  * Common ESC/POS-over-BLE vendor service UUIDs are listed in lib/ble.ts so
  * GATT access is granted; if the printer uses a different one, the log shows

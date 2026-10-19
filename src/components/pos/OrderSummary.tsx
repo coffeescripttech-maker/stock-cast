@@ -77,22 +77,22 @@ export function OrderSummary({
   const isReady = cart.length > 0 && !submitting;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* ─── Order Total (gradient hero card) ─── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white p-6 shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white p-4 sm:p-6 shadow-lg">
         <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/5" />
         <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/5" />
 
-        <div className="relative space-y-1">
-          <div className="text-xs font-semibold text-white/70 uppercase tracking-wider">
+        <div className="relative space-y-0.5">
+          <div className="text-[10px] sm:text-xs font-semibold text-white/70 uppercase tracking-wider">
             Order Total
           </div>
-          <div className="text-3xl font-black font-mono tracking-tight">
+          <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight">
             {fmtCurrency(grandTotal)}
           </div>
         </div>
 
-        <div className="relative mt-4 pt-4 border-t border-white/20 space-y-1.5">
+        <div className="relative mt-3 pt-3 sm:mt-4 sm:pt-4 border-t border-white/20 space-y-1.5">
           <div className="flex justify-between text-xs text-white/80">
             <span>
               {totalUnits} unit{totalUnits !== 1 && 's'} · {cart.length} line
@@ -130,7 +130,7 @@ export function OrderSummary({
           ) : (
             <button
               onClick={onOpenNFC}
-              className="w-full flex items-center justify-between gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+              className="w-full flex items-center justify-between gap-3 p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center group-hover:bg-brand/20 transition-colors">
                   <QrCode size={18} className="text-brand" />
@@ -153,12 +153,12 @@ export function OrderSummary({
       )}
 
       {/* ─── Checkout action ─── */}
-      <div className="space-y-2.5">
+      <div className="space-y-2">
         <button
           onClick={onCheckout}
           disabled={cart.length === 0 || submitting}
           className={cn(
-            'w-full flex items-center justify-center gap-2.5 py-4 rounded-xl font-bold text-sm transition-all',
+            'w-full flex items-center justify-center gap-2.5 py-3.5 sm:py-4 rounded-xl font-bold text-sm transition-all',
             'active:scale-[0.98]',
             isReady
               ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40'

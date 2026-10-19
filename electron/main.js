@@ -34,8 +34,25 @@ const isDev = Boolean(DEV_SERVER_URL);
 // Port the embedded Express server uses. Must match server/.env (PORT=3001).
 const DEFAULT_PORT = Number(process.env.PORT) || 3001;
 
+// Web Bluetooth is off in Electron's renderer by default. Enabling this Blink
+// feature makes `navigator.bluetooth` available so the POS can talk to a BLE
+// thermal printer. Electron never shows the OS device chooser itself — we
+// handle the 'select-bluetooth-device' event in createWindow() and forward the
+// device list to the renderer, which shows an in-app picker.
+app.commandLine.appendSwitch('enable-features', 'WebBluetooth');
+
 let mainWindow = null;
 let appPort = DEFAULT_PORT;
+
+// Holds the callback Electron gives us while `requestDevice()` is waiting for a
+// device to be chosen. Resolved by the renderer's 'bluetooth:select' message.
+let pendingBluetoothCallback = null;
+
+ipcMain.on('bluetooth:select', (_event, deviceId) => {
+  if (!pendingBluetoothCallback) return;
+  pendingBluetoothCallback(typeof deviceId === 'string' ? deviceId : '');
+  pendingBluetoothCallback = null;
+});
 
 // ---------------------------------------------------------------------------
 // Path helpers
@@ -177,6 +194,31 @@ function createWindow() {
   const allowedOrigin = isDev ? DEV_SERVER_URL : `http://127.0.0.1:${appPort}`;
   mainWindow.webContents.on('will-navigate', (event, url) => {
     if (!url.startsWith(allowedOrigin)) event.preventDefault();
+  });
+
+  // Web Bluetooth device selection. Electron does not surface the OS chooser,
+  // so we capture the discovered devices and hand them to the renderer, which
+  // shows an in-app picker and replies with 'bluetooth:select'.
+  mainWindow.webContents.on('select-bluetooth-device', (event, deviceList, callback) => {
+    event.preventDefault();
+    const devices = (deviceList || []).map((d) => ({
+      deviceId: d.deviceId,
+      deviceName: d.deviceName || '',
+    }));
+    if (devices.length === 0) {
+      callback('');
+      return;
+    }
+    pendingBluetoothCallback = callback;
+    mainWindow.webContents.send('bluetooth:devices', devices);
+  });
+
+  mainWindow.on('closed', () => {
+    // Release any in-flight chooser so a pending requestDevice() doesn't hang.
+    if (pendingBluetoothCallback) {
+      pendingBluetoothCallback('');
+      pendingBluetoothCallback = null;
+    }
   });
 
   if (isDev) {

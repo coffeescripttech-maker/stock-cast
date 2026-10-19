@@ -3,11 +3,13 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopNavNew } from './TopNavNew';
 import { BottomNav } from './BottomNav';
+import { BluetoothDeviceChooser } from './BluetoothDeviceChooser';
 import { CommandPalette } from './CommandPalette';
 import { HelpModalContent } from './HelpButton';
 import { Dialog } from '../ui/Dialog';
 import { useUIStore } from '../../stores/uiStore';
 import { useNotificationStore } from '../../stores/notificationStore';
+import { useDataStore } from '../../stores/dataStore';
 import { cn } from '../../lib/cn';
 
 function LoadingFallback() {
@@ -35,6 +37,33 @@ export function AppLayout() {
     return () => {
       document.removeEventListener('pos:help', onHelp);
       useNotificationStore.getState().stopPolling();
+    };
+  }, []);
+
+  // Near-real-time cross-device sync: re-pull all data whenever the app is
+  // focused/foregrounded and on a slow interval. This means a sale made on the
+  // phone shows up on the desktop (and vice-versa) without a relogin/reload.
+  useEffect(() => {
+    let last = 0;
+    const refresh = () => {
+      const now = Date.now();
+      if (now - last < 8000) return; // throttle bursts of focus events
+      last = now;
+      void useDataStore.getState().refreshAll();
+    };
+    const onVisible = () => {
+      if (!document.hidden) refresh();
+    };
+
+    refresh();
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisible);
+    const interval = window.setInterval(onVisible, 60000);
+
+    return () => {
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(interval);
     };
   }, []);
 
@@ -69,6 +98,9 @@ export function AppLayout() {
 
       {/* Mobile/tablet bottom navigation */}
       <BottomNav />
+
+      {/* Desktop Bluetooth device picker (Electron only) */}
+      <BluetoothDeviceChooser />
 
       {/* Command Palette overlay */}
       <CommandPalette />

@@ -40,9 +40,11 @@ export function RfidReaderTest({ onStatusChange, onCapture }: RfidReaderTestProp
 
   const clear = useCallback(() => setRecords([]), []);
 
+  // Count this device as "online" while listening and after a successful
+  // capture (otherwise a completed test showed 0/3).
   useEffect(() => {
-    onStatusChange?.(focused);
-  }, [focused, onStatusChange]);
+    onStatusChange?.(focused || records.length > 0);
+  }, [focused, records.length, onStatusChange]);
 
   const status: DeviceStatus = focused ? 'listening' : 'idle';
   const statusLabel = focused ? 'Listening' : 'Idle';

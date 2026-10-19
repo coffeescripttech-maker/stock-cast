@@ -16,9 +16,13 @@ interface CartItemRowProps {
   onSetQty: (idx: number, qty: number) => void;
   onToggleType: (idx: number, type: SaleType) => void;
   onRemove: (idx: number) => void;
+  /** Bump this to a new nonce to force-open this row's qty editor (F2 shortcut). */
+  forceEdit?: number;
+  /** Called when the editor closes so the parent can clear its focus state. */
+  onEditComplete?: () => void;
 }
 
-export function CartItemRow({ item, index, locked = false, compact = false, onUpdateQty, onSetQty, onToggleType, onRemove }: CartItemRowProps) {
+export function CartItemRow({ item, index, locked = false, compact = false, onUpdateQty, onSetQty, onToggleType, onRemove, forceEdit = 0, onEditComplete }: CartItemRowProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(String(item.qty));
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,10 +34,21 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
     }
   }, [editing]);
 
+  // F2 shortcut: the parent bumps forceEdit to open this row's editor without
+  // any mouse interaction.
+  useEffect(() => {
+    if (forceEdit) setEditing(true);
+  }, [forceEdit]);
+
+  function closeEdit() {
+    setEditing(false);
+    onEditComplete?.();
+  }
+
   function commitEdit() {
     const v = parseInt(editValue);
     if (!isNaN(v) && v > 0) onSetQty(index, v);
-    setEditing(false);
+    closeEdit();
   }
 
   const typeColor = item.type === 'rt'
@@ -43,6 +58,7 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
   if (compact) {
     return (
       <div
+        data-cart-row={index}
         className={cn(
           'relative pl-3 pr-2 py-1.5 rounded-xl border transition-all duration-150 group hover:shadow-md',
           'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700/50',
@@ -99,7 +115,7 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
                 onBlur={commitEdit}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') { e.preventDefault(); commitEdit(); }
-                  if (e.key === 'Escape') { setEditing(false); }
+                  if (e.key === 'Escape') { closeEdit(); }
                 }}
                 className="w-8 text-center text-[11px] font-bold font-mono text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-600 rounded border border-brand outline-none"
                 min="1"
@@ -141,6 +157,7 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
 
   return (
     <div
+      data-cart-row={index}
       className={cn(
         'relative pl-3 pr-3 py-2 rounded-xl border transition-all duration-150 group hover:shadow-md',
         'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700/50',
@@ -220,7 +237,7 @@ export function CartItemRow({ item, index, locked = false, compact = false, onUp
               onBlur={commitEdit}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') { e.preventDefault(); commitEdit(); }
-                if (e.key === 'Escape') { setEditing(false); }
+                if (e.key === 'Escape') { closeEdit(); }
               }}
               className="w-9 text-center text-xs font-bold font-mono text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-600 rounded border border-brand outline-none"
               min="1"

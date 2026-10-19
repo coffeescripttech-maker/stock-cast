@@ -32,6 +32,10 @@ declare global {
         /** Raw ESC/POS receipt bytes as a lowercase hex string. */
         hex: string;
       }) => Promise<boolean>;
+      onBluetoothDevices: (
+        cb: (devices: { deviceId: string; deviceName: string }[]) => void
+      ) => () => void;
+      selectBluetoothDevice: (deviceId: string) => void;
     };
   }
 }
