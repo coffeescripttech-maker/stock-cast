@@ -140,77 +140,76 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
     <div className="space-y-4">
       {/* Sticky search toolbar — stays pinned while the product grid scrolls */}
       <div className="space-y-3 lg:sticky lg:top-0 lg:z-10 lg:bg-white lg:dark:bg-[#1C1C1C] lg:-mx-5 lg:px-5 lg:rounded-t-[20px] lg:border-b lg:border-slate-100 lg:dark:border-slate-800 lg:!mb-0">
-      {/* Search bar + view type toggle */}
-      <div className="flex items-center gap-2.5">
-        <div className="relative flex-1">
-          <Search
-            size={15}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            onKeyDown={e => {
-              handleSearchKeyDown(e, () => {
-                setQuery('');
-                inputRef.current?.blur();
-              });
-            }}
-            placeholder="Search name or scan barcode…"
-            className="w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-white dark:bg-slate-800 outline-none transition-colors border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-brand dark:focus:border-brand placeholder:text-slate-400"
-          />
-        </div>
-        {onScan && (
-          <button
-            onClick={onScan}
-            aria-label="Scan barcode with camera"
-            className="lg:hidden flex-shrink-0 w-11 h-[46px] rounded-xl bg-brand text-[#1C1C1C] flex items-center justify-center transition-all active:scale-95 hover:brightness-110"
-          >
-            <ScanLine size={18} />
-          </button>
-        )}
-        <div className="flex rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 flex-shrink-0">
-          {(['all', 'rt', 'ws'] as const).map(v => (
+        {/* Search bar + view type toggle */}
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex-1">
+            <Search
+              size={15}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => {
+                handleSearchKeyDown(e, () => {
+                  setQuery('');
+                  inputRef.current?.blur();
+                });
+              }}
+              placeholder="Search name or scan barcode…"
+              className="w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-white dark:bg-slate-800 outline-none transition-colors border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-brand dark:focus:border-brand placeholder:text-slate-400"
+            />
+          </div>
+          {onScan && (
             <button
-              key={v}
-              onClick={() => setViewType(v)}
-              className={cn(
-                'px-4 py-2.5 text-[12px] font-bold transition-colors',
-                viewType === v
-                  ? v === 'all'
-                    ? 'bg-brand text-white'
-                    : v === 'rt'
+              onClick={onScan}
+              aria-label="Scan barcode with camera"
+              className="lg:hidden flex-shrink-0 w-11 h-[46px] rounded-xl bg-brand text-[#1C1C1C] flex items-center justify-center transition-all active:scale-95 hover:brightness-110">
+              <ScanLine size={18} />
+            </button>
+          )}
+          <div className="flex rounded-xl overflow-hidden border border-slate-200 dark:border-slate-600 flex-shrink-0">
+            {(['all', 'rt', 'ws'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setViewType(v)}
+                className={cn(
+                  'px-4 py-2.5 text-[12px] font-bold transition-colors',
+                  viewType === v
+                    ? v === 'all'
                       ? 'bg-brand text-white'
-                      : 'bg-brand/70 text-white'
-                  : 'bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-600'
-              )}>
-              {v === 'all' ? 'ALL' : v.toUpperCase()}
-            </button>
-          ))}
+                      : v === 'rt'
+                        ? 'bg-brand text-white'
+                        : 'bg-brand/70 text-white'
+                    : 'bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-600'
+                )}>
+                {v === 'all' ? 'ALL' : v.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Category filter chips */}
-      <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
-        {(['All', ...CATEGORIES] as const).map(cat => {
-          const isActive = category === cat;
-          return (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat as ProductCategory | 'All')}
-              className={cn(
-                'flex-shrink-0 px-3.5 py-2 text-[11px] font-bold rounded-xl border transition-all',
-                isActive
-                  ? 'bg-brand text-white border-brand shadow-sm shadow-brand/20'
-                  : 'bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-600 hover:border-brand hover:text-brand'
-              )}>
-              {cat}
-            </button>
-          );
-        })}
-      </div>
+        {/* Category filter chips */}
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+          {(['All', ...CATEGORIES] as const).map(cat => {
+            const isActive = category === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat as ProductCategory | 'All')}
+                className={cn(
+                  'flex-shrink-0 px-3.5 py-2 text-[11px] font-bold rounded-xl border transition-all',
+                  isActive
+                    ? 'bg-brand text-white border-brand shadow-sm shadow-brand/20'
+                    : 'bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-600 hover:border-brand hover:text-brand'
+                )}>
+                {cat}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Product Grid or Empty State */}
@@ -275,7 +274,10 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
                         'text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0',
                         isOut
                           ? 'bg-red-50 text-red-500 dark:bg-red-950 dark:text-red-400'
-                          : stock < (effectiveType === 'ws' ? LOW_STOCK_WS : LOW_STOCK_RT)
+                          : stock <
+                              (effectiveType === 'ws'
+                                ? LOW_STOCK_WS
+                                : LOW_STOCK_RT)
                             ? 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400'
                             : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400'
                       )}>
@@ -330,7 +332,7 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {filtered.map(p => {
             const defaultType = getDefaultSaleType(p);
             const effectiveType: SaleType = saleMode ?? defaultType;
@@ -421,11 +423,13 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
                     <span className="text-xl font-black font-mono text-brand">
                       {fmtCurrency(primaryPrice)}
                     </span>
-                    {viewType === 'all' && saleMode === null && otherPrice > 0 && (
-                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                        {fmtCurrency(otherPrice)}
-                      </span>
-                    )}
+                    {viewType === 'all' &&
+                      saleMode === null &&
+                      otherPrice > 0 && (
+                        <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                          {fmtCurrency(otherPrice)}
+                        </span>
+                      )}
                   </div>
 
                   {/* Add button */}

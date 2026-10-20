@@ -88,7 +88,7 @@ export default function POSPage() {
       ? Math.floor(redeemPoints / rewardsConfig.redeemEvery) *
         rewardsConfig.redeemValue
       : 0;
-  const taxSettings = useSettingsStore((s) => s.settings.tax);
+  const taxSettings = useSettingsStore(s => s.settings.tax);
   const { total: grandTotal } = applyTax(
     Math.max(0, rawTotal - discount),
     taxSettings
@@ -299,7 +299,10 @@ export default function POSPage() {
           .printRaw(buildSaleReceipt(tx, useSettingsStore.getState().settings))
           .then(() => showToast('Receipt sent to Bluetooth printer', 'success'))
           .catch((err: unknown) =>
-            showToast(err instanceof Error ? err.message : 'Bluetooth print failed', 'error')
+            showToast(
+              err instanceof Error ? err.message : 'Bluetooth print failed',
+              'error'
+            )
           );
       }, 500);
     } else if (pSettings.autoPrintReceipt) {
@@ -355,7 +358,10 @@ export default function POSPage() {
         Product Search / Barcode
       </h2>
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1">
-        <ProductSearch onScan={() => setScannerOpen(true)} compact={cartFirst} />
+        <ProductSearch
+          onScan={() => setScannerOpen(true)}
+          compact={cartFirst}
+        />
       </div>
     </div>
   );
@@ -398,7 +404,7 @@ export default function POSPage() {
 
   // Left column = main panel (products grid by default, big cart in cart-first)
   const leftPanel = (
-    <div className="lg:flex-[0.58] lg:min-w-0 lg:min-h-0 lg:flex lg:flex-col">
+    <div className="lg:flex-1 lg:min-w-0 lg:min-h-0 lg:flex lg:flex-col">
       {cartFirst ? cartCard : productsCard}
     </div>
   );
