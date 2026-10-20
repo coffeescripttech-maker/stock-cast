@@ -485,37 +485,46 @@ export default function ReportsPage() {
                 <p className="text-sm text-slate-400 text-center py-8">No transactions found</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm table-fixed">
+                    <colgroup>
+                      <col className="w-[22%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[12%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[10%]" />
+                    </colgroup>
                     <thead>
-                      <tr className="border-b border-slate-100 dark:border-slate-800 text-xs text-slate-500 font-semibold">
-                        <th className="text-left px-3 py-2">
-                          <button onClick={() => toggleTxSort('id')} className={cn('flex items-center gap-1 hover:text-slate-700 transition-colors', txSortBy === 'id' && 'text-brand')}>
+                      <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 font-semibold bg-slate-50/60 dark:bg-slate-800/40">
+                        <th className="text-left px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleTxSort('id')} className={cn('flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-300 transition-colors', txSortBy === 'id' && 'text-brand')}>
                             ID <ArrowUpDown size={10} className={cn('transition-transform', txSortBy === 'id' && txSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-left px-3 py-2">
-                          <button onClick={() => toggleTxSort('date')} className={cn('flex items-center gap-1 hover:text-slate-700 transition-colors', txSortBy === 'date' && 'text-brand')}>
+                        <th className="text-left px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleTxSort('date')} className={cn('flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-300 transition-colors', txSortBy === 'date' && 'text-brand')}>
                             Date <ArrowUpDown size={10} className={cn('transition-transform', txSortBy === 'date' && txSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-left px-3 py-2">
-                          <button onClick={() => toggleTxSort('cashier')} className={cn('flex items-center gap-1 hover:text-slate-700 transition-colors', txSortBy === 'cashier' && 'text-brand')}>
+                        <th className="text-left px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleTxSort('cashier')} className={cn('flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-300 transition-colors', txSortBy === 'cashier' && 'text-brand')}>
                             Cashier <ArrowUpDown size={10} className={cn('transition-transform', txSortBy === 'cashier' && txSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-center px-3 py-2">
-                          <button onClick={() => toggleTxSort('type')} className={cn('flex items-center gap-1 justify-center hover:text-slate-700 transition-colors', txSortBy === 'type' && 'text-brand')}>
+                        <th className="text-center px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleTxSort('type')} className={cn('flex items-center gap-1 justify-center w-full hover:text-slate-700 dark:hover:text-slate-300 transition-colors', txSortBy === 'type' && 'text-brand')}>
                             Type <ArrowUpDown size={10} className={cn('transition-transform', txSortBy === 'type' && txSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-center px-3 py-2">Payment</th>
-                        <th className="text-center px-3 py-2">
-                          <button onClick={() => toggleTxSort('items')} className={cn('flex items-center gap-1 justify-center hover:text-slate-700 transition-colors', txSortBy === 'items' && 'text-brand')}>
+                        <th className="text-center px-3 py-2 align-middle whitespace-nowrap">Payment</th>
+                        <th className="text-center px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleTxSort('items')} className={cn('flex items-center gap-1 justify-center w-full hover:text-slate-700 dark:hover:text-slate-300 transition-colors', txSortBy === 'items' && 'text-brand')}>
                             Items <ArrowUpDown size={10} className={cn('transition-transform', txSortBy === 'items' && txSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-right px-3 py-2">
-                          <button onClick={() => toggleTxSort('total')} className={cn('flex items-center gap-1 justify-end hover:text-slate-700 transition-colors', txSortBy === 'total' && 'text-brand')}>
+                        <th className="text-right px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleTxSort('total')} className={cn('flex items-center gap-1 justify-end w-full hover:text-slate-700 dark:hover:text-slate-300 transition-colors', txSortBy === 'total' && 'text-brand')}>
                             Total <ArrowUpDown size={10} className={cn('transition-transform', txSortBy === 'total' && txSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
@@ -524,22 +533,24 @@ export default function ReportsPage() {
                     <tbody>
                       {txPaginated.map((tx) => (
                         <tr key={tx.id} className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                          <td className="px-3 py-2.5 font-mono text-xs text-slate-500">{tx.id}</td>
-                          <td className="px-3 py-2.5 text-xs text-slate-500">{fmtDate(tx.date)}</td>
-                          <td className="px-3 py-2.5 text-sm">{tx.cashier}</td>
-                          <td className="px-3 py-2.5 text-center">
+                          <td className="px-3 py-2 text-left align-middle font-mono text-xs text-slate-500">{tx.id}</td>
+                          <td className="px-3 py-2 text-left align-middle text-xs text-slate-500">{fmtDate(tx.date)}</td>
+                          <td className="px-3 py-2 text-left align-middle text-xs text-slate-700 dark:text-slate-300">{tx.cashier}</td>
+                          <td className="px-3 py-2 text-center align-middle">
                             <span className={cn(
-                              'text-[10px] font-bold px-2 py-0.5 rounded-full',
+                              'inline-flex items-center justify-center text-[10px] font-bold px-2 py-0.5 rounded-full',
                               tx.type === 'rt' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' :
                               tx.type === 'ws' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400' :
                               'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400'
                             )}>{tx.type.toUpperCase()}</span>
                           </td>
-                          <td className="px-3 py-2.5 text-center">
-                            <PaymentBadge paymentMethod={tx.paymentMethod} />
+                          <td className="px-3 py-2 text-center align-middle">
+                            <div className="flex justify-center">
+                              <PaymentBadge paymentMethod={tx.paymentMethod} />
+                            </div>
                           </td>
-                          <td className="px-3 py-2.5 text-center text-slate-500">{tx.items.reduce((s, i) => s + i.qty, 0)}</td>
-                          <td className="px-3 py-2.5 text-right font-bold text-slate-800 dark:text-slate-200">{fmtCurrency(tx.total)}</td>
+                          <td className="px-3 py-2 text-center align-middle text-xs text-slate-600 dark:text-slate-400">{tx.items.reduce((s, i) => s + i.qty, 0)}</td>
+                          <td className="px-3 py-2 text-right align-middle text-xs font-bold text-slate-800 dark:text-slate-200">{fmtCurrency(tx.total)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -727,36 +738,44 @@ export default function ReportsPage() {
                 <p className="text-sm text-slate-400 text-center py-8">No products found</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm table-fixed">
+                    <colgroup>
+                      <col className="w-[28%]" />
+                      <col className="w-[12%]" />
+                      <col className="w-[12%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[16%]" />
+                    </colgroup>
                     <thead>
-                      <tr className="border-b border-slate-100 dark:border-slate-800 text-xs text-slate-500 font-semibold">
-                        <th className="text-left px-3 py-2">
-                          <button onClick={() => toggleInvSort('name')} className={cn('flex items-center gap-1 hover:text-slate-700 transition-colors', invSortBy === 'name' && 'text-brand')}>
+                      <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 font-semibold bg-slate-50/60 dark:bg-slate-800/40">
+                        <th className="text-left px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleInvSort('name')} className={cn('flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-300 transition-colors', invSortBy === 'name' && 'text-brand')}>
                             Product <ArrowUpDown size={10} className={cn('transition-transform', invSortBy === 'name' && invSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-right px-3 py-2">
-                          <button onClick={() => toggleInvSort('rtStock')} className={cn('flex items-center gap-1 justify-end hover:text-slate-700 transition-colors', invSortBy === 'rtStock' && 'text-brand')}>
+                        <th className="text-right px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleInvSort('rtStock')} className={cn('flex items-center gap-1 justify-end w-full hover:text-slate-700 dark:hover:text-slate-300 transition-colors', invSortBy === 'rtStock' && 'text-brand')}>
                             RT Stock <ArrowUpDown size={10} className={cn('transition-transform', invSortBy === 'rtStock' && invSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-right px-3 py-2">
-                          <button onClick={() => toggleInvSort('wsStock')} className={cn('flex items-center gap-1 justify-end hover:text-slate-700 transition-colors', invSortBy === 'wsStock' && 'text-brand')}>
+                        <th className="text-right px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleInvSort('wsStock')} className={cn('flex items-center gap-1 justify-end w-full hover:text-slate-700 dark:hover:text-slate-300 transition-colors', invSortBy === 'wsStock' && 'text-brand')}>
                             WS Stock <ArrowUpDown size={10} className={cn('transition-transform', invSortBy === 'wsStock' && invSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-right px-3 py-2">
-                          <button onClick={() => toggleInvSort('rtValue')} className={cn('flex items-center gap-1 justify-end hover:text-slate-700 transition-colors', invSortBy === 'rtValue' && 'text-brand')}>
+                        <th className="text-right px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleInvSort('rtValue')} className={cn('flex items-center gap-1 justify-end w-full hover:text-slate-700 dark:hover:text-slate-300 transition-colors', invSortBy === 'rtValue' && 'text-brand')}>
                             RT Value <ArrowUpDown size={10} className={cn('transition-transform', invSortBy === 'rtValue' && invSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-right px-3 py-2">
-                          <button onClick={() => toggleInvSort('wsValue')} className={cn('flex items-center gap-1 justify-end hover:text-slate-700 transition-colors', invSortBy === 'wsValue' && 'text-brand')}>
+                        <th className="text-right px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleInvSort('wsValue')} className={cn('flex items-center gap-1 justify-end w-full hover:text-slate-700 dark:hover:text-slate-300 transition-colors', invSortBy === 'wsValue' && 'text-brand')}>
                             WS Value <ArrowUpDown size={10} className={cn('transition-transform', invSortBy === 'wsValue' && invSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
-                        <th className="text-right px-3 py-2">
-                          <button onClick={() => toggleInvSort('totalValue')} className={cn('flex items-center gap-1 justify-end hover:text-slate-700 transition-colors', invSortBy === 'totalValue' && 'text-brand')}>
+                        <th className="text-right px-3 py-2 align-middle whitespace-nowrap">
+                          <button onClick={() => toggleInvSort('totalValue')} className={cn('flex items-center gap-1 justify-end w-full hover:text-slate-700 dark:hover:text-slate-300 transition-colors', invSortBy === 'totalValue' && 'text-brand')}>
                             Total Value <ArrowUpDown size={10} className={cn('transition-transform', invSortBy === 'totalValue' && invSortDir === 'desc' && 'rotate-180')} />
                           </button>
                         </th>
