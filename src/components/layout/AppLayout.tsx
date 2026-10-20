@@ -30,7 +30,7 @@ export function AppLayout() {
       setHelpOpen(true);
     }
     document.addEventListener('pos:help', onHelp);
-
+    // here
     // Start notification polling (30s interval)
     useNotificationStore.getState().startPolling();
 
