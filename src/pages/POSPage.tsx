@@ -398,14 +398,14 @@ export default function POSPage() {
 
   // Left column = main panel (products grid by default, big cart in cart-first)
   const leftPanel = (
-    <div className="lg:flex-1 lg:min-w-0 lg:min-h-0 lg:flex lg:flex-col">
+    <div className="lg:flex-[0.58] lg:min-w-0 lg:min-h-0 lg:flex lg:flex-col">
       {cartFirst ? cartCard : productsCard}
     </div>
   );
 
   // Right column = secondary panel + Order Summary pinned at bottom
   const rightColumn = (
-    <div className="flex flex-col gap-4 lg:gap-6 lg:w-[420px] lg:flex-shrink-0 lg:min-h-0">
+    <div className="flex flex-col gap-4 lg:gap-6 lg:flex-[0.42] lg:min-w-[380px] lg:max-w-[440px] lg:min-h-0">
       <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
         {cartFirst ? productsCard : cartCard}
       </div>

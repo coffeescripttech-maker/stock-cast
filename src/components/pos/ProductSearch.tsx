@@ -330,7 +330,7 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2">
           {filtered.map(p => {
             const defaultType = getDefaultSaleType(p);
             const effectiveType: SaleType = saleMode ?? defaultType;
@@ -349,11 +349,11 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
             return (
               <div
                 key={p.id}
-                className="group relative bg-white dark:bg-slate-800 rounded-[16px] border border-slate-100 dark:border-slate-700/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer active:scale-[0.98]"
+                className="group relative bg-white dark:bg-slate-800 rounded-[14px] border border-slate-100 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer active:scale-[0.98]"
                 onClick={() => addToCartFromProduct(p)}>
                 {/* Image area - extra tall for better visual */}
                 <div
-                  className="relative h-0 w-full pt-[90%] overflow-hidden"
+                  className="relative h-0 w-full pt-[72%] overflow-hidden"
                   style={
                     !p.imageUrl
                       ? {
@@ -373,12 +373,12 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
                   {!p.imageUrl && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div
-                        className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
+                        className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md"
                         style={{
                           background: `${catColor.color}22`,
                           color: catColor.color
                         }}>
-                        <span className="text-2xl font-black">{firstChar}</span>
+                        <span className="text-lg font-black">{firstChar}</span>
                       </div>
                     </div>
                   )}
