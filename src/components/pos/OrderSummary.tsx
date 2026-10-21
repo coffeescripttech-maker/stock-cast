@@ -82,9 +82,9 @@ export function OrderSummary({
   const isReady = cart.length > 0 && !submitting;
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-2 sm:space-y-3">
       {/* ─── Order Total (gradient hero card) ─── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white p-3 sm:p-4 lg:p-4 2xl:p-6 shadow-lg pos-summary-hero">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white p-2.5 sm:p-3 lg:p-3 2xl:p-6 shadow-lg pos-summary-hero">
         <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/5" />
         <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/5" />
 
@@ -97,7 +97,7 @@ export function OrderSummary({
           </div>
         </div>
 
-        <div className="relative mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-white/20 space-y-1 pos-summary-section">
+        <div className="relative mt-1.5 pt-1.5 sm:mt-2 sm:pt-2 border-t border-white/20 space-y-0.5 pos-summary-section">
           <div className="flex justify-between text-xs text-white/80">
             <span>
               {totalUnits} unit{totalUnits !== 1 && 's'} · {cart.length} line
@@ -166,7 +166,7 @@ export function OrderSummary({
       {/* ─── PWD/Senior Discount ─── */}
       {cart.length > 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 overflow-hidden">
-          <div className="p-3 space-y-2">
+          <div className="p-2.5 space-y-2">
             <button
               onClick={() => setSpecialDiscount({ enabled: !specialDiscount.enabled })}
               className={cn(
@@ -220,16 +220,16 @@ export function OrderSummary({
 
       {/* ─── Checkout action ─── */}
       <div className="space-y-2">
-        <button
-          onClick={onCheckout}
-          disabled={cart.length === 0 || submitting}
-          className={cn(
-            'w-full flex items-center justify-center gap-2.5 py-2.5 sm:py-3 lg:py-3 2xl:py-4 rounded-xl font-bold text-sm transition-all pos-checkout-btn',
-            'active:scale-[0.98]',
-            isReady
-              ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-          )}>
+          <button
+            onClick={onCheckout}
+            disabled={cart.length === 0 || submitting}
+            className={cn(
+              'w-full flex items-center justify-center gap-2.5 py-2 sm:py-2.5 lg:py-2.5 2xl:py-4 rounded-xl font-bold text-sm transition-all pos-checkout-btn',
+              'active:scale-[0.98]',
+              isReady
+                ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+            )}>
           {submitting ? (
             <Loader2 size={18} className="animate-spin" />
           ) : (

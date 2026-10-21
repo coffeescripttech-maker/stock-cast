@@ -348,7 +348,7 @@ export default function POSPage() {
     <div
       className={cn(
         cardShell,
-        'max-h-[40dvh] lg:max-h-none lg:h-full lg:flex-1 overflow-hidden'
+        'lg:h-full lg:flex-1 overflow-hidden'
       )}>
       <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2 flex-shrink-0">
         <svg
@@ -417,7 +417,7 @@ export default function POSPage() {
 
   // Right column = secondary panel + Order Summary pinned at bottom
   const rightColumn = (
-    <div className="flex flex-col gap-3 lg:gap-4 xl:gap-6 lg:flex-[0.38] lg:min-w-[340px] lg:max-w-[400px] xl:min-w-[380px] xl:max-w-[440px] lg:min-h-0">
+    <div className="flex flex-col gap-1.5 lg:gap-2 xl:gap-6 lg:flex-[0.32] lg:min-w-[300px] lg:max-w-[360px] xl:min-w-[380px] xl:max-w-[440px] lg:min-h-0">
       <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
         {cartFirst ? productsCard : cartCard}
       </div>
@@ -428,10 +428,10 @@ export default function POSPage() {
   return (
     <div className="animate-[fadeUp_0.25s_ease] lg:h-[calc(100dvh-84px)] lg:flex lg:flex-col lg:overflow-hidden">
       {/* Header */}
-      <div className="mb-3 lg:mb-5 flex flex-wrap items-center justify-between gap-3 lg:flex-shrink-0">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="mb-2 lg:mb-3 flex flex-wrap items-center justify-between gap-2 lg:flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <SaleModeToggle />
-          <p className="text-sm text-slate-400 dark:text-slate-500">
+          <p className="text-xs lg:text-sm text-slate-400 dark:text-slate-500">
             {saleMode === null
               ? 'Scan or search — sale type follows each product'
               : saleMode === 'ws'
@@ -462,7 +462,7 @@ export default function POSPage() {
       </div>
 
       {/* Shortcuts bar — desktop only; F-keys don't exist on phones */}
-      <div className="hidden lg:flex lg:flex-shrink-0 flex-wrap gap-1.5 mb-5">
+      <div className="hidden lg:flex lg:flex-shrink-0 flex-wrap gap-1.5 mb-3">
         {[
           { kbd: 'F2', label: 'Edit Qty' },
           { kbd: 'F4', label: 'Print' },
@@ -490,7 +490,7 @@ export default function POSPage() {
           mobile they stack. Left = main panel (grid or big cart), right =
           secondary panel + Order Summary pinned at the bottom so the Complete
           Sale button is ALWAYS visible without scrolling. */}
-      <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 xl:gap-6 lg:flex-1 lg:min-h-0">
+      <div className="flex flex-col lg:flex-row gap-1.5 lg:gap-2 xl:gap-6 lg:flex-1 lg:min-h-0">
         {leftPanel}
         {rightColumn}
       </div>
