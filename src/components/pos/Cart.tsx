@@ -25,15 +25,18 @@ export function Cart() {
   const [editIdx, setEditIdx] = useState(-1);
   const [editNonce, setEditNonce] = useState(0);
 
-  // F2 cycles the qty editor through cart lines so a cashier can fix quantities
-  // without touching the mouse.
+  // F2: first press edits the last item (most recently added), then goes backwards
   useEffect(() => {
     if (cart.length === 0) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'F2') return;
       if (document.querySelector('[role="dialog"][data-state="open"]')) return;
       e.preventDefault();
-      setEditIdx((prev) => (prev < 0 || prev >= cart.length - 1 ? 0 : prev + 1));
+      setEditIdx((prev) => {
+        if (prev < 0) return cart.length - 1; // Unang pindot -> huling item
+        const next = prev - 1;
+        return next < 0 ? cart.length - 1 : next; // Pabalik, pag nasa first item babalik sa last
+      });
       setEditNonce((n) => n + 1);
     };
     window.addEventListener('keydown', handler);
