@@ -6,7 +6,8 @@ import {
   Loader2,
   AlertTriangle,
   ShoppingBag,
-  QrCode
+  QrCode,
+  Percent
 } from 'lucide-react';
 import { usePOSStore } from '../../stores/posStore';
 import { useDataStore } from '../../stores/dataStore';
@@ -36,17 +37,21 @@ export function OrderSummary({
   const redeemPoints = usePOSStore(s => s.redeemPoints);
   const toggleRedeem = usePOSStore(s => s.toggleRedeem);
   const unlinkCustomer = usePOSStore(s => s.unlinkCustomer);
+  const specialDiscount = usePOSStore(s => s.specialDiscount);
+  const setSpecialDiscount = usePOSStore(s => s.setSpecialDiscount);
   const rewardsConfig = useDataStore(s => s.rewardsConfig);
   const enableRewards = useSettingsStore(s => s.settings.pos.enableRewards);
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   const totalUnits = cart.reduce((s, c) => s + c.qty, 0);
   const rawTotal = cart.reduce((s, c) => s + c.qty * c.price, 0);
-  const discount =
+  const pointsDiscount =
     redeemPoints > 0
       ? Math.floor(redeemPoints / rewardsConfig.redeemEvery) *
         rewardsConfig.redeemValue
       : 0;
+  const specialDiscountAmt = specialDiscount.enabled ? rawTotal * 0.05 : 0;
+  const discount = pointsDiscount + specialDiscountAmt;
   const preTaxTotal = Math.max(0, rawTotal - discount);
   const taxSettings = useSettingsStore((s) => s.settings.tax);
   const { taxAmount, total: grandTotal } = applyTax(preTaxTotal, taxSettings);
@@ -79,7 +84,7 @@ export function OrderSummary({
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* ─── Order Total (gradient hero card) ─── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white p-4 sm:p-6 shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white p-3 sm:p-4 lg:p-4 2xl:p-6 shadow-lg pos-summary-hero">
         <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/5" />
         <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/5" />
 
@@ -87,12 +92,12 @@ export function OrderSummary({
           <div className="text-[10px] sm:text-xs font-semibold text-white/70 uppercase tracking-wider">
             Order Total
           </div>
-          <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight">
+          <div className="text-xl sm:text-2xl lg:text-2xl 2xl:text-3xl font-black font-mono tracking-tight pos-summary-hero-total">
             {fmtCurrency(grandTotal)}
           </div>
         </div>
 
-        <div className="relative mt-3 pt-3 sm:mt-4 sm:pt-4 border-t border-white/20 space-y-1.5">
+        <div className="relative mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-white/20 space-y-1 pos-summary-section">
           <div className="flex justify-between text-xs text-white/80">
             <span>
               {totalUnits} unit{totalUnits !== 1 && 's'} · {cart.length} line
@@ -100,10 +105,16 @@ export function OrderSummary({
             </span>
             <span className="font-mono">{fmtCurrency(rawTotal)}</span>
           </div>
-          {discount > 0 && (
+          {pointsDiscount > 0 && (
             <div className="flex justify-between text-xs text-emerald-200">
               <span>Points discount</span>
-              <span className="font-mono">−{fmtCurrency(discount)}</span>
+              <span className="font-mono">−{fmtCurrency(pointsDiscount)}</span>
+            </div>
+          )}
+          {specialDiscountAmt > 0 && (
+            <div className="flex justify-between text-xs text-emerald-200">
+              <span>{specialDiscount.type === 'pwd' ? 'PWD' : 'Senior Citizen'} 5% discount</span>
+              <span className="font-mono">−{fmtCurrency(specialDiscountAmt)}</span>
             </div>
           )}
           {taxAmount > 0 && (
@@ -130,7 +141,7 @@ export function OrderSummary({
           ) : (
             <button
               onClick={onOpenNFC}
-              className="w-full flex items-center justify-between gap-3 p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+              className="w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 lg:p-3 2xl:p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center group-hover:bg-brand/20 transition-colors">
                   <QrCode size={18} className="text-brand" />
@@ -152,13 +163,68 @@ export function OrderSummary({
         </div>
       )}
 
+      {/* ─── PWD/Senior Discount ─── */}
+      {cart.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 overflow-hidden">
+          <div className="p-3 space-y-2">
+            <button
+              onClick={() => setSpecialDiscount({ enabled: !specialDiscount.enabled })}
+              className={cn(
+                'w-full flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all text-left',
+                specialDiscount.enabled
+                  ? 'bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800'
+                  : 'bg-slate-50 dark:bg-slate-700/30 border-slate-200 dark:border-slate-700 hover:border-emerald-300'
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <div className={cn(
+                  'w-8 h-8 rounded-lg flex items-center justify-center',
+                  specialDiscount.enabled ? 'bg-emerald-100 dark:bg-emerald-900' : 'bg-slate-100 dark:bg-slate-700'
+                )}>
+                  <Percent size={14} className={specialDiscount.enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
+                </div>
+                <div>
+                  <div className={cn('text-xs font-bold', specialDiscount.enabled ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300')}>
+                    PWD/Senior Citizen Discount (5%)
+                  </div>
+                  <div className="text-[10px] text-slate-400">Apply 5% discount to subtotal</div>
+                </div>
+              </div>
+              <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', specialDiscount.enabled ? 'bg-emerald-200 text-emerald-700 dark:bg-emerald-800 dark:text-emerald-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-600 dark:text-slate-400')}>
+                {specialDiscount.enabled ? 'ON' : 'OFF'}
+              </span>
+            </button>
+            {specialDiscount.enabled && (
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={specialDiscount.type || ''}
+                  onChange={(e) => setSpecialDiscount({ type: (e.target.value as 'pwd' | 'senior') || null })}
+                  className="px-2.5 py-2 text-xs rounded-lg border border-slate-200 bg-white outline-none focus:border-emerald-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  <option value="">Select type</option>
+                  <option value="pwd">PWD</option>
+                  <option value="senior">Senior Citizen</option>
+                </select>
+                <input
+                  type="text"
+                  value={specialDiscount.idNumber}
+                  onChange={(e) => setSpecialDiscount({ idNumber: e.target.value })}
+                  placeholder="ID/SC No. (optional)"
+                  className="px-2.5 py-2 text-xs rounded-lg border border-slate-200 bg-white outline-none focus:border-emerald-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ─── Checkout action ─── */}
       <div className="space-y-2">
         <button
           onClick={onCheckout}
           disabled={cart.length === 0 || submitting}
           className={cn(
-            'w-full flex items-center justify-center gap-2.5 py-3.5 sm:py-4 rounded-xl font-bold text-sm transition-all',
+            'w-full flex items-center justify-center gap-2.5 py-2.5 sm:py-3 lg:py-3 2xl:py-4 rounded-xl font-bold text-sm transition-all pos-checkout-btn',
             'active:scale-[0.98]',
             isReady
               ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40'

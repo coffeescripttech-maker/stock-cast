@@ -4,6 +4,12 @@ import type { SaleType } from '../types/product';
 import type { Customer } from '../types/customer';
 import type { Transaction } from '../types/transaction';
 
+export interface SpecialDiscount {
+  enabled: boolean;
+  type: 'pwd' | 'senior' | null;
+  idNumber: string;
+}
+
 interface POSState {
   cart: CartItem[];
   /** Sale mode lock for the whole session: 'rt' | 'ws' pushes every added item
@@ -16,6 +22,7 @@ interface POSState {
   redeemPoints: number;
   lastReceipt: Transaction | null;
   receiptIsShowing: boolean;
+  specialDiscount: SpecialDiscount;
 
   setSaleMode: (mode: SaleType | null) => void;
   setSearchQuery: (q: string) => void;
@@ -32,6 +39,8 @@ interface POSState {
   toggleRedeem: (config: { redeemEvery: number; redeemValue: number }) => number;
   setReceiptShowing: (v: boolean) => void;
   setLastReceipt: (t: Transaction) => void;
+  setSpecialDiscount: (v: Partial<SpecialDiscount>) => void;
+  clearSpecialDiscount: () => void;
 }
 
 export const usePOSStore = create<POSState>()((set, get) => ({
@@ -44,6 +53,7 @@ export const usePOSStore = create<POSState>()((set, get) => ({
   redeemPoints: 0,
   lastReceipt: null,
   receiptIsShowing: false,
+  specialDiscount: { enabled: false, type: null, idNumber: '' },
 
   setSaleMode: (mode) => set({ saleMode: mode }),
 
@@ -83,7 +93,7 @@ export const usePOSStore = create<POSState>()((set, get) => ({
     ),
   })),
 
-  clearCart: () => set({ cart: [], linkedCustomer: null, redeemPoints: 0 }),
+  clearCart: () => set({ cart: [], linkedCustomer: null, redeemPoints: 0, specialDiscount: { enabled: false, type: null, idNumber: '' } }),
 
   linkCustomer: (c) => set({ linkedCustomer: c, redeemPoints: 0 }),
 
@@ -102,4 +112,8 @@ export const usePOSStore = create<POSState>()((set, get) => ({
   setReceiptShowing: (v) => set({ receiptIsShowing: v }),
 
   setLastReceipt: (t) => set({ lastReceipt: t }),
+
+  setSpecialDiscount: (v) => set((s) => ({ specialDiscount: { ...s.specialDiscount, ...v } })),
+
+  clearSpecialDiscount: () => set({ specialDiscount: { enabled: false, type: null, idNumber: '' } }),
 }));

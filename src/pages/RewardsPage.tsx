@@ -302,11 +302,27 @@ function LoyaltyCard({
 
 /* ─── Card styles + markup (shared by single print and Print All) ─── */
 const CARD_CSS = `
-  @page { margin: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  @page { size: A4 portrait; margin: 5mm; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   * { margin: 0; padding: 0; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   body { font-family: -apple-system, 'Inter', 'SF Pro Display', 'Segoe UI', sans-serif; background: #fff; }
-  .page { width: 85.6mm; height: 53.98mm; page-break-after: always; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-  .page:last-child { page-break-after: auto; }
+  .pages {
+    display: grid;
+    grid-template-columns: repeat(2, 85.6mm);
+    grid-auto-rows: 53.98mm;
+    gap: 2mm;
+    justify-content: start;
+    align-content: start;
+  }
+  .page {
+    width: 85.6mm;
+    height: 53.98mm;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
   .card {
     width: 85.6mm; height: 53.98mm;
     background: linear-gradient(135deg, #08080c 0%, #0d0d14 50%, #111118 100%);
@@ -480,7 +496,9 @@ async function printCards(customers: Customer[]) {
 <style>${CARD_CSS}</style>
 </head>
 <body>
+<div class="pages">
 ${pages}
+</div>
 <script>
   setTimeout(function() { window.print(); window.close(); }, 400);
 <\/script>

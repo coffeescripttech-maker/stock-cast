@@ -83,11 +83,14 @@ export default function POSPage() {
   // Compute totals — exclusive-priced sales add VAT on top, so the grand
   // total the cashier collects matches what the server charges.
   const rawTotal = cart.reduce((s, c) => s + c.qty * c.price, 0);
-  const discount =
+  const specialDiscountState = usePOSStore(s => s.specialDiscount);
+  const pointsDiscount =
     redeemPoints > 0
       ? Math.floor(redeemPoints / rewardsConfig.redeemEvery) *
         rewardsConfig.redeemValue
       : 0;
+  const specialDiscountAmt = specialDiscountState.enabled ? rawTotal * 0.05 : 0;
+  const discount = pointsDiscount + specialDiscountAmt;
   const taxSettings = useSettingsStore(s => s.settings.tax);
   const { total: grandTotal } = applyTax(
     Math.max(0, rawTotal - discount),
@@ -264,7 +267,10 @@ export default function POSPage() {
       paymentMethod: payment.paymentMethod,
       paymentRef: payment.paymentRef,
       customerId: linkedCustomer?.id ?? null,
-      pointsRedeemed: redeemPoints
+      pointsRedeemed: redeemPoints,
+      specialDiscountType: specialDiscountState.enabled ? specialDiscountState.type : null,
+      specialDiscountId: specialDiscountState.enabled ? specialDiscountState.idNumber.trim() || null : null,
+      specialDiscountAmount: specialDiscountAmt
     });
 
     setSubmitting(false);
@@ -336,15 +342,15 @@ export default function POSPage() {
   // the bottom of the RIGHT column. Nothing overflows, so the Complete Sale
   // button is always visible without scrolling. Only the inner lists scroll.
   const cardShell =
-    'bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-5 flex flex-col min-h-0';
+    'bg-white dark:bg-[#1C1C1C] rounded-[20px] border border-[#ECECEC] dark:border-[#2a2a2a] shadow-[0_4px_16px_rgba(0,0,0,0.05)] p-3 sm:p-4 lg:p-4 xl:p-5 flex flex-col min-h-0';
 
   const productsCard = (
     <div
       className={cn(
         cardShell,
-        'max-h-[42dvh] lg:max-h-none lg:h-full lg:flex-1 overflow-hidden'
+        'max-h-[40dvh] lg:max-h-none lg:h-full lg:flex-1 overflow-hidden'
       )}>
-      <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2 flex-shrink-0">
+      <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2 flex-shrink-0">
         <svg
           width="16"
           height="16"
@@ -368,7 +374,7 @@ export default function POSPage() {
 
   const cartCard = (
     <div className={cn(cardShell, 'lg:h-full lg:flex-1')}>
-      <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2 flex-shrink-0">
+      <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2 flex-shrink-0">
         <svg
           width="16"
           height="16"
@@ -411,7 +417,7 @@ export default function POSPage() {
 
   // Right column = secondary panel + Order Summary pinned at bottom
   const rightColumn = (
-    <div className="flex flex-col gap-4 lg:gap-6 lg:flex-[0.42] lg:min-w-[380px] lg:max-w-[440px] lg:min-h-0">
+    <div className="flex flex-col gap-3 lg:gap-4 xl:gap-6 lg:flex-[0.38] lg:min-w-[340px] lg:max-w-[400px] xl:min-w-[380px] xl:max-w-[440px] lg:min-h-0">
       <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
         {cartFirst ? productsCard : cartCard}
       </div>
@@ -484,7 +490,7 @@ export default function POSPage() {
           mobile they stack. Left = main panel (grid or big cart), right =
           secondary panel + Order Summary pinned at the bottom so the Complete
           Sale button is ALWAYS visible without scrolling. */}
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 lg:flex-1 lg:min-h-0">
+      <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 xl:gap-6 lg:flex-1 lg:min-h-0">
         {leftPanel}
         {rightColumn}
       </div>

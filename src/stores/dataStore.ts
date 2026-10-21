@@ -104,6 +104,9 @@ interface CompleteSaleInput {
   paymentRef?: string | null;
   customerId?: number | null;
   pointsRedeemed?: number;
+  specialDiscountType?: 'pwd' | 'senior' | null;
+  specialDiscountId?: string | null;
+  specialDiscountAmount?: number;
 }
 
 interface DataState {

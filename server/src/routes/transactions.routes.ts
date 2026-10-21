@@ -24,6 +24,9 @@ const createTxSchema = z.object({
   payment_ref: z.string().max(50).optional().nullable(),
   customer_id: z.number().int().positive().optional().nullable(),
   points_redeemed: z.number().int().min(0).optional().default(0),
+  special_discount_type: z.enum(['pwd', 'senior']).optional().nullable(),
+  special_discount_id: z.string().max(50).optional().nullable(),
+  special_discount_amount: z.number().min(0).optional().default(0),
 });
 
 // ---- Helpers ----
@@ -226,7 +229,8 @@ router.post('/', async (req, res, next) => {
     const redeemValue = input.points_redeemed && config
       ? Math.floor(input.points_redeemed / config.redeem_every) * config.redeem_value
       : 0;
-    const discount = redeemValue;
+    const specialDisc = Number(input.special_discount_amount) || 0;
+    const discount = redeemValue + specialDisc;
     const preTaxTotal = Math.max(0, rawTotal - discount);
 
     // Tax — the VAT the customer pays on this sale.

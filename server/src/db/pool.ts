@@ -17,4 +17,10 @@ export const pool = mysql.createPool({
   queueLimit: 0,
   charset: 'utf8mb4',
   timezone: '+08:00',          // Philippine Time
+  dateStrings: false,
+});
+
+// Ensure every connection uses PH time zone
+pool.on('connection', (conn) => {
+  conn.query("SET time_zone = '+08:00';");
 });

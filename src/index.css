@@ -160,6 +160,25 @@
   transition-duration: 0s !important;
 }
 
+@media (max-height: 820px) {
+  .pos-summary-hero {
+    padding: 0.75rem 1rem;
+  }
+  .pos-summary-hero-total {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+  .pos-summary-section {
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    gap: 0.25rem;
+  }
+  .pos-checkout-btn {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+}
+
 /* Font sizes */
 [data-font-size="small"] { font-size: 87.5%; }
 [data-font-size="large"] { font-size: 112.5%; }
