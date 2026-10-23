@@ -46,9 +46,9 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
       if (category !== 'All' && p.category !== category) return false;
       if (q) {
         return (
-          p.name.toLowerCase().includes(q) ||
-          p.retailBarcode.toLowerCase().includes(q) ||
-          p.wholesaleBarcode.toLowerCase().includes(q)
+          (p.name ?? '').toLowerCase().includes(q) ||
+          (p.retailBarcode ?? '').toLowerCase().includes(q) ||
+          (p.wholesaleBarcode ?? '').toLowerCase().includes(q)
         );
       }
       return true;
@@ -137,9 +137,9 @@ export function ProductSearch({ onScan, compact = false }: ProductSearchProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-h-full">
       {/* Sticky search toolbar — stays pinned while the product grid scrolls */}
-      <div className="space-y-3 lg:sticky lg:top-0 lg:z-10 lg:bg-white lg:dark:bg-[#1C1C1C] lg:-mx-5 lg:px-5 lg:rounded-t-[20px] lg:border-b lg:border-slate-100 lg:dark:border-slate-800 lg:!mb-0">
+      <div className="space-y-3 lg:sticky lg:top-0 lg:z-10 lg:bg-white lg:dark:bg-[#1C1C1C] lg:-mx-4 lg:px-4 xl:-mx-5 xl:px-5 lg:rounded-t-[20px] lg:border-b lg:border-slate-100 lg:dark:border-slate-800 lg:!mb-0">
         {/* Search bar + view type toggle */}
         <div className="flex items-center gap-2.5">
           <div className="relative flex-1">

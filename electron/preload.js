@@ -1,5 +1,5 @@
 /**
- * Ruiz Store POS — preload script.
+ * StockCast — preload script.
  *
  * Runs in a sandboxed, isolated context. Only a minimal API is exposed to the
  * renderer via contextBridge — the renderer never gets direct Node/Electron

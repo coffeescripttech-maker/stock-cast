@@ -205,7 +205,7 @@ export function LoginPage() {
         </div>
 
         <h1 className="text-xl font-bold text-center mb-1.5 text-slate-900 dark:text-slate-100 break-words line-clamp-2">
-          {storeName || 'Ruiz Store'} POS
+          {storeName || 'StockCast'} POS
         </h1>
         <p className="text-xs text-slate-400 text-center mb-8 dark:text-slate-500">
           Sign in to access the inventory and sales system

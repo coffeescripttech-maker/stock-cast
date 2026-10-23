@@ -1,9 +1,9 @@
 @echo off
-title Ruiz Store POS - Desktop App
+title StockCast - Desktop App
 cd /d "%~dp0"
 
 echo ================================================
-echo  Ruiz Store POS - Starting Desktop App
+echo  StockCast - Starting Desktop App
 echo ================================================
 echo.
 
@@ -20,6 +20,6 @@ call npm run electron:dev
 
 echo.
 echo ================================================
-echo  Ruiz Store POS is closing...
+echo  StockCast is closing...
 echo ================================================
 pause

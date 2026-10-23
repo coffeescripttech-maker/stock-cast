@@ -1,4 +1,4 @@
--- Ruiz Store POS — Seed Data
+-- StockCast — Seed Data
 -- Run after schema.sql: mysql -u root -p ruizpos < server/src/db/seed.sql
 
 USE ruizpos;
@@ -61,7 +61,7 @@ ON DUPLICATE KEY UPDATE id = id;
 -- -----------------------------------------------------------
 INSERT INTO system_settings (id, settings) VALUES (1, '{
   "general": {
-    "storeName": "Ruiz Store",
+    "storeName": "StockCast",
     "address": "",
     "phone": "",
     "email": "",
@@ -104,8 +104,8 @@ INSERT INTO system_settings (id, settings) VALUES (1, '{
     "defaultSupplier": ""
   },
   "receipt": {
-    "headerText": "RUIZ STORE",
-    "footerText": "Thank you for shopping at Ruiz Store!",
+    "headerText": "STOCKCAST",
+    "footerText": "Thank you for shopping at StockCast!",
     "showLogoOnReceipt": false,
     "showCustomerInfo": true,
     "showBarcodeOnReceipt": false,
@@ -175,9 +175,9 @@ INSERT INTO system_settings (id, settings) VALUES (1, '{
   "about": {
     "appVersion": "1.0.0",
     "lastUpdated": null,
-    "developerInfo": "Ruiz POS Development Team",
+    "developerInfo": "StockCast Development Team",
     "licenseType": "Proprietary",
-    "footerCredits": "Ruiz POS System",
+    "footerCredits": "StockCast System",
     "privacyPolicyUrl": "",
     "termsUrl": ""
   }

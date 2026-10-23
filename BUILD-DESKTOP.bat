@@ -1,9 +1,9 @@
 @echo off
-title Ruiz Store POS - Build Desktop App
+title StockCast - Build Desktop App
 cd /d "%~dp0"
 
 echo ================================================
-echo  Ruiz Store POS - Building Desktop App
+echo  StockCast - Building Desktop App
 echo ================================================
 echo.
 

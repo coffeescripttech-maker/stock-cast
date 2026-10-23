@@ -249,7 +249,7 @@ router.get('/public', async (_req, res, next) => {
     res.json({
       success: true,
       data: {
-        storeName: settings.general?.storeName || 'Ruiz Store',
+        storeName: settings.general?.storeName || 'StockCast',
         currencySymbol: settings.tax?.currencySymbol || '₱',
         currencyPosition: settings.tax?.currencyPosition || 'before',
         currencyLocale: settings.general?.currencyLocale || 'en-PH',

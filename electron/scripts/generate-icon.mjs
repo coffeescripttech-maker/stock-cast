@@ -1,5 +1,5 @@
 /**
- * Generates the Ruiz Store POS app icon:
+ * Generates the StockCast app icon:
  *   - `build/icon.png`  — 512×512 source (also used for macOS .icns conversion)
  *   - `build/icon.ico`  — multi-size Windows icon (16→256 px, PNG-compressed),
  *     used directly by electron-builder so no runtime image conversion is needed.

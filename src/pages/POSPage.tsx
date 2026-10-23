@@ -348,7 +348,7 @@ export default function POSPage() {
     <div
       className={cn(
         cardShell,
-        'lg:h-full lg:flex-1 overflow-hidden'
+        'min-h-[360px] lg:min-h-0 lg:h-full lg:flex-1 overflow-hidden'
       )}>
       <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2 flex-shrink-0">
         <svg
@@ -415,10 +415,14 @@ export default function POSPage() {
     </div>
   );
 
-  // Right column = secondary panel + Order Summary pinned at bottom
+  // Right column = secondary panel + Order Summary pinned at bottom.
+  // The secondary panel keeps a minimum height so the Product Search never
+  // collapses to 0 when the Order Summary grows (e.g. after adding to cart,
+  // which reveals the PWD/Senior discount block). If the column is still
+  // taller than the viewport it scrolls instead of squeezing the panel away.
   const rightColumn = (
-    <div className="flex flex-col gap-1.5 lg:gap-2 xl:gap-6 lg:flex-[0.32] lg:min-w-[300px] lg:max-w-[360px] xl:min-w-[380px] xl:max-w-[440px] lg:min-h-0">
-      <div className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
+    <div className="flex flex-col gap-1.5 lg:gap-2 xl:gap-6 lg:flex-[0.32] lg:min-w-[300px] lg:max-w-[360px] xl:min-w-[380px] xl:max-w-[440px] lg:min-h-0 lg:overflow-y-auto lg:pr-0.5">
+      <div className="lg:flex-1 lg:min-h-[220px] lg:flex lg:flex-col">
         {cartFirst ? productsCard : cartCard}
       </div>
       {orderSummaryBlock}

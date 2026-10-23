@@ -1,5 +1,5 @@
 /**
- * Ruiz Store POS — Electron main process.
+ * StockCast — Electron main process.
  *
  * Two operating modes:
  *
@@ -418,7 +418,7 @@ public class RawPrinterHelper {
     if (!OpenPrinter(printerName, out hPrinter, IntPtr.Zero)) return false;
     try {
       DOCINFOA di = new DOCINFOA();
-      di.pDocName = "Ruiz Store POS Receipt";
+      di.pDocName = "StockCast Receipt";
       di.pDataType = "RAW";
       bool ok = StartDocPrinter(hPrinter, 1, di);
       if (!ok) return false;

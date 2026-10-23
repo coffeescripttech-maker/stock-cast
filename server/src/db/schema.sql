@@ -1,4 +1,4 @@
--- Ruiz Store POS — Database Schema
+-- StockCast — Database Schema
 -- Run: mysql -u root -p ruizpos < server/src/db/schema.sql
 
 CREATE DATABASE IF NOT EXISTS ruizpos

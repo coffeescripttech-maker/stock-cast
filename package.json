@@ -2,8 +2,8 @@
   "name": "ruiz-store-pos",
   "private": true,
   "version": "5.0.0",
-  "description": "Ruiz Store POS — desktop point-of-sale application",
-  "author": "Ruiz Store",
+  "description": "StockCast — desktop point-of-sale application",
+  "author": "StockCast",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -27,7 +27,7 @@
   },
   "build": {
     "appId": "com.ruizstore.pos",
-    "productName": "Ruiz Store POS",
+    "productName": "StockCast",
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -71,10 +71,10 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Ruiz Store POS",
+      "shortcutName": "StockCast",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
-      "uninstallDisplayName": "Ruiz Store POS"
+      "uninstallDisplayName": "StockCast"
     },
     "mac": {
       "target": [

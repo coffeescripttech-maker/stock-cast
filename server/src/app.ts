@@ -93,7 +93,7 @@ app.use(errorMiddleware);
 //      the main process starts it via app.listen() on 127.0.0.1 instead. ----
 if (!EMBEDDED) {
   app.listen(PORT, () => {
-    console.log(`✓ Ruiz Store POS API running on http://localhost:${PORT}`);
+    console.log(`✓ StockCast API running on http://localhost:${PORT}`);
     console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }

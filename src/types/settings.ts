@@ -156,7 +156,7 @@ export type SettingsSection = keyof SystemSettings;
 
 export const defaultSettings: SystemSettings = {
   general: {
-    storeName: 'Ruiz Store',
+    storeName: 'StockCast',
     address: '',
     phone: '',
     email: '',
@@ -200,8 +200,8 @@ export const defaultSettings: SystemSettings = {
     defaultSupplier: '',
   },
   receipt: {
-    headerText: 'RUIZ STORE',
-    footerText: 'Thank you for shopping at Ruiz Store!',
+    headerText: 'STOCKCAST',
+    footerText: 'Thank you for shopping at StockCast!',
     receiptTitle: 'Official Receipt',
     showLogoOnReceipt: false,
     showCustomerInfo: true,
@@ -272,9 +272,9 @@ export const defaultSettings: SystemSettings = {
   about: {
     appVersion: '1.0.0',
     lastUpdated: null,
-    developerInfo: 'Ruiz POS Development Team',
+    developerInfo: 'StockCast Development Team',
     licenseType: 'Proprietary',
-    footerCredits: 'Ruiz POS System',
+    footerCredits: 'StockCast System',
     privacyPolicyUrl: '',
     termsUrl: '',
   },
