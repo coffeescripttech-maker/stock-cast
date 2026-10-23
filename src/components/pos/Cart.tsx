@@ -213,7 +213,7 @@ export function Cart() {
 
       {/* Scrollable cart items — on desktop this fills the remaining card
           height so the product list scrolls independently on the left */}
-      <div className="max-h-[400px] overflow-y-auto space-y-1 pr-1 lg:max-h-none lg:flex-1 lg:min-h-0">
+      <div className="max-h-[400px] overflow-y-auto overscroll-contain space-y-1 pr-1 lg:max-h-none lg:flex-1 lg:min-h-0">
         {visibleItems.length === 0 ? (
           <div className="text-center py-6 text-xs text-slate-400 dark:text-slate-500">
             No match in cart{query.trim() && (

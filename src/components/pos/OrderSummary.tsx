@@ -6,8 +6,7 @@ import {
   Loader2,
   AlertTriangle,
   ShoppingBag,
-  QrCode,
-  Percent
+  QrCode
 } from 'lucide-react';
 import { usePOSStore } from '../../stores/posStore';
 import { useDataStore } from '../../stores/dataStore';
@@ -38,7 +37,6 @@ export function OrderSummary({
   const toggleRedeem = usePOSStore(s => s.toggleRedeem);
   const unlinkCustomer = usePOSStore(s => s.unlinkCustomer);
   const specialDiscount = usePOSStore(s => s.specialDiscount);
-  const setSpecialDiscount = usePOSStore(s => s.setSpecialDiscount);
   const rewardsConfig = useDataStore(s => s.rewardsConfig);
   const enableRewards = useSettingsStore(s => s.settings.pos.enableRewards);
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
@@ -160,61 +158,6 @@ export function OrderSummary({
               </kbd>
             </button>
           )}
-        </div>
-      )}
-
-      {/* ─── PWD/Senior Discount ─── */}
-      {cart.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 overflow-hidden">
-          <div className="p-2.5 space-y-2">
-            <button
-              onClick={() => setSpecialDiscount({ enabled: !specialDiscount.enabled })}
-              className={cn(
-                'w-full flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all text-left',
-                specialDiscount.enabled
-                  ? 'bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800'
-                  : 'bg-slate-50 dark:bg-slate-700/30 border-slate-200 dark:border-slate-700 hover:border-emerald-300'
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <div className={cn(
-                  'w-8 h-8 rounded-lg flex items-center justify-center',
-                  specialDiscount.enabled ? 'bg-emerald-100 dark:bg-emerald-900' : 'bg-slate-100 dark:bg-slate-700'
-                )}>
-                  <Percent size={14} className={specialDiscount.enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
-                </div>
-                <div>
-                  <div className={cn('text-xs font-bold', specialDiscount.enabled ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300')}>
-                    PWD/Senior Citizen Discount (5%)
-                  </div>
-                  <div className="text-[10px] text-slate-400">Apply 5% discount to subtotal</div>
-                </div>
-              </div>
-              <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', specialDiscount.enabled ? 'bg-emerald-200 text-emerald-700 dark:bg-emerald-800 dark:text-emerald-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-600 dark:text-slate-400')}>
-                {specialDiscount.enabled ? 'ON' : 'OFF'}
-              </span>
-            </button>
-            {specialDiscount.enabled && (
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={specialDiscount.type || ''}
-                  onChange={(e) => setSpecialDiscount({ type: (e.target.value as 'pwd' | 'senior') || null })}
-                  className="px-2.5 py-2 text-xs rounded-lg border border-slate-200 bg-white outline-none focus:border-emerald-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
-                >
-                  <option value="">Select type</option>
-                  <option value="pwd">PWD</option>
-                  <option value="senior">Senior Citizen</option>
-                </select>
-                <input
-                  type="text"
-                  value={specialDiscount.idNumber}
-                  onChange={(e) => setSpecialDiscount({ idNumber: e.target.value })}
-                  placeholder="ID/SC No. (optional)"
-                  className="px-2.5 py-2 text-xs rounded-lg border border-slate-200 bg-white outline-none focus:border-emerald-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
-                />
-              </div>
-            )}
-          </div>
         </div>
       )}
 

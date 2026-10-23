@@ -25,6 +25,7 @@ import { printFallback } from '../lib/electron';
 import { applyTax } from '../lib/tax';
 import { printerReady, usePrinterStore } from '../stores/printerStore';
 import type { Transaction } from '../types/transaction';
+import type { SpecialDiscount } from '../stores/posStore';
 
 export default function POSPage() {
   const cart = usePOSStore(s => s.cart);
@@ -35,6 +36,7 @@ export default function POSPage() {
   const redeemPoints = usePOSStore(s => s.redeemPoints);
   const setLastReceipt = usePOSStore(s => s.setLastReceipt);
   const setReceiptShowing = usePOSStore(s => s.setReceiptShowing);
+  const setSpecialDiscount = usePOSStore(s => s.setSpecialDiscount);
 
   const rewardsConfig = useDataStore(s => s.rewardsConfig);
   const products = useDataStore(s => s.products);
@@ -95,6 +97,46 @@ export default function POSPage() {
   const { total: grandTotal } = applyTax(
     Math.max(0, rawTotal - discount),
     taxSettings
+  );
+
+  /**
+   * Recompute the grand total for an arbitrary PWD/Senior discount amount
+   * using the SAME formula as the live totals above (raw − points − 5% → tax).
+   * Used by the Collect Payment modal: when the cashier toggles the discount
+   * there, this snaps `pendingTotal` to the recomputed value without touching
+   * any other behavior.
+   */
+  const computeGrandTotal = useCallback(
+    (specialAmt: number) => {
+      const pts =
+        redeemPoints > 0
+          ? Math.floor(redeemPoints / rewardsConfig.redeemEvery) *
+            rewardsConfig.redeemValue
+          : 0;
+      const { total } = applyTax(
+        Math.max(0, rawTotal - pts - specialAmt),
+        useSettingsStore.getState().settings.tax
+      );
+      return total;
+    },
+    [rawTotal, redeemPoints, rewardsConfig]
+  );
+
+  /**
+   * When the toggle/select/ID fields change inside the Collect Payment modal,
+   * persist them to the cart store (so completeSale records them exactly as
+   * the OrderSummary-era flow did) and refresh the amount due. The cart is
+   * frozen behind the payment dialog while this runs, so nothing else can
+   * race the recompute.
+   */
+  const handleUpdateSpecial = useCallback(
+    (next: SpecialDiscount) => {
+      setSpecialDiscount(next);
+      setPendingTotal(
+        computeGrandTotal(next.enabled ? rawTotal * 0.05 : 0)
+      );
+    },
+    [setSpecialDiscount, computeGrandTotal, rawTotal]
   );
 
   // ---- Event listeners for keyboard shortcuts ----
@@ -510,6 +552,9 @@ export default function POSPage() {
         open={paymentOpen}
         onOpenChange={setPaymentOpen}
         total={pendingTotal}
+        rawTotal={rawTotal}
+        specialDiscount={specialDiscountState}
+        onUpdateSpecial={handleUpdateSpecial}
         onComplete={handlePaymentComplete}
       />
 
